@@ -1,392 +1,686 @@
-# GemSwap — Piano Implementativo Dettagliato (MVP Match-3 Web)
+# GemSwap — Piano di sviluppo eseguibile (MVP Match-3 Web)
+
+> **Root del progetto:** `Match3/`, cioè la cartella corrente del benchmark.
+>
+> **Stack confermato:** TypeScript strict + Vite + Canvas 2D + Vitest. C/raylib non
+> fanno parte di questo target web; l'eventuale porting nativo è un progetto separato.
 
 ---
 
-## 1. Contesto (Context)
+## 1. Obiettivo e confini
 
-| Voce | Dettaglio |
-|------|-----------|
-| Obiettivo | Realizzare un gioco match-3 (swap → match → clear → refill → cascade) giocabile su browser desktop e mobile |
-| Punto di partenza | Cartella vuota (solo `.agents/skills/`), **nessun repo git**, nessun codice esistente |
-| Stack | TypeScript (strict) + Vite 7 (Node ≥ 20.19) + HTML5 Canvas 2D + Vitest 4 (unit/integration) · Playwright E2E (stretch, fuori scope v1) |
-| Output richiesto | MVP completo di: board 8×8, swap/animazioni, match/clear, gravità/refill, cascade, punteggio, game-over, HUD, polish base, **due modalità di gioco (Moves / Time) selezionabili all'avvio con valori editabili** |
-| DoD globale | TS strict senza errori · test core ≥ 90% branch coverage · 60 FPS con CPU throttle 4× · iOS Safari + Android Chrome + desktop Firefox/Chrome · zero console errors |
+### 1.1 Obiettivo prodotto
+
+Realizzare un match-3 giocabile su desktop e mobile:
+
+```text
+start → input swap → validazione → match → clear → gravity → refill
+      → cascade fino a stabilità → score → game over → restart
+```
+
+La board è 8×8, contiene sei tipi di tile procedurali e non presenta match
+automatici all'avvio. Il gioco offre due modalità:
+
+- **Moves:** 20 mosse valide di default; valore configurabile 5–50.
+- **Time:** 60 secondi di default; valore configurabile 30–300 secondi.
+
+I valori configurati e il best score sono separati per modalità e persistiti in
+`localStorage` quando il browser lo consente.
+
+### 1.2 Scope del primo rilascio
+
+**MVP giocabile (P0):**
+
+- core puro e deterministico: board, match, swap, clear, gravity, refill,
+  cascade, deadlock e score;
+- modalità Moves prima, modalità Time subito dopo il vertical slice;
+- FSM esplicita e input bloccato durante le transizioni;
+- rendering Canvas procedurale, layout responsive, HUD minimo;
+- reset/restart affidabile e persistenza difensiva;
+- test unitari e di integrazione del core.
+
+**Release v1 (P1, dopo il core):**
+
+- pause, timer completo, animazioni rifinite, accessibilità, particelle, audio,
+  best score e verifica responsive/performance;
+- coverage branch del core ≥ 90% come gate finale, non come prerequisito per il
+  primo prototipo giocabile.
+
+**Fuori scope v1:**
+
+- special tile (bombe, razzi, rainbow/wild), booster e livelli;
+- backend, account, classifiche online e analytics;
+- asset binari: forme, colori e suoni sono procedurali;
+- Playwright, CI e deploy automatico: sono stretch goal documentati in §11.
+
+### 1.3 Decisione sulle special tile
+
+Le special tile **non fanno parte dell'MVP né dell'architettura attiva di v1**.
+`Tile` non contiene quindi `specialType`, `MatchEngine` non genera effetti
+secondari e `ScoreManager` non assegna bonus per bombe/linee.
+
+Il punteggio può comunque riconoscere la geometria del match normale:
+
+- linea di 3: `shapeBonus = 0`;
+- linea di 4 o 5: bonus configurabile, ma tutte le tile vengono rimosse
+  normalmente;
+- forma L/T o sovrapposizione: bonus configurabile.
+
+Le special tile saranno una milestone P2 separata, con schema dati, regole,
+test e animazioni proprie. Non si devono lasciare hook parziali o codice morto
+nel core v1.
 
 ---
 
-## 2. Approccio (Approach)
+## 2. Criteri di successo e priorità
 
-### 2.1 Architettura a 3 strati (dal prompt, raffinata)
+### 2.1 Gate progressivi
 
+| Gate | Quando | Criteri bloccanti |
+|---|---|---|
+| **G0 Riproducibile** | fine setup | installazione da lockfile, typecheck, lint e test dummy verdi |
+| **G1 Vertical slice** | prima demo | una partita Moves completa con swap, match, cascade e restart |
+| **G2 Core robusto** | prima di polish | invarianti board, deadlock, cap cascade, identità tile e test verdi |
+| **G3 MVP** | fine funzionalità | Moves + Time, persistenza difensiva, responsive e HUD |
+| **G4 Release v1** | fine verifica | coverage, performance, accessibilità, browser smoke e build produzione |
+
+Un fallimento P1 non deve impedire G1: si consegna prima il core giocabile e si
+aggiunge il polish in seguito.
+
+### 2.2 Definition of Done v1
+
+- `npm ci`, `npm run typecheck`, `npm run lint`, `npm test` e `npm run build`
+  completano senza errori;
+- branch coverage ≥ 90% su `src/core` (le soglie sono applicate solo quando il
+  core è completo);
+- nessun `any` nel core e nessun accesso indicizzato non verificato;
+- una partita completa funziona in Moves e Time;
+- reset e restart azzerano score, board, selezione, transazioni, mosse e timer,
+  ma non cancellano i best score;
+- dati `localStorage` corrotti, mancanti, di versione sconosciuta o inaccessibili
+  non causano crash;
+- board stabile: piena, senza match e con almeno una mossa valida;
+- nessuna identità tile duplicata o persa durante swap, gravity, refill e
+  reshuffle, salvo le identità esplicitamente ritirate durante clear/reset;
+- Canvas responsive a 375×667, 768×1024 e 1920×1080, senza overflow;
+- nessun errore in console nella build di produzione.
+
+Il requisito "60 FPS con CPU 4× su ogni browser e ogni dispositivo" non è un
+criterio realistico per il primo prototipo. Per G4 si misura su un dispositivo
+di riferimento: nessun calo sostenuto sotto 50 FPS, nessun long task >50 ms e
+nessuna allocazione evidente per frame nel rendering normale. I risultati vanno
+registrati, non dichiarati senza misura.
+
+---
+
+## 3. Stack riproducibile
+
+Non usare `create-vite@latest`, `npm install` senza versione o versioni `^`/`~`
+per le dipendenze dirette. Il repository deve committare `package-lock.json`.
+
+Baseline da fissare in `package.json` e verificare in `package-lock.json`:
+
+| Componente | Versione esatta |
+|---|---:|
+| Node | `20.19.0` |
+| npm | `10.8.2` |
+| `create-vite` | `7.0.6` (solo scaffold iniziale) |
+| Vite | `7.0.6` |
+| TypeScript | `5.8.3` |
+| Vitest | `4.0.0` |
+| `@vitest/coverage-v8` | `4.0.0` |
+| ESLint | `9.32.0` |
+| `typescript-eslint` | `8.38.0` |
+
+Se una versione non è disponibile nell'ambiente, fermarsi e registrare la
+variazione in `CHANGELOG.md`: non sostituirla silenziosamente con `latest`.
+Usare `.nvmrc`/`.node-version` e `engines` in `package.json`.
+
+Script minimi:
+
+```json
+{
+  "dev": "vite",
+  "build": "tsc -b && vite build",
+  "preview": "vite preview",
+  "typecheck": "tsc -b --pretty false",
+  "lint": "eslint .",
+  "test": "vitest run",
+  "test:watch": "vitest",
+  "test:coverage": "vitest run --coverage"
+}
 ```
-┌──────────────────────────────────────────────────────────┐
-│ Game Shell (UI)                                           │
-│  HUD · Overlay (Start/GameOver/Pause) · InputHandler      │
-├──────────────────────────────────────────────────────────┤
-│ Engine Core (logica pura, NO DOM, 100% testabile)         │
-│  StateMachine (FSM) · Board · MatchEngine · ScoreManager  │
-├──────────────────────────────────────────────────────────┤
-│ Rendering Layer                                           │
-│  Renderer (Canvas 2D) · Animator (tween) · Particles      │
-└──────────────────────────────────────────────────────────┘
+
+Il lockfile è parte dell'artefatto: una macchina pulita deve produrre lo stesso
+albero con `npm ci`.
+
+---
+
+## 4. Architettura e contratti
+
+### 4.1 Strati e responsabilità
+
+```text
+UI shell / HUD / Overlay / InputHandler
+              │ comandi ed eventi tipizzati
+Rendering / Animator / Particles / Audio
+              │ legge snapshot e animation plan
+Core puro (Board, MatchEngine, ScoreManager, GameSession, FSM)
+              │ nessun DOM, Canvas, RAF, localStorage o Web Audio
 ```
 
-### 2.2 Principi guida
+- **Core:** funzioni pure dove possibile; riceve RNG, clock e configurazione
+  tramite parametri o adapter.
+- **FSM/GameSession:** unico orchestratore dei comandi; il DOM non decide mai
+  una transizione.
+- **Rendering:** spettatore del core. Le coordinate pixel sono derivate dalla
+  cella e dalla viewport, non sono stato di dominio.
+- **Adapter:** `StorageAdapter`, `Clock` e `Rng` sono interfacce sostituibili e
+  testabili.
 
-1. **Separazione logica/presentazione**: il core (`Board`, `MatchEngine`, `ScoreManager`, FSM) non tocca mai DOM/Canvas e non usa `requestAnimationFrame`. È testabile con Vitest in Node puro.
-2. **FSM come unico orchestratore**: ogni transizione di stato è esplicita; il rendering è uno *spectator* che legge lo stato.
-3. **Data-driven**: tutte le costanti (ROWS, COLS, TILE_SIZE, colori, durate animazione, punteggi) in `config.ts`; nessun magic number nel codice.
-4. **Posizione = row/col nel modello, x/y derivati per il rendering**: le animazioni tweenano `x/y`, il modello resta `row/col`.
-5. **Determinismo**: la generazione della board e la risoluzione cascade sono funzioni pure → testabili e riproducibili (seed RNG per il futuro daily challenge).
-6. **Un input alla volta**: durante qualsiasi stato ≠ IDLE, l'input è ignorato (tranne pause/restart).
+### 4.2 Struttura dei file
 
-### 2.3 Struttura file (da creare ex-novo)
-
-```
-Match3Deepseek/
+```text
+Match3/
 ├── index.html
 ├── package.json
-├── tsconfig.json  (+ tsconfig.app.json / tsconfig.node.json)
+├── package-lock.json
+├── .nvmrc
+├── tsconfig.json
+├── tsconfig.app.json
+├── tsconfig.node.json
 ├── vite.config.ts
-├── vitest.config.ts          # o integrazione in vite.config.ts
-├── playwright.config.ts      # (stretch — fuori scope v1)
-├── .github/workflows/ci.yml  # (stretch — fuori scope v1)
-└── src/
-    ├── main.ts               # bootstrap: canvas, loop, wiring
-    ├── config.ts             # costanti globali
-    ├── core/
-    │   ├── types.ts          # Tile, Board, GameState, TileType, TileState, eventi
-    │   ├── Board.ts          # generazione, gravità, refill, deadlock check
-    │   ├── MatchEngine.ts    # findMatches, special-tile rules
-    │   ├── ScoreManager.ts   # punteggio, combo/cascade multiplier
-    │   └── StateMachine.ts   # FSM + event emitter
-    ├── input/
-    │   └── InputHandler.ts   # pointer events → comandi (swap)
-    ├── rendering/
-    │   ├── Renderer.ts       # draw loop
-    │   ├── Animator.ts       # tween engine (ease/lerp)
-    │   └── Particles.ts      # FX
-    ├── ui/
-    │   ├── HUD.ts
-    │   └── Overlay.ts
-    ├── audio/
-    │   └── AudioManager.ts
-    └── assets/               # (non serve: tile procedurali, zero asset binari)
+├── vitest.config.ts
+├── eslint.config.js
+├── src/
+│   ├── main.ts
+│   ├── config.ts
+│   ├── core/
+│   │   ├── constants.ts
+│   │   ├── types.ts
+│   │   ├── Board.ts
+│   │   ├── MatchEngine.ts
+│   │   ├── ScoreManager.ts
+│   │   ├── GameSession.ts
+│   │   ├── StateMachine.ts
+│   │   ├── Storage.ts
+│   │   └── __tests__/
+│   ├── input/InputHandler.ts
+│   ├── rendering/Renderer.ts
+│   ├── rendering/Animator.ts
+│   ├── rendering/Particles.ts
+│   ├── ui/HUD.ts
+│   ├── ui/Overlay.ts
+│   └── audio/AudioManager.ts
+└── docs/
+    ├── TEST-MATRIX.md
+    └── PERFORMANCE.md
 ```
 
-### 2.4 Decisioni tecniche (confermate dal committente)
+### 4.3 Tipi senza enum
 
-| Tema | Decisione |
-|------|-----------|
-| Grafica tile | **Procedurale via Canvas** (forme geometriche + gradienti, nessun file binario) → niente asset pipeline |
-| Fine partita | **Due modalità selezionabili all'avvio**: `Moves` (default 20, editabile) e `Time` (default 60 s, editabile) — vedi §2.5 #10 e Fase 5 |
-| Lingua UI | Inglese (testi semplici, i18n futuro facile) |
-| Persistenza | `localStorage` per best score, preferenze modalità e mute (nessun backend) |
-| Punteggio | Formula del prompt: `tiles × 10 × cascade_multiplier + shape_bonus` |
-| Deploy | **Fuori scope v1** — step pronti per **Cloudflare Pages** + auto-deploy su push a main (S7.5) |
+`src/core/constants.ts` deve essere la fonte unica dei valori:
 
-### 2.5 Migliorie deliberate rispetto allo spec (richieste dal committente)
+```ts
+export const TILE_TYPES = {
+  RED: 'red',
+  BLUE: 'blue',
+  GREEN: 'green',
+  YELLOW: 'yellow',
+  PURPLE: 'purple',
+  ORANGE: 'orange',
+} as const;
 
-| # | Miglioria | Motivo |
-|---|-----------|--------|
-| 1 | `noUncheckedIndexedAccess` + accessi difensivi (niente `board[r][c]!` sparsi) | Elimina bug da out-of-bounds a compile-time |
-| 2 | Event emitter tipizzato core → UI | Disaccoppia engine e HUD senza polling |
-| 3 | Loop RAF con delta-time (non frame-based) | Animazioni fluide indipendenti dal framerate |
-| 4 | RNG deterministica con seed (mulberry32) | Test riproducibili + futuro daily challenge |
-| 5 | Pool di oggetti per particelle (vincolo di design) | Niente GC spike nelle cascade |
-| 6 | Clamp `devicePixelRatio` ≤ 2 | Performance su mobile |
-| 7 | Tile procedurali (zero asset binari) | Niente loading screen, niente pipeline asset |
-| 8 | Deadlock → reshuffle animato come feature del core | Nel prompt è un rischio; qui è un invariante testato (S4.5) |
-| 9 | Cap cascade 20 + stabilizzazione forzata come invariante | Test dedicato, niente hang (S4.4) |
-| 10 | Config centralizzata con modalità Moves/Time e valori editabili | Estende la P1 "Move Counter / Timer" in due game mode |
-| 11 | Pausa che congela anche il timer di modalità Time | Niente drift nel countdown |
-| 12 | Audio procedurale via Web Audio (nessun file .mp3/.ogg) | Zero asset, autoplay policy gestita (S6.3) |
+export type TileType = typeof TILE_TYPES[keyof typeof TILE_TYPES];
 
----
+export const GAME_STATES = {
+  START: 'START',
+  IDLE: 'IDLE',
+  SWAPPING: 'SWAPPING',
+  REVERTING: 'REVERTING',
+  MATCHING: 'MATCHING',
+  CLEARING: 'CLEARING',
+  FALLING: 'FALLING',
+  REFILLING: 'REFILLING',
+  RESHUFFLING: 'RESHUFFLING',
+  PAUSED: 'PAUSED',
+  GAME_OVER: 'GAME_OVER',
+} as const;
 
-## 3. Decisioni confermate (dal committente)
+export type GameState = typeof GAME_STATES[keyof typeof GAME_STATES];
+```
 
-| # | Decisione | Scelta |
-|---|-----------|--------|
-| 1 | Fedeltà allo spec | Seguire lo spec introducendo **migliorie documentate** (§2.5) |
-| 2 | Grafica tile | **Procedurale** via Canvas (nessun asset binario) |
-| 3 | Test E2E + CI | **Solo Vitest + verifiche manuali** per la v1; Playwright/CI come stretch (S7.2, S7.6) |
-| 4 | Deploy | **Fuori scope v1**; step pronti per **Cloudflare Pages** (S7.5) |
-| 5 | Fine partita | **Due modalità selezionabili all'avvio**: `Moves` (default 20) e `Time` (default 60 s), valori **editabili** e persistiti |
-| 6 | Lingua UI | **Inglese** |
+Sono vietati enum TypeScript, stringhe duplicate per gli stati e `as` usato per
+aggirare `noUncheckedIndexedAccess`. I tipi devono includere almeno:
 
----
+```ts
+interface Tile {
+  readonly id: string;
+  readonly type: TileType;
+  row: number;
+  col: number;
+  state: 'IDLE' | 'CLEARING' | 'FALLING';
+}
 
-## 4. Fasi, Milestones e Steps dettagliati
+type Board = Array<Array<Tile | null>>;
+type Cell = Readonly<{ row: number; col: number }>;
+type Swap = Readonly<{ from: Cell; to: Cell }>;
+```
 
-> Legenda step: **Obiettivo** = goal verificabile · **Attività** = cosa fare · **Done** = criterio di completamento.
+Le proprietà `row`, `col` e `state` cambiano solo durante commit atomici del
+core; l'identità `id` e il tipo della tile non cambiano mai.
 
-### Fase 0 — Setup progetto (≈1-2 gg)
+### 4.4 Invarianti formali della board
 
-**Goal fase**: ambiente riproducibile, type-safe, lintato, con test runner pronto.
+Ogni metodo pubblico che muta o restituisce una board deve rispettare e, in
+ambiente di test, poter essere verificato contro questi invarianti:
 
-- [ ] **S0.1 Scaffold Vite + TS**
-  - Obiettivo: repo funzionante con `npm run dev` che mostra una pagina vuota.
-  - Attività: `npm create vite@latest . -- --template vanilla-ts`; `npm install`; verifica Node ≥ 20.19.
-  - Done: `npm run dev` serve la pagina; `npm run build` produce `dist/` senza errori.
-- [ ] **S0.2 Git + .gitignore**
-  - Obiettivo: history versionata, artefatti esclusi.
-  - Attività: `git init`, branch `main`, `.gitignore` (node_modules, dist, .env, .playwright, coverage).
-  - Done: `git status` pulito; primo commit.
-- [ ] **S0.3 TS strict + lint**
-  - Obiettivo: rigore tipo massimo, zero errori di stile.
-  - Attività: tsconfig con `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitOverride`, `verbatimModuleSyntax`; aggiunta ESLint flat config.
-  - Done: `npm run typecheck` e `npm run lint` passano su scaffold.
-- [ ] **S0.4 Vitest + coverage**
-  - Obiettivo: runner di test con metriche branch coverage.
-  - Attività: install `vitest @vitest/coverage-v8`; script `test`, `test:coverage`; soglia 90% su `src/core`.
-  - Done: `npm test` esegue un test dummy verde; `npm run test:coverage` riporta le soglie configurate.
-- [ ] **S0.5 Boilerplate Canvas**
-  - Obiettivo: canvas full-screen responsive con `devicePixelRatio` corretto e loop RAF.
-  - Attività: `index.html` con `<canvas>`; `main.ts` con loop base (`requestAnimationFrame`, delta time); resize handler.
-  - Done: rettangolo di debug disegnato; resize senza distortion; nessun errore console.
+1. dimensioni sempre `ROWS = 8`, `COLS = 8`;
+2. ogni cella contiene `null` oppure una tile di tipo valido;
+3. ogni tile live compare in una sola cella; gli `id` sono univoci e non vengono
+   riutilizzati nella sessione;
+4. per ogni tile live, `tile.row` e `tile.col` coincidono con la cella che la
+   contiene;
+5. `row` e `col` sono sempre nel range `[0, 7]` dopo ogni commit;
+6. durante `IDLE` la board è piena, non contiene match e ha almeno una mossa
+   valida;
+7. durante una transazione possono esistere piani temporanei e `null`, ma mai
+   una tile in due destinazioni o una destinazione assegnata a due tile;
+8. una tile clearata è ritirata e non può rientrare in gravity/refill;
+9. un nuovo gioco ritira tutte le tile precedenti e crea nuovi ID;
+10. seed, board iniziale e lista di comandi identici producono lo stesso snapshot
+    core (il clock è passato esplicitamente).
 
-### Fase 1 — Board & Rendering (≈3 gg)
+`assertBoardInvariant(board, phase)` deve essere usata nei test e, se utile, in
+sviluppo; non deve introdurre lavoro per frame in produzione.
 
-**Goal fase**: board 8×8 renderizzata e animabile, senza logica di gioco.
+### 4.5 Contratto di identità e coordinate
 
-- [ ] **S1.1 Tipi core** (`core/types.ts`)
-  - Obiettivo: contratto dati condiviso tra engine e rendering.
-  - Attività: definire `TileType` (enum 0..5), `TileState`, `GameState`, `Tile { type, row, col, x, y, state }`, `Board = (Tile|null)[][]`, eventi tipizzati.
-  - Done: file compila in strict mode; nessun `any`.
-- [ ] **S1.2 Generazione board senza match preesistenti** (`core/Board.ts`)
-  - Obiettivo: `generateBoard()` pura, deterministica (seed opzionale), mai con match iniziali.
-  - Attività: per ogni cella, scegli tipo evitando che completi run di 3 (controlla 2 a sinistra e 2 sopra).
-  - Done: test `generateBoard` su 1000 board → `findMatches` vuoto (test da scrivere in parallelo).
-- [ ] **S1.3 Rendering tile**
-  - Obiettivo: griglia visibile con tile distinte per tipo.
-  - Attività: `Renderer.ts` disegna sfondo griglia + tile (forma procedurale per tipo); `TILE_SIZE` e margini in `config.ts`.
-  - Done: board 8×8 visibile con 6 gemme distinguibili; scala corretta su mobile.
-- [ ] **S1.4 Responsive & DPR**
-  - Obiettivo: canvas nitido e centrato su portrait e landscape.
-  - Attività: calcolo `TILE_SIZE` dinamico da viewport; `ctx.setTransform` per DPR; `ResizeObserver`.
-  - Done: test manuale su viewport 375×667, 768×1024, 1920×1080; nessun blur/overflow.
-- [ ] **S1.5 Animator base** (`rendering/Animator.ts`)
-  - Obiettivo: motore tween riusabile (lerp + easing).
-  - Attività: classe `Tween` (durata, easing, callback onUpdate/onComplete), gestione in RAF del loop.
-  - Done: tile animabile (es. scale pulse) via tween; test unitario del calcolo easing (opzionale).
+La tile segue l'oggetto fisico, non la cella. Un `id` non viene mai cambiato per
+far sembrare che una tile sia un'altra.
 
-### Fase 2 — Input & Swapping (≈3 gg)
+- **Swap:** prima dell'animazione si crea uno `SwapAnimationPlan` con due ID e
+  celle sorgente/destinazione. La board logica non cambia durante il tween. Al
+  termine, le due referenze vengono scambiate in un unico commit e i due
+  `row/col` vengono aggiornati insieme. Se il match è assente, il revert è solo
+  visivo e la board non viene mai committata.
+- **Clear:** il match produce un set di ID, non solo coordinate. Durante il fade
+  le tile sono `CLEARING` e restano referenziate per il renderer. Al commit di
+  clear le celle diventano `null` e quegli ID sono ritirati.
+- **Gravity:** `applyGravity` calcola una lista `{ tileId, from, to }` senza
+  modificare coordinate a ogni frame. Il piano deve essere iniettivo. Al termine
+  dell'animazione il core ricostruisce la colonna e aggiorna tutti i `row/col`
+  in modo atomico.
+- **Refill:** ogni nuova tile riceve subito un ID mai usato, una cella target
+  unica e una posizione grafica di spawn sopra la board. La nuova tile entra
+  nella board solo nel commit del refill o, se serve al rendering, è indicata
+  separatamente come `pendingSpawn`; non può essere conteggiata due volte.
+- **Reshuffle:** si permutano le referenze delle tile esistenti, preservando ID e
+  tipo; al commit si aggiornano le coordinate. Se il fallback deve rigenerare i
+  tipi, le vecchie tile vengono ritirate esplicitamente e la sessione emette un
+  evento diagnostico.
+- **Reset:** nessuna vecchia animazione può committare dopo `reset()`. Si usa un
+  `sessionGeneration`/token di transazione per invalidare callback tardive.
+- **Rendering:** `x/y` pixel sono sempre derivati da `row/col` e dal layout,
+  oppure dal piano di animazione; non diventano una seconda fonte di verità.
 
-**Goal fase**: il giocatore seleziona e scambia tile adiacenti con feedback visivo; swap invalido torna indietro.
+Test obbligatori: ID preservati nello swap valido e invalido, coordinate corrette
+post-swap, coordinate corrette dopo colonne con gap multipli, ID nuovi nel refill,
+nessun commit dopo reset e IDs preservati nel reshuffle normale.
 
-- [ ] **S2.1 InputHandler unificato**
-  - Obiettivo: touch + mouse con un unico flusso `pointerdown/move/up`.
-  - Attività: mapping viewport→cella (row/col), soglia drag 10 px, hit test solo su celle valide.
-  - Done: tap/trascina su desktop e mobile seleziona la cella corretta (test manuale + pointer events mock).
-- [ ] **S2.2 Selezione tile**
-  - Obiettivo: highlight della tile selezionata.
-  - Attività: stato `selected` nel renderer; animazione pulse; deselezione su tap fuori.
-  - Done: selezione visibile e deselezionabile.
-- [ ] **S2.3 Swap + FSM SWAPPING**
-  - Obiettivo: swap animato di due tile adiacenti.
-  - Attività: stato `SWAPPING` nella FSM; animazione scambio; aggiornamento modello (row/col) a fine tween.
-  - Done: swap fluido; input bloccato durante l'animazione.
-- [ ] **S2.4 Rilevamento match post-swap**
-  - Obiettivo: decidere se lo swap produce un match.
-  - Attività: dopo lo swap, `findMatches`; se match → `MATCHING`, altrimenti `REVERTING`.
-  - Done: FSM transiziona correttamente nei due casi (test di integrazione).
-- [ ] **S2.5 Revert animato**
-  - Obiettivo: swap indietro fluido se nessun match.
-  - Attività: stato `REVERTING`; ri-animazione opposta; ritorno a `IDLE`.
-  - Done: swap invalido torna alla posizione originale senza perdere il turno; input riabilitato.
+### 4.6 FSM formale
 
-### Fase 3 — Match & Clear (≈3 gg)
+La FSM conserva `state`, `resumeState` quando è in pausa, `gameMode`,
+`movesRemaining`, `timeRemainingMs`, `cascadeLevel` e una sola transazione
+attiva. Solo `GameSession` invia eventi alla FSM.
 
-**Goal fase**: match rilevati, rimossi con animazione, punteggio calcolato.
+| Stato | Ingresso consentito | Uscita consentita |
+|---|---|---|
+| `START` | `START_GAME` | `IDLE` |
+| `IDLE` | `REQUEST_SWAP`, `PAUSE`, `RESET`, `GAME_OVER_REQUEST` | `SWAPPING`, `PAUSED`, `START`, `GAME_OVER` |
+| `SWAPPING` | `SWAP_ANIMATION_DONE`, `PAUSE`, `RESET`, `GAME_OVER_REQUEST` | `MATCHING`, `REVERTING`, `PAUSED`, `START`, `GAME_OVER` |
+| `REVERTING` | `REVERT_DONE`, `PAUSE`, `RESET`, `GAME_OVER_REQUEST` | `IDLE`, `PAUSED`, `START`, `GAME_OVER` |
+| `MATCHING` | `MATCHES_RESOLVED`, `PAUSE`, `RESET`, `GAME_OVER_REQUEST` | `CLEARING`, `IDLE`, `PAUSED`, `START`, `GAME_OVER` |
+| `CLEARING` | `CLEAR_ANIMATION_DONE`, `PAUSE`, `RESET`, `GAME_OVER_REQUEST` | `FALLING`, `PAUSED`, `START`, `GAME_OVER` |
+| `FALLING` | `FALL_ANIMATION_DONE`, `PAUSE`, `RESET`, `GAME_OVER_REQUEST` | `REFILLING`, `PAUSED`, `START`, `GAME_OVER` |
+| `REFILLING` | `REFILL_ANIMATION_DONE`, `PAUSE`, `RESET`, `GAME_OVER_REQUEST` | `MATCHING`, `RESHUFFLING`, `IDLE`, `PAUSED`, `START`, `GAME_OVER` |
+| `RESHUFFLING` | `RESHUFFLE_DONE`, `RESET` | `IDLE`, `START` |
+| `PAUSED` | `RESUME`, `RESET` | `resumeState`, `START` |
+| `GAME_OVER` | `RESTART`, `RESET` | `START` |
 
-- [ ] **S3.1 findMatches completo** (`core/MatchEngine.ts`)
-  - Obiettivo: scan orizzontale + verticale, match ≥ 3, overlap L/T gestiti.
-  - Attività: implementare l'algoritmo del prompt come funzione pura; gestire run sovrapposti.
-  - Done: test case — run H di 3, run V, L-shape/T-shape, doppio match, nessun match.
-- [ ] **S3.2 FSM MATCHING → CLEARING**
-  - Obiettivo: sequenza match→clear orchestrata dalla FSM.
-  - Attività: stati `MATCHING` (rileva e marca) e `CLEARING` (anima rimozione: fade/scale-out); `Tile.state = CLEARING`.
-  - Done: le tile matchate scompaiono con animazione; il modello diventa `null` sulle celle.
-- [ ] **S3.3 ScoreManager**
-  - Obiettivo: punteggio per evento di clear, con moltiplicatore cascade.
-  - Attività: `ScoreManager` con `addClearEvent(tiles, cascadeLevel, shapeBonus)`; formula `tiles×10×mult + bonus`; evento `scoreChange`.
-  - Done: test unitari della formula (match 3/4/5, cascade ×1/×2/×3).
-- [ ] **S3.4 HUD punteggio**
-  - Obiettivo: score visibile e aggiornato in tempo reale.
-  - Attività: `HUD.ts` legge eventi dal core e aggiorna il DOM (senza logica di gioco nel DOM).
-  - Done: lo score sale a ogni clear (test manuale).
+Regole aggiuntive:
 
-### Fase 4 — Gravity & Refill (≈3 gg)
-
-**Goal fase**: cascade completa — caduta, spawn, nuovi match, loop fino a stabilità.
-
-- [ ] **S4.1 applyGravity** (`core/Board.ts`)
-  - Obiettivo: funzione pura che compatta le colonne verso il basso.
-  - Attività: per ogni colonna, sposta tile verso il basso riempiendo i `null`; ritorna lista dei movimenti (from→to) per l'animazione.
-  - Done: test unitari — colonna con gap multipli, colonna piena, colonna vuota.
-- [ ] **S4.2 Refill**
-  - Obiettivo: spawn di nuove tile dall'alto.
-  - Attività: per ogni gap in cima, crea tile con `state: FALLING` e `y` negativo (fuori canvas); tipi random senza creare match iniziali con le vicine già presenti.
-  - Done: board sempre piena (8×8, nessun `null`) a fine refill.
-- [ ] **S4.3 FALLING + REFILLING nella FSM**
-  - Obiettivo: stati animati con modello aggiornato a fine caduta.
-  - Attività: `FALLING` anima le tile verso la row target; al termine aggiorna `row/col`; transizione a `REFILLING`/`MATCHING`.
-  - Done: cascade visivamente fluida; nessuna tile "teletrasportata".
-- [ ] **S4.4 Loop cascade**
-  - Obiettivo: ripetere match→clear→fall→refill finché stabile.
-  - Attività: a fine refill, `findMatches` → se match torna a `MATCHING` (cascade level++) altrimenti `IDLE`; cap depth = 20 (rischio "board mai stabile").
-  - Done: test di integrazione: da board nota, la cascade si risolve fino a stabilità in N step; test con cap 20 che forza la stabilizzazione.
-- [ ] **S4.5 Deadlock detection**
-  - Obiettivo: nessuna partita bloccata.
-  - Attività: `hasValidMoves(board)` — esiste almeno uno swap che produce match; se assente a fine cascade → reshuffle animato.
-  - Done: test con board costruita senza mosse valide → reshuffle; nessun loop infinito.
-
-### Fase 5 — Game Flow (≈2-3 gg)
-
-**Goal fase**: partita con selezione modalità (Moves/Time), avvio, limite, fine e restart.
-
-- [ ] **S5.0 Modalità di gioco & configurazione**
-  - Obiettivo: due game mode selezionabili con valori editabili e persistiti.
-  - Attività: tipo `GameMode = 'moves' | 'time'` e `GameConfig { mode, moves: 20, timeSeconds: 60 }` in `core/types.ts`; input numerici (+/− stepper, clamp moves 5-50, time 30-300) nello start screen; persistenza in `localStorage`; la FSM e l'HUD leggono `GameConfig` (niente magic number).
-  - Done: scelta modalità e modifica valori funzionanti; al reload le preferenze restano (test manuale); test unitario sul clamp dei valori.
-- [ ] **S5.1 FSM GAME_OVER + Start screen**
-  - Obiettivo: ciclo vita partita completo.
-  - Attività: stato `GAME_OVER`; overlay Start ("Play" + selector modalità di S5.0) e GameOver (score, best, "Play again").
-  - Done: da overlay si avvia una nuova partita pulita (board nuova, score 0, contatori resettati) nella modalità scelta.
-- [ ] **S5.2 Move counter + Timer (per modalità)**
-  - Obiettivo: limite di partita coerente con la modalità (moves: swap validi; time: countdown).
-  - Attività: in `moves` solo gli swap validi consumano una mossa (evento `movesChange`); in `time` un timer basato su `performance.now()` congelato in pausa (evento `timeChange`); a 0 → GAME_OVER in entrambe.
-  - Done: il contatore giusto per modalità decrementa correttamente; game-over a 0 (test manuale su entrambe le modalità); il timer non "perde" secondi in pausa.
-- [ ] **S5.3 Best score (localStorage)**
-  - Obiettivo: persistenza del record (separato per modalità).
-  - Attività: `ScoreManager.load()/save()` con chiavi `best.moves` / `best.time`; HUD mostra best della modalità corrente; aggiornato a fine partita.
-  - Done: refresh pagina → best score persistente e corretto per modalità.
-- [ ] **S5.4 Pause**
-  - Obiettivo: pausa senza rompere il loop né il timer.
-  - Attività: stato `PAUSED` (toggle tasto/tap); RAF sospeso; overlay Pause; il timer Time è congelato (miglioria #11).
-  - Done: pausa/riprendi preserva stato, animazioni e timer.
-
-### Fase 6 — Polish (≈4 gg)
-
-**Goal fase**: gioco "finito": FX, audio, tile speciali, combo UI.
-
-- [ ] **S6.1 Particle FX** (`rendering/Particles.ts`)
-  - Obiettivo: sparkle/explosion alla clear.
-  - Attività: sistema a pool di particelle (riuso oggetti, niente GC spike); colori per tipo gemma.
-  - Done: FX visibili senza drop di frame; pool riusato (test di massima: 60 FPS).
-- [ ] **S6.2 Combo UI**
-  - Obiettivo: feedback per cascade ("x2!", "x3!").
-  - Attività: testo fluttuante al clear; evento `combo` dal core.
-  - Done: testo combo visibile e animato su cascade ≥ 2.
-- [ ] **S6.3 Audio via Web Audio API** (`audio/AudioManager.ts`)
-  - Obiettivo: SFX (swap, match, cascade, game over) + BGM opzionale, con toggle.
-  - Attività: sintesi procedurale (oscillatori) — nessun file audio esterno; mute persistente in localStorage.
-  - Done: suoni coerenti; toggle funzionante; AudioContext avviato su gesto utente (autoplay policy).
-- [ ] **S6.4 DEFERRED (non confermato in scope) Special tiles (P2)** — *se confermato in scope*
-  - Obiettivo: match di 4 → tile "linea", match di 5 → "bomba".
-  - Attività: regole di generazione post-match; logica di attivazione; animazioni dedicate.
-  - Done: test unitari regole; partita giocabile con tile speciali senza regressioni.
-- [ ] **S6.5 Bilanciamento & tuning**
-  - Obiettivo: difficoltà ragionevole (game feel).
-  - Attività: tweak di punteggi, durate animazioni (120-350 ms), soglie drag; playtest rapido.
-  - Done: partita media 2-4 min; nessuna animazione "lenta".
-
-### Fase 7 — Testing, Performance & Packaging (≈2-3 gg)
-
-**Goal fase**: qualità verificata, build distribuita.
-
-- [ ] **S7.1 Copertura core ≥ 90% branch**
-  - Obiettivo: soglia di qualità su `src/core`.
-  - Attività: colmare gap con test Vitest (Board, MatchEngine, ScoreManager, FSM, deadlock, cap cascade).
-  - Done: `npm run test:coverage` verde con soglie configurate.
-- [ ] **S7.2 E2E Playwright — FUORI SCOPE v1 (stretch)**
-  - Obiettivo: flussi chiave automatizzati (non bloccante per la v1).
-  - Attività (quando in scope): avvio partita, swap via coordinate canvas, score che aumenta, game-over.
-  - Done: suite E2E verde su Chromium + WebKit (mobile viewport).
-- [ ] **S7.3 Performance check**
-  - Obiettivo: 60 FPS sotto carico.
-  - Attività: DevTools performance con CPU 4× throttle; profiler su cascade lunghe; Lighthouse mobile.
-  - Done: 60 FPS sostenuti; < 3 s load; nessun long task > 50 ms.
-- [ ] **S7.4 Build di produzione + preview**
-  - Obiettivo: artefatto finale valido.
-  - Attività: `npm run build`; `npm run preview`; smoke test manuale sulla build.
-  - Done: build senza warning; preview giocabile.
-- [ ] **S7.5 Deploy su Cloudflare Pages — FUORI SCOPE v1 (step pronti)**
-  - Obiettivo: gioco online con URL pubblico (attivabile a richiesta in ~1 ora).
-  - Attività (quando in scope): connessione repo a **Cloudflare Pages** (build `npm run build`, output `dist/`); auto-deploy su push a main; custom domain opzionale.
-  - Done: URL live; nuovo push → deploy automatico in < 2 min.
-- [ ] **S7.6 CI pipeline — FUORI SCOPE v1 (step pronti)**
-  - Obiettivo: qualità gate automatica su ogni PR (attivabile a richiesta).
-  - Attività (quando in scope): GitHub Actions: typecheck + lint + test + coverage + build.
-  - Done: PR con check verdi; main protetto (opzionale).
+- `REQUEST_SWAP` è accettato solo in `IDLE`, per due celle adiacenti e con due
+  tile presenti;
+- una mossa viene decrementata solo quando lo swap produce almeno un match;
+- durante `SWAPPING`/`REVERTING`/`MATCHING`/`CLEARING`/`FALLING`/`REFILLING`
+  ogni input di gioco è ignorato, non accodato;
+- `PAUSE` congela clock di gioco, Animator e transazione; `RESUME` riprende lo
+  stesso stato senza ricominciare il piano;
+- `GAME_OVER_REQUEST` può essere prodotto dal timer o dal contatore, ma viene
+  consumato una sola volta al confine sicuro della transazione corrente; ogni
+  stato attivo può quindi terminare in `GAME_OVER` senza interrompere a metà un
+  commit; reset/restart azzerano il flag;
+- ogni transizione illegale è un errore di sviluppo e un no-op controllato in
+  produzione, mai una mutazione parziale.
 
 ---
 
-## 5. Reuse
+## 5. Persistenza e tempo
 
-- **Nessun codice esistente da riusare** (repo vuota). Tutto è greenfield.
-- **Scaffold**: `create-vite` (template `vanilla-ts`) fornisce Vite 7 + TS + ESLint già configurati.
-- **Librerie riusabili** (evitare di reinventare):
-  - `vitest` + `@vitest/coverage-v8` per test e coverage.
-  - `@playwright/test` per E2E (stretch — fuori scope v1).
-  - Web Audio API (nativa) per SFX — zero dipendenze audio.
-  - `localStorage` (nativo) per best score / mute.
-  - Nessun framework UI: DOM + Canvas vanilla (il gioco è monoschermo).
-- **Pattern da riusare nel nostro codice**:
-  - Tween engine (Fase 1) riusato da swap/clear/fall.
-  - `findMatches` riusato da FSM e da test.
-  - Emitter di eventi tipizzato condiviso tra core → UI (senza dipendenze esterne).
+### 5.1 Schema versionato
+
+Usare chiavi namespaced e envelope versionati, ad esempio:
+
+```text
+`gem-swap:v1:settings`
+`gem-swap:v1:best-scores`
+```
+
+Payload minimo:
+
+```ts
+interface SettingsV1 {
+  version: 1;
+  mode: 'moves' | 'time';
+  moves: number;       // clamp 5..50
+  timeSeconds: number; // clamp 30..300
+  muted: boolean;
+}
+
+interface BestScoresV1 {
+  version: 1;
+  moves: number;
+  time: number;
+}
+```
+
+`StorageAdapter.load()` non si fida mai di un cast TypeScript: esegue parse,
+controllo dei campi, controllo dei tipi, clamp e validazione degli enum.
+
+Comportamento definito:
+
+1. chiave assente → default (`moves=20`, `timeSeconds=60`, mode `moves`,
+   `muted=false`);
+2. JSON invalido, payload non-oggetto, versione sconosciuta o campo invalido
+   → scarta il payload, usa i default per quel documento e rimuove la chiave
+   corrotta; nessun crash e nessun dato parzialmente applicato;
+3. versione precedente conosciuta → migra con funzione pura `migrateVnToV1`,
+   valida il risultato e salva solo dopo migrazione riuscita;
+4. `SecurityError`, quota esaurita o storage non disponibile → fallback in
+   memoria per la sessione, con un warning non bloccante solo in sviluppo;
+5. best score non numerico, negativo o infinito → ignora solo quel record e
+   conserva l'altro;
+6. salvataggio dopo modifica esplicita delle preferenze e a game-over; mai in un
+   loop RAF.
+
+Test obbligatori: assenza chiave, JSON corrotto, JSON valido ma schema errato,
+versione migrabile, versione sconosciuta, `localStorage` che lancia, clamp,
+reset di sessione senza perdita del best score e separazione Moves/Time.
+
+### 5.2 Timer deterministico
+
+Il core riceve `tick(nowMs)` da un adapter `Clock`; non usa `setInterval` per il
+conteggio. Il timer:
+
+- parte da `timeSeconds * 1000` a `START_GAME`;
+- usa `performance.now()` monotono e calcola il delta dall'ultimo tick valido;
+- non avanza in `PAUSED`, `START`, `GAME_OVER` o mentre la pagina è nascosta;
+- clampa delta anomali dopo tab sospesa e riallinea il riferimento al resume;
+- emette `timeChange` solo quando cambia il secondo visualizzato;
+- a `0` emette una sola richiesta di `GAME_OVER` al confine transazionale.
+
+Test con clock finto: tick da 0→500, pausa, tick da 500→10000, resume, scadenza
+esatta, delta negativo e reset. Verificare che non si perda tempo in pausa.
 
 ---
 
-## 6. Verifica (Verification)
+## 6. Milestone e task eseguibili
 
-### Comandi
-| Comando | Scopo |
-|---------|-------|
-| `npm run dev` | sviluppo con HMR |
-| `npm run typecheck` | TS strict |
-| `npm run lint` | ESLint |
-| `npm test` | unit + integration (Vitest) |
-| `npm run test:coverage` | soglia ≥ 90% branch su core |
-| `npm run build && npm run preview` | produzione + smoke test |
-| `npx playwright test` | E2E (stretch — fuori scope v1) |
+Le stime sono per un singolo sviluppatore, senza includere attese. Le milestone
+sono sequenziali; all'interno di una milestone si parallelizzano solo file
+indipendenti. Ogni task deve produrre codice/test o un artefatto verificabile.
 
-### Checklist manuale per fase (smoke)
-- F1: board 8×8 senza match iniziali visibili; responsive.
-- F2: swap valido/invalido con revert; input bloccato durante animazioni.
-- F3: match 3/4/5 e L/T; score corretto.
-- F4: cascade multi-step; nessuna tile "teletrasportata"; board mai bloccata.
-- F5: selezione modalità (Moves/Time) con valori editabili; start → gioco → game-over (mosse esaurite o tempo scaduto) → restart; best score persistente per modalità; pausa (timer fermo).
-- F6: FX/combo/audio visibili e disattivabili; special tile (se in scope).
-- F7: 60 FPS a 4× throttle; zero console errors; build live.
+### M0 — Fondamenta riproducibili (0,5–1 giorno) — G0
 
-### Matrix browser
-- iOS Safari (ultime 2 major) · Android Chrome · Desktop Chrome/Firefox/Safari (ultime 2 major).
+- [ ] **M0.1 Scaffold pinned** — creare in `Match3/` i file Vite vanilla-ts
+  usando la versione esatta di §3; aggiungere `.nvmrc`, `engines`, scripts,
+  `package-lock.json`. **Done:** `npm ci`, `npm run dev`, `npm run build`.
+- [ ] **M0.2 Tooling** — configurare TS strict (`noUncheckedIndexedAccess`,
+  `noImplicitOverride`, `verbatimModuleSyntax`), ESLint flat config e Vitest.
+  Configurare coverage solo su `src/core/**`. **Done:** typecheck, lint, test
+  dummy e report coverage.
+- [ ] **M0.3 Config e adapter** — creare config centralizzata, RNG seedabile,
+  `Clock` e interfaccia `StorageAdapter`; nessuna dipendenza browser nel core.
+  **Done:** test di riproducibilità RNG e typecheck.
+
+### M1 — Core board e vertical slice Moves (2–3 giorni) — G1
+
+- [ ] **M1.1 Tipi e invarianti** — implementare `constants.ts`, `types.ts`,
+  `assertBoardInvariant` e generatore di ID monotono. **Done:** fixture board
+  valida/invalida e test di ogni invariante.
+- [ ] **M1.2 Generazione iniziale** — `generateStableBoard(seed)` evita match
+  durante il riempimento e usa massimo un numero finito di tentativi. **Done:**
+  1.000 seed senza match; board piena; almeno una mossa valida.
+- [ ] **M1.3 MatchEngine** — scan orizzontale/verticale, run sovrapposti e
+  geometria L/T; output di ID e celle immutabile. **Done:** fixture per run 3,
+  run 4/5, overlap, L/T e nessun match.
+- [ ] **M1.4 Board swap e FSM minima** — swap adiacente con commit atomico,
+  revert senza commit, `IDLE/SWAPPING/REVERTING/MATCHING`. **Done:** test di
+  transizioni, scambio di riferimenti e input bloccato.
+- [ ] **M1.5 Clear, score e Moves** — rimozione, formula `tiles × 10 ×
+  cascadeMultiplier + shapeBonus`, decremento solo su swap valido e HUD score.
+  **Done:** vertical slice manuale completo con restart.
+- [ ] **M1.6 Canvas/input minimi** — renderer di griglia e sei forme procedurali,
+  pointer events e mapping cella. **Done:** swap via mouse e touch su viewport
+  desktop/mobile; nessuna logica core nel DOM.
+
+### M2 — Cascade, identità e deadlock (2–3 giorni) — G2
+
+- [ ] **M2.1 Gravity plan** — `applyGravity` ritorna movimenti per ID, compatti
+  ogni colonna verso il basso e committa coordinate solo a fine animazione.
+  **Done:** colonne con zero/uno/molti gap e test `from/to` iniettivo.
+- [ ] **M2.2 Refill plan** — crea ID mai usati, spawn sopra il canvas, evita
+  match introdotti quando possibile e riempie tutte le celle. **Done:** board
+  piena a fine commit, contatore ID corretto, coordinate finali corrette.
+- [ ] **M2.3 Cascade orchestrata** — `CLEARING → FALLING → REFILLING →
+  MATCHING` fino a stabilità; `cascadeLevel` incrementa solo per un nuovo
+  clear. **Done:** fixture deterministica multi-cascade e nessun teleport.
+- [ ] **M2.4 Cap cascade esplicito** — usare `MAX_CASCADE_DEPTH = 20`. Quando il
+  refill produrrebbe la cascade 21, non assegnare score né bonus aggiuntivi e
+  invocare `forceStabilize`. L'algoritmo tenta al massimo 1000 permutazioni
+  deterministiche delle tile esistenti per ottenere board piena, senza match e
+  con mossa valida; se fallisce, genera una nuova board stabile, ritira i vecchi
+  ID e mostra una breve transizione `EMERGENCY_STABILIZING`. Non consuma mosse,
+  non crea loop e azzera `cascadeLevel` a 0. **Done:** test cap, score invariato
+  durante la stabilizzazione, board stabile e fallback finito.
+- [ ] **M2.5 Deadlock** — a fine cascade eseguire `hasValidMoves`; se falso,
+  `RESHUFFLING` con Fisher–Yates limitato a 100 tentativi, preservando ID/tipi.
+  Fallback deterministico a board stabile se necessario. **Done:** fixture
+  senza mosse, reshuffle finito e nessun loop infinito.
+- [ ] **M2.6 Test identità/reset** — test espliciti per swap, gravity, refill,
+  reshuffle, coordinate e callback tardivo dopo reset. **Done:** invarianti
+  verificati dopo ogni commit e nessun ID duplicato.
+
+### M3 — Game flow, Time e persistenza (2 giorni) — G3
+
+- [ ] **M3.1 FSM completa** — aggiungere `START`, `PAUSED`, `GAME_OVER`,
+  `RESHUFFLING` e resume state; definire eventi tipizzati e transizioni illegali.
+  **Done:** tabella §4.6 coperta da test.
+- [ ] **M3.2 Start/restart/reset** — overlay iniziale, `RESTART` e `RESET` con
+  nuovo seed/session generation. **Done:** score, selezione, board, transazioni,
+  moves e timer resettati; best score conservato.
+- [ ] **M3.3 Time mode** — implementare il contratto `tick(nowMs)` e HUD countdown;
+  pausa e tab nascosta non consumano tempo. **Done:** test con fake clock per
+  tick, pausa, resume, scadenza e reset.
+- [ ] **M3.4 Storage versionato** — implementare schema v1, validazione, migrazione,
+  fallback in memoria e gestione corruzione secondo §5.1. **Done:** test di
+  localStorage assente/corrotto/inaccessibile, versioni e clamp.
+- [ ] **M3.5 Best score e preferenze** — salvare best per modalità e configurazione
+  scelta, con HUD coerente. **Done:** reload manuale e test di isolamento
+  `moves`/`time`.
+
+### M4 — Rendering, UX e accessibilità (2–3 giorni) — G3/P1
+
+- [ ] **M4.1 Animator** — tween con delta-time, easing, cancellazione tramite
+  session token e piani swap/clear/fall/refill. **Done:** completamento singolo,
+  pausa/ripresa e reset senza callback stantii.
+- [ ] **M4.2 Responsive layout** — `ResizeObserver`, DPR clamp a 2, trasformazione
+  Canvas corretta e hit-test derivato dallo stesso layout. **Done:** tre
+  viewport della DoD senza blur/overflow o celle errate.
+- [ ] **M4.3 HUD/overlay** — score, best, modalità, moves/time, pause e game-over;
+  elementi HTML semantici, focus visibile e pulsanti utilizzabili da tastiera.
+  **Done:** `prefers-reduced-motion`, contrasto sufficiente e aria-label per
+  controlli non testuali.
+- [ ] **M4.4 Polish opzionale** — particelle con pool e Web Audio sintetico con
+  toggle persistito. **Done:** audio creato solo dopo gesto utente; fallback
+  silenzioso; nessun calo misurabile causato dagli FX.
+
+### M5 — Verifica e packaging (1–2 giorni) — G4
+
+- [ ] **M5.1 Test finale** — completare casi limite e coverage branch ≥90% su
+  `src/core`; nessun test random non riproducibile (ogni failure stampa seed).
+  **Done:** `npm run test:coverage` verde.
+- [ ] **M5.2 Performance** — misurare cascade lunga con CPU 4× su dispositivo
+  di riferimento, memorizzando browser, hardware e risultati in
+  `docs/PERFORMANCE.md`. **Done:** criteri misurabili in §2.2 o issue P1,
+  mai un "60 FPS" non verificato.
+- [ ] **M5.3 Browser smoke** — verificare desktop Chrome/Firefox e almeno un
+  mobile reale (Android Chrome oppure iOS Safari); la matrice estesa è una
+  attività separata. **Done:** checklist `docs/TEST-MATRIX.md`, zero errori
+  console e input funzionante.
+- [ ] **M5.4 Produzione** — `npm run build`, `npm run preview`, smoke test sulla
+  build, verifica asset procedurali e dimensione bundle. **Done:** preview
+  giocabile e artefatto `dist/` riproducibile.
+
+**Stima totale:** 8–12 giorni lavorativi per MVP/G3, 10–14 per G4 con polish e
+verifica. La coverage e la matrice browser completa non sono sovrapposte alla
+stima del vertical slice.
 
 ---
 
-## 7. Rischi & Mitigazioni (dal prompt, con azioni concrete)
+## 7. Contratti di test
 
-| Rischio | Impatto | Mitigazione nel piano |
-|---------|---------|----------------------|
-| Cascade infinita | Hang | Cap depth 20 + stabilizzazione forzata (S4.4) + test dedicato |
-| Nessuna mossa valida | Giocatore bloccato | Deadlock check → reshuffle animato (S4.5) + test |
-| Performance mobile | Jank | Pool di particelle, niente allocazioni in loop, RAF, DPR clamp ≤ 2 (S6.1, S7.3) |
-| Conflitto touch/mouse | Cella sbagliata | Pointer events unificati + soglia drag 10 px (S2.1) |
-| Autoplay audio bloccato | Nessun suono | AudioContext avviato al primo gesto utente (S6.3) |
-| Asset non pronti | Schermo vuoto | Tile procedurali: nessun asset binario (S1.3) |
+### 7.1 Fixture e determinismo
+
+Le fixture usano board leggibili (una lettera per `TileType`) e ID espliciti.
+Ogni test casuale riceve un seed e lo stampa in caso di failure. Le funzioni
+core da testare sono almeno:
+
+- `generateStableBoard(seed)`;
+- `findMatches(board)` e `shapeBonus(matches)`;
+- `isAdjacent`, `isValidSwap`, `swap`;
+- `clearMatches`, `applyGravity`, `createRefillPlan`;
+- `hasValidMoves`, `reshuffle`, `forceStabilize`;
+- `ScoreManager`;
+- reducer/FSM e `GameSession`;
+- `StorageAdapter` e `tick` con clock finto.
+
+### 7.2 Casi obbligatori
+
+- board iniziale senza match su almeno 1.000 seed;
+- match orizzontale/verticale, 4, 5, L, T e overlap;
+- swap valido, swap invalido e celle non adiacenti;
+- colonne vuote, gap multipli, refill completo e coordinate finali;
+- cascade 1, cascade multipla, cascade cap 20 e fallback di stabilizzazione;
+- deadlock e reshuffle con ID preservati;
+- score e shape bonus senza special tile;
+- transizioni FSM valide/illegali, input durante animazione, pause/resume;
+- timer con delta, tab sospesa, pausa e scadenza;
+- reset/restart durante e dopo un'animazione;
+- localStorage corrotto, schema errato, versione precedente/sconosciuta,
+  eccezioni di accesso, clamp e best separato per modalità;
+- invariant check dopo ogni operazione pubblica.
+
+### 7.3 E2E e test manuali
+
+Per v1 i test di integrazione del core sono bloccanti; Playwright è stretch.
+La verifica manuale minima copre:
+
+1. start → swap valido → match → cascade → score;
+2. swap invalido con revert e input bloccato;
+3. Moves a zero → game-over → restart;
+4. Time a zero, pausa e resume senza perdita di secondi;
+5. reload con preferenze/best e localStorage corrotto;
+6. touch, mouse, tastiera, portrait e landscape;
+7. reduced motion, mute e assenza di supporto Web Audio.
 
 ---
 
-## 8. Definizione di Done — MVP GemSwap
+## 8. Gestione degli errori e osservabilità
 
-- [ ] TS strict: `npm run typecheck` pulito, zero `any` nel core.
-- [ ] Coverage branch ≥ 90% su `src/core`.
-- [ ] 60 FPS a CPU throttle 4× (DevTools).
-- [ ] Funziona su iOS Safari, Android Chrome, Firefox/Chrome/Safari desktop.
-- [ ] Zero console errors/warnings in produzione.
-- [ ] Partita completa giocabile in **entrambe le modalità** (Moves / Time): start → swap → match → cascade → game-over → restart.
-- [ ] Valori di default corretti (20 mosse / 60 s) e editabili dall'utente; preferenze persistite in `localStorage`.
-- [ ] Deploy live con auto-deploy (solo se attivato — fuori scope v1, Cloudflare Pages).
+- Non fare affidamento su `console.error` per il flusso normale: gli errori di
+  input/storage sono degradazioni controllate.
+- In sviluppo, gli snapshot includono `state`, seed, cascade level e ID; in
+  produzione non si stampano board o dati inutili.
+- Ogni fallback (reshuffle fallito, emergency stabilization, storage in memoria)
+  emette un evento diagnostico non bloccante.
+- Le callback dell'Animator verificano `sessionGeneration` prima di committare.
+- Nessun `while(true)`: generazione, reshuffle e stabilizzazione hanno limiti
+  espliciti e fallback deterministici.
+
+---
+
+## 9. Performance e responsive design
+
+- Canvas dimensionato in pixel fisici con DPR clamp `Math.min(devicePixelRatio, 2)`;
+- nessuna allocazione di array/oggetti nel loop di rendering salvo transizione;
+- pool per particelle, numero massimo di particelle configurabile;
+- `requestAnimationFrame` solo per presentazione; il core non dipende dal frame
+  rate;
+- animazioni default 120–350 ms, disabilitabili/riducibili con
+  `prefers-reduced-motion`;
+- input con Pointer Events, `touch-action: none` solo sul canvas e hit-test
+  basato sul layout condiviso con Renderer;
+- test su 375×667, 768×1024, 1920×1080, orientamento portrait/landscape e DPR 1/2.
+
+---
+
+## 10. Rischi e mitigazioni
+
+| Rischio | Mitigazione verificabile |
+|---|---|
+| cascade infinita | `MAX_CASCADE_DEPTH=20`, `forceStabilize` limitato, fallback stabile testato |
+| deadlock | `hasValidMoves` a fine cascade, reshuffle limitato e fallback |
+| tile duplicate/perse | piani per ID, commit atomici e invariant check |
+| callback dopo reset | `sessionGeneration` verificato prima di ogni commit |
+| timer drift | `performance.now`, fake clock, pausa e hidden-page testati |
+| localStorage corrotto | parse/validate/version/migrate, fallback memoria e test di eccezione |
+| dipendenze variabili | versioni esatte, `.nvmrc`, `package-lock.json`, `npm ci` |
+| scope eccessivo | special tile, E2E, CI e deploy fuori v1; G1 prima di polish |
+| jank mobile | DPR clamp, delta-time, pool, profiling registrato |
+| autoplay audio | AudioContext creato/ripreso solo durante gesto utente, fallback muto |
+
+---
+
+## 11. Stretch post-v1
+
+Solo dopo G4, con dipendenze sempre pinned:
+
+- **P2 Special tile:** introdurre `SpecialType` come `as const`, regole di
+  creazione/attivazione, identità/animazioni, scoring e test senza modificare le
+  invarianti base;
+- **E2E Playwright:** avvio, swap, score, game-over, storage e viewport mobile;
+- **CI GitHub Actions:** `npm ci`, typecheck, lint, test, coverage e build;
+- **Deploy Cloudflare Pages:** build `npm run build`, output `dist/`, preview e
+  auto-deploy su `main`;
+- daily challenge, livelli e porting C/raylib come progetti distinti.
+
+Nessuna attività stretch può diventare requisito implicito del MVP: deve avere
+una issue, una stima e un criterio di accettazione separati.
+
+---
+
+## 12. Comandi di verifica
+
+```bash
+npm ci
+npm run typecheck
+npm run lint
+npm test
+npm run test:coverage
+npm run build
+npm run preview
+```
+
+Playwright, CI e deploy si attivano solo dopo approvazione dello scope post-v1.
