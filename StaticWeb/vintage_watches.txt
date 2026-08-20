@@ -1,0 +1,122 @@
+## Sito Web Statico Multipagina — Orologi d'Epoca
+
+##  Ruolo
+Agisci come **Senior Frontend Developer & UI/UX Designer** specializzato in siti statici (HTML5/CSS3/JS ES6+). Sei esperto in performance, accessibilità, animazioni CSS/JS avanzate, micro-interazioni di precisione e design system scalabili senza framework.
+
+##  Contesto del Progetto
+Crea un sito web multipagina per **"Tempo Ritrovato — Orologi d'Epoca"**, una boutique specializzata nella vendita, nel restauro e nella valutazione di orologi vintage: orologi da polso, da tasca, cronografi e segnatempo di manifattura dal 1890 al 1990.
+
+Il tema deve evocare **eleganza senza tempo, artigianalità orologiera e silenzio di lusso**. Niente elementi tech (es. circuiti, terminal, schermi) come sfondo narrativo.
+
+**Filosofia di design centrale — "Cassa quieta, movimento complesso"**: come un orologio meccanico, la superficie del sito deve apparire *minimalista*: colori neutri, spazi bianchi generosi, pochi elementi, gerarchia tipografica calma e quasi silenziosa. Ma sotto questa superficie ogni dettaglio deve rivelare una **complessità tecnica raffinata**: ombre dinamiche che simulano una sorgente luminosa reale, animazioni di precisione al decimo di secondo, parallasse multiclivello, un orologio funzionante in tempo reale nell'hero. Il visitatore deve percepire l'essenzialità a prima vista e scoprire la meccanica solo interagendo.
+
+Il sito sarà multipagina con navigazione fluida tra le sezioni:
+- **Home** — Hero con orologio analogico funzionante, manifesto della boutique, pezzi in evidenza, anteprima atelier, testimonianze, CTA
+- **Collezione** — Catalogo completo con filtri interattivi per epoca, movimento e prezzo
+- **Artigianato** — Servizi: restauro, manutenzione, valutazione e certificazione, cinturini
+- **Storia** — Origini della boutique, il maestro orologiaio, l'atelier
+- **Contatti** — Form di appuntamento, mappa, orari, dati aziendali
+
+##  Specifiche Tecniche
+- **Stack**: HTML5 semantico, CSS3 (variables, grid, flexbox, container queries), JavaScript vanilla ES6+
+- **Nessun framework**. Consentite solo librerie leggere via CDN se strettamente necessarie, ma preferisci implementazioni custom in JS puro.
+- **Complessità tecnica richiesta** (il cuore del progetto — la superficie è minima, il sottofondo è profondo):
+  - **Orologio analogico funzionante** nell'hero e nel footer: quadrante in SVG con lancette (ore, minuti, secondi) sincronizzate con l'ora reale del dispositivo via `requestAnimationFrame`, movimento fluido della lancetta dei secondi, tick decorativo. Deve essere un vero orologio, non una decorazione statica
+  - **Ombre dinamiche "luce reale"**: le ombre delle card prodotto e degli elementi chiave non sono statiche ma ricalcolate in base alla posizione del cursore, simulando una sorgente luminosa che si sposta (calcolo dinamico di `box-shadow` con direzione/offset/opacità derivati dalle coordinate del mouse, con lerp per fluidità). Le ombre sono protagoniste del linguaggio visivo
+  - `IntersectionObserver` per scroll-triggered animations e lazy loading immagini (`loading="lazy"` + JS fallback) con placeholder progressivo
+  - Scroll-driven animations con CSS `animation-timeline: view()` dove supportato, con fallback JS basato su `IntersectionObserver` per browser meno recenti
+  - **Text reveal di precisione**: titoli e paragrafi che si rivelano al scroll con mask (`overflow: hidden` + `clip-path` + `translateY`), riga per riga con stagger calcolato, easing `cubic-bezier(0.16, 1, 0.3, 1)`
+  - Parallax multiclivello su hero e sezioni chiave (CSS `transform: translateZ` + JS per fallback) con profondità e blur differenziati per livello
+  - **Card prodotto con tilt 3D prospettico** che segue il cursore (`perspective` + `rotateX`/`rotateY`), con reset fluido al mouseout
+  - Smooth scroll custom con lerp (solo ruota del mouse, disattivato su touch e su `prefers-reduced-motion`)
+  - **Bottoni magnetici**: i CTA si avvicinano leggermente al cursore entro un raggio di prossimità, con ritorno elastico
+  - Galleria fotografica con lightbox custom, navigazione tastiera, swipe touch e overlay dinamico
+  - Menu mobile con animazione SVG morphing e backdrop-filter
+  - Toggle tema chiaro/scuro con persistenza `localStorage` (in tema scuro la palette neutra si inverte su neri caldi, l'ottone resta)
+  - Validazione form real-time con feedback visivo, messaggi di errore chiari e gestione stati
+  - Custom cursor minimale (un sottile anello + punto, solo desktop) sincronizzato con hover states
+  - CSS `@property` per animazioni smooth su gradienti/opacity
+  - Filtri interattivi per la pagina collezione (epoca, movimento, prezzo) con animazioni di transizione fluide delle card (layout animato, non brutale show/hide)
+  - Rispetto di `prefers-reduced-motion`: tutte le animazioni si riducono a dissolvenze semplici o si disattivano
+  - Performance target: Lighthouse > 90 (Performance, Accessibility, Best Practices)
+
+##  Design & UX Guidelines
+- **Palette** (neutri caldi, un solo accento metallico):
+  - `#F6F4EF` (avorio — sfondo chiaro generale)
+  - `#EAE6DC` (greige caldo — sezioni alternate, card)
+  - `#2B2825` (inchiostro — testi principali, sfondi scuri)
+  - `#6E675F` (taupe — testi secondari, icone)
+  - `#A88F63` (ottone antico — unico accento: CTA, dettagli, lancette, hover)
+  - `#FFFFFF` (bianco puro — testi su sfondo scuro)
+- **Tipografia**:
+  - Titoli: `Cormorant Garamond` o `Playfair Display` — serif elegante, alta contrasto, grande corpo
+  - Body: `Inter` o `DM Sans` — sans-serif geometrica pulita e leggibile
+  - Dettagli tecnici (anno, calibro, movimento, prezzo): `IBM Plex Mono` o `Space Mono` — monospace per le "specifiche da orologeria", in maiuscoletto con ampio letter-spacing
+- **Layout**: Mobile-first, spazio bianco generoso e non negoziabile (il vuoto è parte del design), griglia editoriale asimmetrica, hairline borders da 1px come unico ornamento strutturale, dimensioni tipografiche oversize ("display" che occupano l'intera larghezza), etichette in maiuscoletto con letter-spacing ampio (es. `COLLEZIONE 1920–1970`), foto protagoniste su sfondo avorio. Le card prodotto sono essenziali: fotografia, nome, anno, prezzo — nulla di più
+- **Micro-interazioni** (precisione, non giocosità): durate di 0.2–0.5s con easing `cubic-bezier(0.16, 1, 0.3, 1)`, hover con trasformazioni sottili (scale 1.02, ombra che si intensifica), transizioni "a scatto" da movimento meccanico sulle lancette, reveal al scroll a scatti riga per riga, l'ottone come unico colore che si anima
+- **Accessibilità**: WCAG 2.1 AA, contrasti verificati anche in tema scuro, focus visible evidente (anello ottone), ARIA labels su tutti gli elementi interattivi, skip links, navigazione completa da tastiera, testi alternativi descrittivi per tutte le fotografie di orologi, `aria-live` sui filtri della collezione
+
+##  Struttura dei File (Output Atteso)
+Fornisci il codice completo e pronto all'uso per:
+```
+/
+├── index.html               (Home — hero orologio animato, manifesto, pezzi in evidenza, atelier, testimonianze, CTA)
+├── collezione.html          (Catalogo con filtri interattivi epoca/movimento/prezzo)
+├── artigianato.html         (Restauro, manutenzione, valutazione, cinturini)
+├── storia.html              (Chi siamo, il maestro orologiaio, atelier)
+├── contatti.html            (Form appuntamento, mappa, orari, dati)
+├── css/
+│   ├── main.css             (Variabili, reset, layout base, componenti globali, tema scuro)
+│   └── utilities.css        (Utility classes, spacing, typography helper)
+├── js/
+│   ├── app.js               (Init, navigazione multipagina, tema, menu mobile, smooth scroll)
+│   ├── scroll-animations.js (IntersectionObserver, parallax, text reveal, scroll-driven fallback)
+│   └── components.js        (orologio analogico, ombre dinamiche, tilt 3D, lightbox, form validation, filtri collezione, custom cursor, bottoni magnetici)
+└── assets/
+    └── images/
+        ├── hero-pocket-watch.jpg
+        ├── hero-grand-complication.jpg
+        ├── collection/
+        │   ├── pocket-watch-1910.jpg
+        │   ├── chronograph-1943.jpg
+        │   ├── dress-watch-1958.jpg
+        │   ├── diver-watch-1968.jpg
+        │   ├── chronograph-1957.jpg
+        │   ├── dress-watch-1965.jpg
+        │   ├── field-watch-1972.jpg
+        │   └── pocket-watch-1895.jpg
+        ├── atelier/
+        │   ├── restoration-bench.jpg
+        │   ├── movement-macro.jpg
+        │   ├── watchmaker-hands.jpg
+        │   ├── workshop-tools.jpg
+        │   ├── founder-portrait.jpg
+        │   └── shop-front.jpg
+        ├── services/
+        │   ├── restoration.jpg
+        │   ├── maintenance.jpg
+        │   ├── valuation.jpg
+        │   └── straps.jpg
+        └── testimonials/
+            └── client-watch.jpg
+```
+
+##  Requisiti di Output
+1. **Codice completo** per ogni file, commentato in italiano dove necessario
+2. **HTML semantico** con `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`, `aria-*` su tutte le pagine
+3. **Header e footer coerenti** su tutte le pagine con navigazione multipagina funzionante; il footer deve includere un piccolo orologio analogico funzionante
+4. **CSS organizzato** con variabili, reset moderno, utility classes e blocchi logici (BEM o simile)
+5. **JS modulare** con IIFE o ES modules, nessuna dipendenza globale polluzione
+6. **Istruzioni di esecuzione**: come aprire il sito in locale (es. `Live Server` o doppio click su `index.html`)
+7. **Note tecniche**: breve spiegazione delle scelte architetturali e dei punti di complessità implementati (in particolare orologio animato, ombre dinamiche e text reveal)
+
+##  Istruzioni Finali
+- Genera prima la struttura HTML di tutte le pagine, poi CSS, infine JS. Mantieni coerenza tra tutte le pagine.
+- Usa immagini da Unsplash con query coerenti: `vintage watch`, `antique pocket watch`, `mechanical watch movement`, `watchmaker`, `watch restoration`, `horology`, `old watch macro`, `watch workshop`, `heritage watch`. Inserisci almeno 15-20 foto diverse per riempire il sito in modo ricco.
+- Le pagine devono avere un header e footer identici con navigazione funzionante tra tutte le pagine.
+- La pagina **collezione.html** deve avere filtri interattivi (per epoca: 1890–1940, 1940–1970, 1970–1990; per movimento: meccanico a carica manuale, automatico, al quarzo; per fascia di prezzo) con animazioni fluide e `aria-live` per l'annuncio dei risultati.
+- La pagina **contatti.html** deve avere un form di appuntamento completo (nome, email, telefono, tipo di servizio: vendita/restauro/valutazione/manutenzione, modello o referenza di interesse, data desiderata, messaggio).
+- Ricorda la filosofia "cassa quieta, movimento complesso": se un elemento può essere rimosso senza perdita di significato, rimuovilo; se un dettaglio esiste, che sia animato con precisione da orologiaio.
+- Evita over-engineering: complessità deve servire l'UX, non il tecnico.
+- Rispondi in italiano. Fornisci codice in blocchi ` ```html `, ` ```css `, ` ```js `.
+- *Importante*: evita di utilizzare emoji se non necessarie, preferisci icone vettoriali SVG inline.

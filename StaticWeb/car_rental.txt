@@ -1,0 +1,117 @@
+## Sito Web Statico Multipagina — Noleggio Auto d'Epoca
+
+
+##  Ruolo
+Agisci come **Senior Frontend Developer & UI/UX Designer** specializzato in siti statici (HTML5/CSS3/JS ES6+). Sei esperto in performance, accessibilità, animazioni CSS/JS avanzate e design system scalabili senza framework.
+
+
+##  Contesto del Progetto
+Crea un sito web multipagina per **"RetroMotors — Noleggio Auto d'Epoca"**, un'azienda specializzata nel noleggio di automobili d'epoca per eventi esclusivi, matrimoni, film e occasioni speciali. Il tema deve evocare **eleganza classica, artigianalità automobilistica e lusso senza tempo**. Niente elementi tech (es. circuiti, code, schermi) come sfondo narrativo. L'interfaccia deve trasmettere passione per il vintage, materiali pregiati (cuoio, legno, cromo) e un'atmosfera da salone d'epoca.
+
+
+Il sito sarà multipagina con navigazione fluida tra le sezioni:
+- **Home** — Hero immersive, anteprima flotta, testimonianze, CTA
+- **Flotta** — Catalogo completo auto con filtri per categoria/anno/prezzo
+- **Servizi** — Tipologie di noleggio (matrimoni, eventi, shooting, giri panoramici)
+- **Chi Siamo** — Storia dell'azienda, filosofia, galleria del garage
+- **Contatti** — Form prenotazione, mappa, dati aziendali
+
+
+L'interfaccia deve trasmettere artigianalità, materiali naturali e atmosfera esclusiva. Le foto di auto d'epoca devono essere protagoniste assolute.
+
+
+##  Specifiche Tecniche
+- **Stack**: HTML5 semantico, CSS3 (variables, grid, flexbox, container queries), JavaScript vanilla ES6+
+- **Nessun framework**. Consentite solo librerie leggere via CDN se strettamente necessarie (es. `Swiper` per caroselli), ma preferisci implementazioni custom in JS puro.
+- **Complessità tecnica richiesta**:
+  - `IntersectionObserver` per scroll-triggered animations e lazy loading immagini (`loading="lazy"` + JS fallback)
+  - Parallax multiclivello su hero e sezioni chiave (CSS `transform: translateZ` + JS per fallback)
+  - Galleria fotografica con lightbox personalizzato, navigazione tastiera, swipe touch e overlay dinamico
+  - Menu mobile con animazione SVG morphing e backdrop-filter
+  - Toggle tema chiaro/scuro con persistenza `localStorage`
+  - Validazione form real-time con feedback visivo e gestione errori
+  - Custom cursor sincronizzato con hover states (solo desktop)
+  - Transizioni di pagina smooth tra le pagine multipagina
+  - CSS `@property` per animazioni smooth su gradienti/opacity
+  - Filtri interattivi per la pagina flotta (per categoria, anno, prezzo) con animazioni di transizione
+  - Performance target: Lighthouse > 90 (Performance, Accessibility, Best Practices)
+  - Lazy loading delle immagini con placeholder progressivo
+
+
+##  Design & UX Guidelines
+- **Palette**:
+  - `#1C1C1C` (nero carbone — sfondi scuri, testi principali)
+  - `#8B6914` (oro antico — accenti, CTA, dettagli eleganti)
+  - `#F7F3EB` (crea pergamena — sfondo chiaro generale)
+  - `#5C1A1B` (bordeaux vino — accenti secondari, hover)
+  - `#D4C5A9` (sabbia dorata — separatori, bordi)
+  - `#FFFFFF` (bianco puro — testi su sfondo scuro)
+- **Tipografia**:
+  - Titoli: `Playfair Display` o `Cormorant Garamond` — serif elegante, evocativa
+  - Body: `DM Sans` o `Inter` — sans-serif geometrica pulita e leggibile
+  - Citazioni/dettagli: `Cormorant SC` — per un tocco da cartello d'epoca
+- **Layout**: Mobile-first, grid asimmetrico, uso di `clip-path`, `mask-image`, overlay gradient e spaziatura generosa. Le foto devono occupare il 60-80% dello spazio visivo nelle sezioni pertinenti.
+- **Micro-interazioni**: Hover states con scale/opacity smooth, transizioni CSS custom, feedback tattile visivo su bottoni, animazioni di entrata per le card della flotta, effetto "reveal" sulle immagini al scroll.
+- **Accessibilità**: WCAG 2.1 AA, contrasti verificati, focus visible, ARIA labels, skip links, navigazione da tastiera, testi alternativi descrittivi per tutte le foto di auto.
+
+
+##  Struttura dei File (Output Atteso)
+Fornisci il codice completo e pronto all'uso per:
+```
+/
+├── index.html              (Home — hero, anteprima flotta, testimonianze, CTA)
+├── flotta.html             (Catalogo auto con filtri interattivi)
+├── servizi.html            (Tipologie di noleggio e pacchetti)
+├── about.html              (Chi siamo, storia, galleria garage)
+├── contatti.html            (Form prenotazione, mappa, dati)
+├── css/
+│   ├── main.css            (Variabili, reset, layout base, componenti globali)
+│   └── utilities.css       (Utility classes, spacing, typography helper)
+├── js/
+│   ├── app.js              (Init, navigazione multipagina, transizioni)
+│   ├── scroll-animations.js (IntersectionObserver, parallax, reveal)
+│   └── components.js       (lightbox, menu mobile, tema, form validation, filtri flotta)
+└── assets/
+    └── images/
+        ├── hero-classic-car.jpg
+        ├── fleet/
+        │   ├── ford-mustang-1967.jpg
+        │   ├── mercedes-300sl-1955.jpg
+        │   ├── jaguar-e-type-1961.jpg
+        │   ├── porsche-911-1973.jpg
+        │   ├── alfa-romeo-giulia-1965.jpg
+        │   ├── ferrari-250gto-replica.jpg
+        │   ├── aston-martin-db5-1964.jpg
+        │   └── bmw-2002-1970.jpg
+        ├── about/
+        │   ├── garage-interior.jpg
+        │   ├── restoration-workshop.jpg
+        │   └── team-photo.jpg
+        ├── services/
+        │   ├── wedding-car-setup.jpg
+        │   ├── film-shoot-classic.jpg
+        │   └── scenic-drive-vintage.jpg
+        └── testimonials/
+            └── client-event-photo.jpg
+```
+
+
+##  Requisiti di Output
+1. **Codice completo** per ogni file, commentato in italiano dove necessario
+2. **HTML semantico** con `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`, `aria-*` su tutte le pagine
+3. **Header e footer coerenti** su tutte le pagine con navigazione multipagina funzionante
+4. **CSS organizzato** con variabili, reset moderno, utility classes e blocchi logici (BEM o simile)
+5. **JS modulare** con IIFE o ES modules, nessuna dipendenza globale polluzione
+6. **Istruzioni di esecuzione**: come aprire il sito in locale (es. `Live Server` o doppio click su `index.html`)
+7. **Note tecniche**: breve spiegazione delle scelte architetturali e dei punti di complessità implementati
+
+
+##  Istruzioni Finali
+- Genera prima la struttura HTML di tutte le pagine, poi CSS, infine JS. Mantieni coerenza tra tutte le pagine.
+- Usa immagini da Unsplash con query coerenti: `classic car`, `vintage automobile`, `retro car`, `oldtimer`, `classic car wedding`, `vintage garage`, `restoration workshop`. Inserisci almeno 15-20 foto diverse per riempire il sito in modo ricco.
+- Le pagine devono avere un header e footer identici con navigazione funzionante tra tutte le pagine.
+- La pagina **flotta.html** deve avere filtri interattivi (per categoria: Sportiva, Coupé, Cabrio, Berlina; per anno; per prezzo) con animazioni fluide.
+- La pagina **contatti.html** deve avere un form di prenotazione completo (nome, email, telefono, data evento, tipo di servizio, auto desiderata, messaggio).
+- Evita over-engineering: complessità deve servire l'UX, non il tecnico.
+- Rispondi in italiano. Fornisci codice in blocchi ` ```html `, ` ```css `, ` ```js `.
+- *Importante*: evita di utilizzare emoji se non necessarie, preferisci icone vettoriali SVG inline.

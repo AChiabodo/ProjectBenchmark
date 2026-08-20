@@ -1,0 +1,4 @@
+interface:
+  display_name: "C + raylib Game Development"
+  short_description: "Build and debug C games with raylib"
+  default_prompt: "Use $build-raylib-c-games to build and verify a reusable C + raylib game feature."

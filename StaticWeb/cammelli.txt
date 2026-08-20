@@ -1,0 +1,59 @@
+## Sito Web Statico Avanzato
+
+##  Ruolo
+Agisci come **Senior Frontend Developer & UI/UX Designer** specializzato in siti statici (HTML5/CSS3/JS ES6+). Sei esperto in performance, accessibilità, animazioni CSS/JS avanzate e design system scalabili senza framework.
+
+##  Contesto del Progetto
+Crea un sito e-commerce statico per **"Cammelli Peluche Digitali"**, un negozio dedicato a cammelli animati e interattivi pensati per bambini e famiglie. Il tema deve evocare **magia, giocosità e calore**. Niente elementi tech (es. circuiti, terminal, schermi) come sfondo narrativo. L'interfaccia deve trasmettere affidabilità ai genitori (layout pulito, navigazione intuitiva, gerarchia chiara) e incanto ai bambini (forme arrotondate, colori pastello, micro-interazioni divertenti, elementi illustrativi morbidi). L'esperienza deve essere fluida su mobile/tablet, con target tattili grandi e feedback immediati.
+
+##  Specifiche Tecniche
+- **Stack**: HTML5 semantico, CSS3 (variables, grid, flexbox, container queries), JavaScript vanilla ES6+
+- **Nessun framework**. Consentite solo librerie leggere via CDN se strettamente necessarie, ma preferisci implementazioni custom in JS puro.
+- **Complessità tecnica richiesta**:
+  - `IntersectionObserver` per scroll-triggered animations e lazy loading delle immagini prodotti
+  - Parallax multiclivello (CSS + JS per fallback) con elementi decorativi (nuvole, stelle, montagnette stilizzate)
+  - Lightbox/modale prodotto custom con navigazione tastiera, zoom e overlay dinamico
+  - Menu mobile con animazione SVG morphing e backdrop-filter
+  - Toggle tema chiaro/scuro ("Giorno/Notte") con persistenza `localStorage`
+  - Validazione form real-time (checkout/newsletter) con feedback visivo, messaggi di errore chiari e gestione stati
+  - Custom cursor sincronizzato con hover states (opzionale, stile morbido/tondo)
+  - CSS `@property` per animazioni smooth su gradienti/opacity
+  - Performance target: Lighthouse > 90 (Performance, Accessibility, Best Practices)
+
+##  Design & UX Guidelines
+- **Palette**: `#FF9AA2` (corallo soft), `#B5EAD7` (menta), `#FFDAC1` (pesca`, `#E2F0CB` (verde pastello), `#2D3436` (testo scuro), `#FFFFFF` (sfondo chiaro)
+- **Tipografia**: Display giocosa ma leggibile per titoli (es. `Baloo 2` o `Fredoka`), Sans-serif arrotondata e altamente leggibile per il body (es. `Nunito` o `Quicksand`)
+- **Layout**: Mobile-first, griglia prodotti a card con bordi molto arrotondati (`border-radius: 20px+`), ombre morbide, elementi flottanti/illustrativi, spaziatura generosa per non affollare la vista, CTA prominenti e sempre accessibili
+- **Micro-interazioni**: Hover con effetto "bounce" leggero, transizioni fluide, feedback visivo immediato su aggiunta al carrello, animazioni CSS continue ma non invasive (es. elementi che "respirano" o si muovono lentamente), transizioni di pagina coerenti
+- **Accessibilità**: WCAG 2.1 AA, target tattili grandi (min 44px), focus visibile evidente, ARIA labels, skip links, navigazione completa da tastiera, contrasto verificato anche in modalità "Notte"
+
+##  Struttura dei File (Output Atteso)
+Fornisci il codice completo e pronto all'uso per:
+```
+/
+├── index.html
+├── css/
+│   ├── main.css
+│   └── utilities.css
+├── js/
+│   ├── app.js
+│   ├── scroll-animations.js
+│   └── components.js (lightbox, menu, theme, form, cart-ui)
+└── assets/
+    └── images/ (placeholder con nomi descrittivi tipo camel-hero, product-card-1, bg-clouds, etc.)
+```
+
+##  Requisiti di Output
+1. **Codice completo** per ogni file, commentato in italiano dove necessario
+2. **HTML semantico** con `<header>`, `<main>`, `<section>`, `<article>`, `<footer>`, `aria-*`
+3. **CSS organizzato** con variabili, reset moderno, utility classes e blocchi logici (BEM o simile)
+4. **JS modulare** con IIFE o ES modules, nessuna dipendenza globale polluzione
+5. **Istruzioni di esecuzione**: come aprire il sito in locale (es. `Live Server` o doppio click su `index.html`)
+6. **Note tecniche**: breve spiegazione delle scelte architetturali e dei punti di complessità implementati
+
+##  Istruzioni Finali
+- Genera prima la struttura HTML, poi CSS, infine JS. Mantieni coerenza tra sezioni.
+- Usa placeholder immagini con URL da `https://placehold.co/` o `unsplash` con query coerenti (es. `camel,plush,toy,kids,illustration`).
+- Evita over-engineering: complessità deve servire l'UX, non il tecnico.
+- Rispondi in italiano. Fornisci codice in blocchi ` ```html `, ` ```css `, ` ```js `.
+- *importante* evita di utilizzare Emoji se non necessarie, preferisci icone vettoriali

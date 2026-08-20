@@ -1,0 +1,123 @@
+## Sito Web Statico Multipagina — Aste Virtuali Online
+
+##  Ruolo
+Agisci come **Senior Frontend Developer & UI/UX Designer** specializzato in siti statici (HTML5/CSS3/JS ES6+). Sei esperto in performance, accessibilità, animazioni CSS/JS avanzate, micro-interazioni di precisione e design system scalabili senza framework. Il tuo linguaggio visivo è **ultra-moderno**: editoriale, pulito, con un uso chirurgico del colore e un tema notturno che sa trasformare l'interfaccia in un'esperienza neon.
+
+##  Contesto del Progetto
+Crea un sito web multipagina per **"MARTELLO — Aste Virtuali Online"**, una casa d'aste digitale che mette all'incanto opere d'arte contemporanea, sculture, oggetti di design, fotografia d'autore ed edizioni limitate, con aste live 24/7. Il martello del banditore batte online: chiunque può seguire l'asta in tempo reale e fare la propria offerta da qualsiasi dispositivo.
+
+**Filosofia di design centrale — "Di giorno una galleria, di notte un'arena"**: la modalità chiara (default) è una galleria minimalista: colori neutri, bianco generoso, hairline, gerarchia tipografica calma, silenziosa, autorevole. La modalità notte non è un semplice tema scuro: è una **trasformazione** — l'interfaccia diventa un'arena digitale dove i neon si accendono (viola elettrico, ciano, magenta), i bordi si illuminano, i countdown pulsano e le card diventano vetro. Il pulsante di switch non cambia solo i colori: deve far percepire un passaggio di stato, un'accensione. Niente elementi tech narrativi (circuiti, terminal, schermi) come sfondo; la tecnologia si esprime solo attraverso il linguaggio visivo del neon.
+
+Il sito sarà multipagina con navigazione fluida tra le sezioni:
+- **Home** — Hero con asta live in corso (countdown reale + offerta attuale del lotto in evidenza), manifesto della casa d'aste, ticker dei lotti in arrivo, lotti in evidenza, anteprima "come funziona", testimonianze, CTA
+- **Aste** — Catalogo completo dei lotti con filtri interattivi e ricerca
+- **Lotto** — Pagina di dettaglio dinamica di un singolo lotto con pannello di offerta simulato
+- **Come Funziona** — I passaggi per partecipare (registrazione, offerte, aggiudicazione, ritiro), regolamento, FAQ
+- **Chi Siamo** — Storia della casa d'aste, gli esperti, numeri e traguardi
+- **Contatti** — Form completo, canali di assistenza, dati aziendali
+
+##  Specifiche Tecniche
+- **Stack**: HTML5 semantico, CSS3 (variables, grid, flexbox, container queries), JavaScript vanilla ES6+
+- **Nessun framework**. Consentite solo librerie leggere via CDN se strettamente necessarie, ma preferisci implementazioni custom in JS puro.
+- **Complessità tecnica richiesta** (il cuore del progetto — la superficie è pulita, la meccanica è profonda):
+  - **Toggle tema "Galleria/Notte Neon"**: due modalità — Chiaro (neutri) e Notte (neon). Default: chiaro; al primo accesso rispetta `prefers-color-scheme`; persistenza in `localStorage` con script inline in `<head>` per evitare il FOUC; meta `color-scheme`. La transizione tra i temi è **animata**: crossfade dell'interfaccia e accensione scalare degli elementi neon (glow/colori applicati con transition e delay a cascata, come luci che si accendono una dopo l'altra). Icona del toggle con SVG morphing sole/luna
+  - **Countdown live di precisione**: timer `giorni/ore/minuti/secondi` (con i decimi nel lotto in hero) sincronizzati via `requestAnimationFrame` con scatto secco delle cifre in monospace; stato "Termina presto" (< 1h) con colore d'avviso; `aria-live` per gli annunci; countdown presente su card, hero, pagina lotto e footer
+  - **Dataset lotti in `data.js`**: 12–16 lotti con id, nome, artista/autore, categoria, descrizione, stima (min–max), prezzo di partenza, incremento minimo, offerta attuale, stato (`live`, `in arrivo`, `chiusa`), data di chiusura, immagini multiple. Le card dei lotti sono **renderizzate dinamicamente** dal dataset in tutte le pagine che li mostrano
+  - **Pagina lotto dinamica** (`lotto.html?id=...`): il contenuto è generato dal dataset in base al parametro della query string; gestione di id inesistente con stato "Lotto non trovato" e link al catalogo. Galleria con lightbox custom (navigazione tastiera, swipe touch, overlay dinamico)
+  - **Pannello di offerta simulato** (demo chiaramente dichiarata): pulsanti di incremento rapido (+incremento minimo, +5×), campo importo personalizzato con validazione, pulsante "Fai un'offerta"; competizione simulata: ogni 8–20s un offerente fittizio rilancia (incremento casuale), il prezzo "batte" con un impulso visivo animato e la cronologia offerte si aggiorna in tempo reale; se l'utente viene superato, notifica "Sei stato superato" con CTA per rilanciare; a countdown azzerato, modale di esito (aggiudicato/rilanciato) con animazione di chiusura pulita
+  - `IntersectionObserver` per scroll-triggered animations e lazy loading immagini (`loading="lazy"` + JS fallback) con placeholder progressivo
+  - Scroll-driven animations con CSS `animation-timeline: view()` dove supportato, con fallback JS basato su `IntersectionObserver`
+  - **Text reveal di precisione**: titoli e paragrafi che si rivelano al scroll con mask (`overflow: hidden` + `clip-path` + `translateY`), riga per riga con stagger calcolato, easing `cubic-bezier(0.16, 1, 0.3, 1)`
+  - Parallax multiclivello su hero e sezioni chiave (CSS `transform: translateZ` + JS per fallback)
+  - **Card lotto con tilt 3D prospettico** che segue il cursore (`perspective` + `rotateX`/`rotateY`) con reset fluido al mouseout
+  - **Ticker dei lotti** (marquee) nella home con pausa al hover
+  - Menu mobile con animazione SVG morphing e backdrop-filter
+  - Custom cursor minimale (anello + punto, solo desktop) che in modalità notte emette un sottile glow neon
+  - CSS `@property` per animazioni smooth su gradienti/glow/opacity
+  - Filtri interattivi per la pagina aste (categoria, stato, fascia di prezzo, ordinamento, ricerca per nome) con transizioni animate del layout delle card (animato, non brutale show/hide) e `aria-live` sui risultati; stato vuoto "Nessun lotto trovato" con pulsante di reset
+  - Validazione form real-time (contatti) con feedback visivo, messaggi di errore chiari e gestione stati
+  - Sticky header che si compatta allo scroll; footer con mini-countdown del lotto che chiude prima (link alla pagina lotto)
+  - Rispetto di `prefers-reduced-motion`: tutte le animazioni si riducono a dissolvenze semplici o si disattivano
+  - Performance target: Lighthouse > 90 (Performance, Accessibility, Best Practices)
+
+##  Design & UX Guidelines
+- **Palette — Modalità Chiara (neutri, silenziosa)**:
+  - `#FAFAF9` (bianco caldo — sfondo principale)
+  - `#F0EFEC` (grigio chiaro — sezioni alternate, card)
+  - `#141414` (inchiostro — testi principali)
+  - `#6E6E6E` (grigio — testi secondari, icone)
+  - `#5B5BD6` (viola profondo — unico accento: link attivi, dettagli interattivi, usato con parsimonia)
+  - `#D92D20` (rosso — avvisi, "Termina presto")
+  - `#FFFFFF` (bianco puro — card)
+- **Palette — Modalità Notte (arena neon)**:
+  - `#08080C` (nero bluastro — sfondo principale)
+  - `#10101A` (card vetro, sfondi secondari)
+  - `#F2F2F7` (testi principali)
+  - `#9A9AA8` (testi secondari)
+  - `#8B7CFF` (viola elettrico — neon primario: CTA, bordi, glow principali)
+  - `#00E0FF` (ciano — neon secondario: countdown, dettagli, icone, linee di separazione)
+  - `#FF4D9D` (magenta — avvisi, outbid, "Termina presto")
+- **Tipografia**:
+  - Titoli: `Space Grotesk` — geometrica moderna, leggermente tecnica, grande corpo
+  - Body: `Inter` — sans-serif pulita e altamente leggibile
+  - Dati d'asta (prezzi, countdown, id lotto, stime, timestamp, etichette): `JetBrains Mono` o `IBM Plex Mono` — monospace, in maiuscoletto con ampio letter-spacing (es. `LOTTO N. 048 — LIVE`, `OFFERTA ATTUALE € 12.400`)
+- **Layout**: Mobile-first, griglia editoriale con spaziature generose e non negoziabili in modalità chiara (il vuoto è parte del design), hairline borders da 1px come unico ornamento strutturale, tipografia display oversize, etichette in maiuscoletto con letter-spacing ampio, foto protagoniste. In modalità notte il layout resta identico ma la materia cambia: **glassmorphism** (backdrop-filter + bordi traslucidi), glow soffusi e sfumature radiali animate in sottofondo, righe di separazione con gradiente viola→ciano. Le card lotto sono essenziali: fotografia, nome, offerta attuale, tempo rimanente — nulla di più
+- **Micro-interazioni** (precisione, non giocosità): durate 0.2–0.5s con easing `cubic-bezier(0.16, 1, 0.3, 1)`, hover con trasformazioni sottili (scale 1.02, ombra/glow che si intensifica), il prezzo che "batte" con un impulso quando sale, cifre del countdown a scatto secco, flicker neon sottile sugli elementi chiave al hover in modalità notte, badge "LIVE" pulsante con pallino luminoso
+- **Accessibilità**: WCAG 2.1 AA, contrasti verificati in **entrambe** le modalità (il neon deve rispettare il contrasto, mai solo decorativo), focus visible evidente (anello viola/neon), ARIA labels su tutti gli elementi interattivi, skip links, navigazione completa da tastiera, testi alternativi descrittivi per tutte le fotografie, `aria-live` su countdown, filtri e aggiornamenti delle offerte
+
+##  Struttura dei File (Output Atteso)
+Fornisci il codice completo e pronto all'uso per:
+```
+/
+├── index.html               (Home — hero asta live, manifesto, ticker, lotti in evidenza, come funziona, testimonianze, CTA)
+├── aste.html                (Catalogo lotti con filtri interattivi, ricerca e ordinamento)
+├── lotto.html               (Dettaglio lotto dinamico via ?id=, pannello offerta, lightbox, cronologia)
+├── come-funziona.html       (Passaggi, regolamento, FAQ accordion)
+├── chi-siamo.html           (Storia, esperti, numeri e traguardi)
+├── contatti.html            (Form completo, canali assistenza, dati)
+├── css/
+│   ├── main.css             (Variabili, reset, layout base, componenti globali, tema chiaro e tema notte neon)
+│   └── utilities.css        (Utility classes, spacing, typography helper)
+├── js/
+│   ├── data.js              (Dataset dei lotti d'asta)
+│   ├── app.js               (Init, navigazione multipagina, tema chiaro/notte, menu mobile, ticker, footer countdown)
+│   ├── scroll-animations.js (IntersectionObserver, parallax, text reveal, scroll-driven fallback)
+│   └── components.js        (countdown, rendering card lotti, filtri catalogo, pannello offerta simulato, lightbox, form validation, custom cursor, tilt 3D)
+└── assets/
+    └── images/
+        ├── hero-art-piece.jpg
+        ├── hero-auction-hall.jpg
+        ├── lots/
+        │   ├── lot-001-painting.jpg ... (12-16 immagini, una per lotto, più dettagli per i lotti in evidenza)
+        ├── about/
+        │   ├── gallery-interior.jpg
+        │   ├── expert-appraisal.jpg
+        │   └── auctioneer-hammer.jpg
+        ├── process/
+        │   ├── registration.jpg
+        │   ├── live-bidding.jpg
+        │   └── delivery.jpg
+        └── testimonials/
+            └── collector-client.jpg
+```
+
+##  Requisiti di Output
+1. **Codice completo** per ogni file, commentato in italiano dove necessario
+2. **HTML semantico** con `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`, `aria-*` su tutte le pagine
+3. **Header e footer coerenti** su tutte le pagine con navigazione multipagina funzionante; il footer include il mini-countdown del lotto che chiude prima
+4. **CSS organizzato** con variabili (inclusa la palette completa di entrambi i temi), reset moderno, utility classes e blocchi logici (BEM o simile); le regole del tema notte vanno gestite con un attributo/class sul `<html>` (es. `data-theme="night"`)
+5. **JS modulare** con IIFE o ES modules, nessuna dipendenza globale polluzione; il dataset in `data.js` deve essere l'unica fonte di verità per i lotti
+6. **Istruzioni di esecuzione**: come aprire il sito in locale (es. `Live Server` o doppio click su `index.html`) e come testare entrambe le modalità
+7. **Note tecniche**: breve spiegazione delle scelte architetturali e dei punti di complessità implementati (in particolare tema neon, countdown, rendering dinamico dei lotti e pannello di offerta simulato)
+
+##  Istruzioni Finali
+- Genera prima la struttura HTML di tutte le pagine, poi CSS, infine JS. Mantieni coerenza tra tutte le pagine.
+- Usa immagini da Unsplash con query coerenti: `contemporary art`, `modern sculpture`, `design furniture`, `fine art photography`, `collectible`, `auction house`, `art gallery`, `abstract painting`, `limited edition`. Inserisci almeno 15-20 foto diverse per riempire il sito in modo ricco.
+- Le pagine devono avere un header e footer identici con navigazione funzionante tra tutte le pagine; i link del catalogo devono puntare a `lotto.html?id=...` con l'id corretto del dataset.
+- La pagina **aste.html** deve avere filtri interattivi (per categoria: Arte Contemporanea, Scultura, Design, Fotografia, Edizioni Limitata; per stato: Asta live, In arrivo, Chiusa; per fascia di prezzo) più ordinamento (tempo rimanente, prezzo, più recente) e ricerca per nome, con animazioni fluide e `aria-live` per l'annuncio dei risultati.
+- La pagina **lotto.html** deve rendere il contenuto dal dataset in base a `?id=`, con galleria lightbox, countdown live, pannello di offerta simulato con cronologia in tempo reale e modale di esito a fine asta; inserisci un disclaimer visibile che la simulazione d'offerta è dimostrativa.
+- La pagina **contatti.html** deve avere un form completo (nome, email, telefono, oggetto: Assistenza offerte, Vendere un lotto, Valutazione, Partnership; messaggio).
+- Ricorda la filosofia "di giorno una galleria, di notte un'arena": in modalità chiara tutto è neutro e silenzioso, in modalità notte il neon è la voce del design — ma sempre leggibile e accessibile.
+- Evita over-engineering: complessità deve servire l'UX, non il tecnico.
+- Rispondi in italiano. Fornisci codice in blocchi ` ```html `, ` ```css `, ` ```js `.
+- *Importante*: evita di utilizzare emoji se non necessarie, preferisci icone vettoriali SVG inline.
