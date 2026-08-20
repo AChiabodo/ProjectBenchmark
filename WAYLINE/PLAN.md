@@ -14,7 +14,7 @@
 | **Pubblico** | 12+, giocatori di avventure compatte, sistemi leggibili e interfacce retro |
 | **Promessa centrale** | Ogni indirizzo è un luogo; ogni link è un sentiero; ogni URL condiviso è una storia giocabile |
 | **Modello commerciale** | Distribuzione gratuita o pay-what-you-want, senza pubblicità, gacha o acquisti in gioco |
-| **Scope di lancio** | 29 nodi di mondo, 20 Echi, 5 regioni principali, 6 scontri chiave, 2 finali |
+| **Scope release target** | 29 nodi di mondo, 20 Echi, 5 regioni principali, 6 scontri chiave, 2 finali |
 
 ### 1.1 High concept
 
@@ -39,12 +39,33 @@ Durante il viaggio il Tracciatore entra in sintonia con gli **Echi**, manifestaz
 - Nessun sistema di evoluzioni, allevamento, scambio o collezione enciclopedica.
 - Nessuna ruota elementale o struttura basata su palestre, medaglie e campionato.
 - Nessun open world procedurale: la forza è nella progressione curata e verificabile.
-- Nessuna dipendenza runtime, account obbligatorio o backend necessario per giocare.
+- Nessun backend, account o servizio remoto necessario per giocare. React e `react-dom` sono dipendenze runtime deliberate della UI; “nessuna dipendenza runtime” significa invece che il dominio non dipende da framework, rete, server o librerie native aggiuntive.
 - Nessun inventario infinito o grind richiesto per superare i cancelli principali.
 
 ---
 
 ## 2. Pilastri di design
+
+### 2.0 Strategia di consegna e vertical slice bloccato
+
+Il progetto ha due livelli distinti: **MVP tecnico/playable** e **release narrativa completa**. Il secondo non può iniziare finché il primo non è dimostrato in un browser reale.
+
+**Vertical slice obbligatorio (MVP-0, nessun contenuto extra):**
+
+```text
+Valdaluce → Prato delle Scie → un incontro → COLPISCI/SINTONIA
+→ primo Eco in Compagnia → genera Wayline → copia URL → reload/deep link
+```
+
+Il slice usa una sola scena, un solo Eco accordabile, un solo consumabile e un solo risultato di viaggio. Deve già dimostrare:
+
+- stato canonico in TypeScript strict e transizioni deterministiche;
+- URL leggibile più Short Save, con checksum, validazione e messaggio per link invalido;
+- ripristino esatto dopo reload, apertura in nuova scheda e browser back/forward;
+- un flusso completo da tastiera, touch, screen reader e viewport 320 px;
+- nessun `Math.random()`, stato React autorevole o accesso DOM nel dominio.
+
+**Fuori dal vertical slice:** Torre, due rami, roster completo, economia avanzata, pixel art, audio, analytics, challenge e contenuti opzionali. Se il gate MVP-0 fallisce, si corregge il slice: non si aggiungono regioni.
 
 ### 2.1 La Via è l'interfaccia
 
@@ -461,6 +482,18 @@ Può vivere in `localStorage` senza entrare nel Wayline:
 - Ogni rinomina usa alias legacy per almeno una major release.
 - Un refactor narrativo non può invalidare i Wayline esistenti: gli ID wire legacy vengono migrati verso gli ID canonici.
 
+### 9.5 Contratto browser: History API, deep link e battaglia
+
+La URL è la rappresentazione persistente; `history.state` è soltanto metadato non autorevole (`entryIndex`, `schemaVersion`, `waylineDigest`). Il router non usa React Router e non duplica lo stato in un context globale.
+
+- **Avvio/deep link:** `main.tsx` legge `location.pathname` e `?s=`. Prima normalizza e migra il save, poi valida lo slug e infine renderizza. Il path e `state.node` devono coincidere; l'unica eccezione è un alias legacy che viene canonicalizzato con `replaceState`. Un path sconosciuto o un save invalido mostra una **Via Smarrita** senza eseguire transizioni e offre “Torna all'inizio”; il server statico deve rispondere con `index.html` per ogni path.
+- **Comando di dominio:** ogni comando accettato produce `nextState`, eventi e URL canonica in un'unica operazione. Per un cambiamento di gioco si usa `pushState`; `replaceState` è ammesso solo per canonicalizzazione, ripristino dopo errore o modifica di preferenze UI. Lo stesso URL non viene aggiunto due volte.
+- **Back/forward fuori battaglia:** `popstate` decodifica la destinazione e la tratta come snapshot autorevole già validato; non richiama il comando precedente e non ricalcola casualità. Il log e la UI vengono ricostruiti dal nuovo stato. Forward ripristina uno snapshot esistente oppure, se la cronologia è stata sostituita, non inventa uno stato.
+- **Durante una battaglia:** ogni turno accettato crea uno snapshot con `battleId`, HP, turno, seed e path; Back/Forward può quindi ripristinare esattamente un turno precedente/successivo. I comandi di viaggio e cambio scena sono disabilitati e `transition` li rifiuta con evento `BATTLE_LOCKED`. Per evitare che il Back accidentale abbandoni lo scontro, se la destinazione non contiene lo stesso `battleId` il router torna all'indice corrente (`history.go`) e apre un dialog accessibile: “Abbandonare lo scontro?”. Solo **RITIRATI**, vittoria o sconfitta possono chiudere la battaglia e creare una nuova entry di viaggio.
+- **Link condiviso durante uno scontro:** è valido e riprende lo scontro esatto dal seed e dal turno salvati; non riproduce una sequenza implicita e non consuma un turno al caricamento.
+- **Refresh/chiusura:** nessun `beforeunload` blocca l'utente. L'ultimo stato è già nella URL; `localStorage` è solo comodità e non viene usato per sovrascrivere un deep link esplicito.
+- **Test obbligatori:** deep link a ogni nodo, back/forward tra comando e battaglia, reload a ogni fase del combattimento, apertura in nuova scheda, slug sconosciuto, query corrotta e server statico senza rewrite manuale.
+
 ---
 
 ## 10. Architettura tecnica greenfield
@@ -496,7 +529,7 @@ DOM, History API, audio e cache non devono essere importati dal dominio puro. Re
 |---|---|---|
 | Linguaggio | TypeScript strict (target ES2020) | Union discriminate per comandi/eventi, tipi su schema, codec, migrazioni e transizioni; JSDoc non basta per i contratti |
 | Framework UI | React 19, solo nel renderer | Il dominio puro resta framework-free e testabile in Node senza DOM; React gestisce pannelli, focus, aria-live e aggiornamenti atomici stato → UI |
-| Routing | History API + fallback hash/statico | Deep link e hosting statico |
+| Routing | History API con fallback statico a `index.html` | Deep link con slug stabili e hosting statico; hash routing non viene usato perché la URL è parte della fiction |
 | Stato | Schema normalizzato V1+ e codec Short Save | Condivisione, migrazioni e limiti espliciti |
 | Dati | Un'unica fonte canonica validata | Evita divergenza tra JSON e moduli duplicati |
 | Casualità | Hash/PRNG deterministico per canali nominati | Replay identici tra browser |
@@ -506,34 +539,231 @@ DOM, History API, audio e cache non devono essere importati dal dominio puro. Re
 | Test | Vitest + React Testing Library + Playwright (Chromium/Firefox/WebKit) | Dominio puro senza jsdom; componenti e flussi reali in browser |
 | Build | Vite: build statico TS/JSX minificato e hashato; script di validazione/generazione dati | Deploy statico semplice, nessun build al runtime |
 
-**Conseguenze esplicite:** React 19 + react-dom aggiungono ~140 KB minificati (~46 KB gzip), quindi il gate di 13.2 passa da <150 KB a <250 KB non compressi / <75 KB gzip con decisione esplicita. Se il peso tornasse critico, Preact è il drop-in compatibile (~4 KB gzip) senza modificare contratti, test o componenti. I moduli di dominio (schema, codec, transizioni, PRNG, dati) non importano mai React né DOM.
+**Conseguenze esplicite:** React 19 + react-dom sono le sole dipendenze runtime applicative e aggiungono circa 140 KB minificati (circa 46 KB gzip); il gate passa quindi a <250 KB non compressi / <75 KB gzip. Vite, TypeScript, Vitest, Playwright, Testing Library e `vite-plugin-pwa` sono dev/build dependencies e non vengono caricate dalla pagina come pacchetti separati. Se il peso tornasse critico, Preact è un'alternativa valutabile soltanto dopo il vertical slice, senza modificare contratti o dominio. I moduli di dominio (schema, codec, transizioni, PRNG, dati) non importano mai React né DOM.
 
-### 10.3 Moduli target
+### 10.3 Struttura del repository e configurazione eseguibile
+
+Non sono ammessi file di produzione `.js` o `.jsx`: il codice applicativo è `.ts`/`.tsx`; l'unico JavaScript distribuito è l'output generato da Vite. JSON e CSS restano formati dati/asset, non una seconda implementazione del dominio.
 
 ```text
-data/
-  world.json              # nodi, requisiti, uscite, epiloghi
-  echoes.json             # statistiche e risonanze
-  characters.json         # dialoghi e transizioni quest
-  items.json              # consumabili, strumenti, oggetti chiave
-js/
-  state/schema.js         # limiti e normalizzazione
-  state/codec.js          # URL leggibile e Short Save
-  state/migrations.js     # migrazioni e alias legacy
-  transitions/battle.js   # comandi puri
-  transitions/quest.js    # dialoghi e ricompense atomiche
-  transitions/storage.js  # Compagnia/Archivio
-  validation/contracts.js # contratti dati riusabili
-  validation/reachability.js
-  random.js
-  router.js
-  renderer.js
-  audio.js
-  main.js
+package.json
+index.html
+vite.config.ts
+tsconfig.json
+tsconfig.node.json
+public/
+  manifest.webmanifest
+  icons/
+src/
+  main.tsx
+  App.tsx
+  styles/
+    tokens.css
+    global.css
+    console.css
+  data/
+    world.json
+    echoes.json
+    characters.json
+    items.json
+  domain/
+    state/schema.ts
+    state/normalize.ts
+    state/migrations.ts
+    state/codec.ts
+    transitions/battle.ts
+    transitions/quest.ts
+    transitions/storage.ts
+    random.ts
+    validation/contracts.ts
+    validation/reachability.ts
+  router/
+    route.ts
+    history-router.ts
+  renderer/
+    SceneScreen.tsx
+    CommandScreen.tsx
+    BattlePanel.tsx
+    WaylineBar.tsx
+    dialogs.tsx
+  platform/
+    audio.ts
+    clipboard.ts
+    storage.ts
+  pwa/
+    register.ts
+    service-worker.ts
+  app.css
 tests/
-  fixtures/saves/         # golden save legacy e correnti
-  e2e/                    # viaggio, battaglia, PWA e finali
+  unit/
+  fixtures/saves/
+  e2e/
 ```
+
+Manifest minimo da creare in `package.json` (le versioni esatte vengono fissate dal lockfile e aggiornate solo con una verifica completa):
+
+```json
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json --pretty false && tsc --noEmit -p tsconfig.node.json --pretty false",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "validate": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "typescript": "~5.0.0",
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0",
+    "vite-plugin-pwa": "^0.21.1",
+    "workbox-precaching": "^7.3.0",
+    "workbox-routing": "^7.3.0",
+    "workbox-strategies": "^7.3.0"
+  }
+}
+```
+
+`vite.config.ts` deve usare `@vitejs/plugin-react` e `VitePWA` con `strategies: "injectManifest"`, `srcDir: "src/pwa"`, `filename: "service-worker.ts"`, `registerType: "prompt"` e manifest webapp. `tsconfig.json` deve avere `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`, `noEmit: true`, `jsx: "react-jsx"`, `moduleResolution: "Bundler"` e target ES2020. `tsconfig.node.json` include solo `vite.config.ts`. `index.html` importa `src/main.tsx`, contiene un `<main id="root">` e non contiene stato di gioco. `src/main.tsx` monta React, registra il service worker e passa a `App.tsx` esclusivamente lo snapshot restituito dal router.
+
+Configurazione minima di `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": ["src"]
+}
+```
+
+Configurazione minima di `tsconfig.node.json`:
+
+```json
+{
+  "compilerOptions": { "composite": true, "module": "ESNext", "moduleResolution": "Bundler", "allowJs": false, "strict": true, "noEmit": true },
+  "include": ["vite.config.ts"]
+}
+```
+
+Configurazione minima di `vite.config.ts`:
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
+
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src/pwa",
+      filename: "service-worker.ts",
+      injectRegister: false,
+      registerType: "prompt",
+      manifest: { name: "WAYLINE", short_name: "WAYLINE", display: "standalone", start_url: "/" }
+    })
+  ],
+  build: { target: "es2020", sourcemap: true, cssCodeSplit: true }
+});
+```
+
+`src/main.tsx` crea il root React, chiama `readLocation()` e registra `src/pwa/register.ts`; `App.tsx` riceve un modello di rendering e un dispatcher di `GameCommand`. Il dispatcher esegue `transition`, serializza `nextState`, chiama `pushState` e poi aggiorna React. Un `setState` UI non è mai sufficiente per salvare.
+
+`src/pwa/service-worker.ts` è concreto e minimale:
+
+```ts
+/// <reference lib="webworker" />
+import { precacheAndRoute } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
+import { NetworkFirst, CacheFirst } from "workbox-strategies";
+
+declare const self: ServiceWorkerGlobalScope;
+precacheAndRoute(self.__WB_MANIFEST);
+registerRoute(({ request, url }) => ["document", "script", "style"].includes(request.destination) || url.pathname.endsWith(".json"), new NetworkFirst({ cacheName: "wayline-shell-v1" }));
+registerRoute(({ request }) => request.destination === "image", new CacheFirst({ cacheName: "wayline-assets-v1" }));
+```
+
+I dati JSON sono serviti dalla stessa policy network-first; gli atlanti opzionali non sono nel manifest precached. `register.ts` ascolta `waiting`, mostra “Aggiornamento pronto” e invia `SKIP_WAITING` solo dopo azione esplicita dell'utente. Il service worker sorgente è compilato dal plugin e produce `/sw.js`; il file in `dist/` è un artefatto, non codice sorgente da modificare a mano. Nessun CDN, font remoto o stile inline è necessario per il funzionamento.
+
+I CSS sono espliciti e locali: `tokens.css` contiene colori, spaziatura, focus e safe-area; `console.css` contiene layout desktop/mobile; `global.css` contiene reset e media query. Il tema deve definire almeno `--color-bg`, `--color-fg`, `--color-focus`, `--touch-target: 44px`, `--console-max-width: 920px` e una variante `prefers-reduced-motion`.
+### 10.3.1 Contratti TypeScript minimi
+
+I contratti sono la seam tra dominio, renderer e piattaforma. Ogni comando UI viene convertito in unione discriminata; il renderer non può costruire direttamente un `GameState`.
+
+```ts
+export type NodeId = string & { readonly __brand: "NodeId" };
+export type EchoId = string & { readonly __brand: "EchoId" };
+
+export interface BattleState {
+  readonly battleId: string;
+  readonly echoId: EchoId;
+  readonly enemyHp: number;
+  readonly enemyMaxHp: number;
+  readonly turn: number;
+  readonly seed: number;
+  readonly origin: NodeId;
+  readonly canAttune: boolean;
+}
+
+export interface GameState {
+  readonly schemaVersion: number;
+  readonly node: NodeId;
+  readonly hp: number;
+  readonly maxHp: number;
+  readonly tokens: number;
+  readonly flags: ReadonlySet<string>;
+  readonly inventory: Readonly<Record<string, number>>;
+  readonly party: readonly EchoId[];
+  readonly archive: readonly EchoId[];
+  readonly battle: BattleState | null;
+  readonly ending: "restored" | "freed" | null;
+}
+
+export type GameCommand =
+  | { readonly type: "TRAVEL"; readonly destination: NodeId }
+  | { readonly type: "ATTACK" }
+  | { readonly type: "ATTUNE" }
+  | { readonly type: "USE_ITEM"; readonly itemId: string }
+  | { readonly type: "RETREAT" }
+  | { readonly type: "CHOOSE_ENDING"; readonly ending: "restored" | "freed" };
+
+export interface GameEvent { readonly type: string; readonly messageKey: string; readonly data?: unknown; }
+export interface Navigation { readonly kind: "stay" | "push" | "replace"; readonly path: string; }
+export interface TransitionResult { readonly nextState: GameState; readonly events: readonly GameEvent[]; readonly navigation: Navigation; }
+
+export interface WaylineCodec {
+  encode(state: GameState): string;
+  decode(input: string): { kind: "ok"; state: GameState } | { kind: "invalid"; reason: string };
+}
+```
+
+`transition(state, command, rng)` è l'unico produttore di nuovi stati. `GameEvent.data` non contiene HTML: il renderer risolve solo chiavi e valori già validati. Il router espone `readLocation()`, `writeLocation()`, `onPopState()` e `replaceInvalidLocation()`; `history.state` contiene solo indice e digest tecnico, mai lo stato autorevole.
 
 ### 10.4 Determinismo
 
@@ -555,6 +785,44 @@ Aggiungere un tiro a un canale non deve spostare gli esiti di tutti gli altri. N
 - Chiamare `registration.update()` all'avvio.
 - Ricaricare automaticamente solo quando un service worker già attivo viene sostituito; mai alla prima installazione.
 - Un timeout del browser non è prova di fallimento: verificare versione cache, controller attivo e asset realmente serviti.
+
+### 10.6 Integrità, anti-tampering e stati non raggiungibili dei Wayline
+
+Il progetto è offline-first e senza account: non è possibile autenticare crittograficamente un Wayline nel client. Un checksum non è una firma e un utente che modifica la URL può ricalcolarlo. Questa è una decisione esplicita, non una lacuna.
+
+**Pipeline di import, in ordine:**
+
+1. limite di lunghezza, alphabet base64url e percent-encoding sicuro;
+2. decode del payload canonico e verifica della versione/checksum;
+3. migrazione `Vn -> Vcurrent` senza fallback parziali;
+4. validazione strutturale: numeri finiti e nei limiti, enum noti, ID esistenti, quantità non negative, party senza duplicati e battaglia coerente;
+5. validazione semantica: flag compatibili, strumenti prodotti da un nodo noto, finale coerente con il boss, HP coerenti con lo scontro;
+6. classificazione della raggiungibilità, senza mutare silenziosamente il save.
+
+Il codec usa un envelope canonico compatto `{ v, p, h }`, dove `p` è payload serializzato in ordine stabile e `h` è un digest/checksum troncato. Prima della serializzazione, `ReadonlySet` diventa un array ordinato e gli oggetti vengono emessi con chiavi ordinate; il decoder ricostruisce il modello normalizzato. Il checksum rileva corruzione accidentale e test di compatibilità; la sicurezza reale deriva dal rifiuto di dati fuori contratto, dal rendering esclusivamente tramite ID/chiavi e dall'assenza di HTML o codice eseguibile nei save.
+
+Ogni import riceve uno stato di provenienza:
+
+```ts
+type SaveTrust = "generated" | "imported-legal" | "imported-unreachable";
+type LoadResult =
+  | { kind: "ok"; state: GameState; trust: SaveTrust }
+  | { kind: "invalid"; reason: "corrupt" | "unsupported" | "illegal" };
+```
+
+- `generated` è prodotto da `transition` e abilita tutti i test di replay;
+- `imported-legal` supera schema e semantica ma non ha una prova completa di provenienza;
+- `imported-unreachable` è strutturalmente valido, ma contiene una combinazione che il grafo di progressione non può produrre (per esempio una quantità al limite massimo ma senza alcun produttore raggiunto). In modalità storia viene caricato come **Wayline non canonico**, con badge visibile, senza achievement, challenge seed o telemetria di bilanciamento; il giocatore può continuare o ricominciare. Non si correggono flag automaticamente.
+
+Uno stato semanticamente illegale, troppo grande, non supportato o con riferimenti sconosciuti viene rifiutato con una Via Smarrita e un motivo comprensibile. La validazione di raggiungibilità produce sia prove positive sia contraddizioni; uno stato non dimostrabile ma non contraddittorio resta `imported-legal`, mai “verificato”.
+
+La firma server-side/HMAC di Wayline ufficiali è **fuori MVP e fuori dalla release offline**: potrà esistere in un formato separato (`official=1`) solo con servizio di verifica, scadenza, rotazione chiavi e fallback chiaramente documentati. Non si devono promettere classifiche o ricompense basate su save client-side.
+
+### 10.7 Profilo tecnico browser (non Unity/Unreal/raylib)
+
+Le skill e i deliverable di implementazione sono quelli di un'applicazione React browser: TypeScript strict, DOM semantico, CSS responsive, History API, Web Audio, Clipboard, Service Worker, Vitest e Playwright. Unity, Unreal, C e raylib non fanno parte del runtime o della toolchain di release perché non producono la PWA condivisibile richiesta.
+
+Un eventuale prototipo C/raylib può essere usato solo come laboratorio offline per numeri di bilanciamento o PRNG, con fixture esportate e nessuna autorità sul gioco. Ogni formula e risultato deve essere riscritto e verificato in `src/domain`; il piano non accetta un secondo motore. Le review devono quindi includere routing browser, accessibilità, ciclo di vita React, cache PWA e sicurezza del parsing, non rendering loop, ECS o asset pipeline 3D.
 
 ---
 
@@ -602,17 +870,18 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 
 ## 12. Piano di produzione da zero
 
-### Fase 0 — Pre-produzione e vertical slice (settimana 1)
+### Fase 0 — MVP-0: vertical slice bloccato (settimana 1)
 
-- [ ] Approvare titolo, bible narrativa e lessico canonico.
-- [ ] Bloccare mappa macro, arco in quattro atti e due finali.
-- [ ] Definire schema dati, stato iniziale e contratti.
-- [ ] Prototipare: Valdaluce → incontro → Sintonia → Wayline condiviso.
-- [ ] Validare il tono con 3 lettori esterni e la comprensione del loop con 5 giocatori.
+- [ ] Approvare solo il lessico e il contratto narrativo necessari a Valdaluce.
+- [ ] Creare repository TypeScript/React con `package.json`, Vite, `tsconfig`, CSS e test runner funzionanti.
+- [ ] Definire schema V1, stato iniziale, comandi, eventi, codec e router secondo i contratti 10.3.1.
+- [ ] Implementare soltanto: Valdaluce → Prato → un incontro → Sintonia → Wayline condiviso.
+- [ ] Coprire reload, nuova scheda, back/forward, link corrotto e Via Smarrita.
+- [ ] Validare il loop con 5 giocatori e il tono con 3 lettori esterni.
 
-**Gate:** il vertical slice comunica il concept senza riferimenti a Pokémon e ripristina lo stato tramite URL.
+**Gate MVP-0, stop/go:** il vertical slice comunica il concept senza riferimenti a Pokémon, è giocabile da tastiera e touch, ripristina lo stato tramite URL in tre browser e passa `npm run validate`. Nessun lavoro su Torre o altri Echi è autorizzato prima di questo gate.
 
-### Fase 1 — Fondamenta deterministiche (settimana 2)
+### Fase 1 — Fondamenta deterministiche e hardening del MVP (settimana 2)
 
 - [ ] Router, codec, schema e migrazioni.
 - [ ] PRNG a canali nominati.
@@ -622,7 +891,7 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 
 **Gate:** replay identico su tre browser; Short Save massimo sotto 2.000 caratteri.
 
-### Fase 2 — Atto I e Torre (settimana 3)
+### Fase 2 — Release narrativa R1: Atto I e Torre (settimana 3)
 
 - [ ] Valdaluce, Ponte di Radica e Rocca delle Soglie.
 - [ ] 6 Echi comuni e 3 scontri chiave.
@@ -632,7 +901,7 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 
 **Gate:** un nuovo giocatore raggiunge lo split in 20–30 minuti senza assistenza.
 
-### Fase 3 — I due rami (settimane 4–5)
+### Fase 3 — Release narrativa R1: i due rami (settimane 4–5)
 
 - [ ] Selva, Caverne, Frammento di Memoria.
 - [ ] Costa, Mare, Isola, Cifrario di Marea.
@@ -642,7 +911,7 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 
 **Gate:** entrambi gli ordini di ramo sono validi, senza soft-lock o backtracking eccessivo.
 
-### Fase 4 — Finale e reattività narrativa (settimana 6)
+### Fase 4 — Release narrativa R1: finale e reattività (settimana 6)
 
 - [ ] Salita al Picco, Aster Veyr e Leviatano Meridiano.
 - [ ] Due finali persistenti.
@@ -651,7 +920,7 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 
 **Gate:** storia completa, motivazioni comprensibili e finale raggiungibile da ogni build valida.
 
-### Fase 5 — Presentazione e hardening (settimana 7)
+### Fase 5 — Release candidate: presentazione e hardening (settimana 7)
 
 - [ ] Pass ASCII completo e differenziato per regione.
 - [ ] Audio sintetizzato, riduzione movimento, screen reader e zoom 200%.
@@ -661,7 +930,7 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 
 **Gate:** nessun errore console, nessuna azione essenziale fuori viewport, cache aggiornata correttamente.
 
-### Fase 6 — Bilanciamento e release (settimana 8)
+### Fase 6 — Release candidate: bilanciamento e release (settimana 8)
 
 - [ ] 10–15 playtest esterni completi.
 - [ ] Telemetria locale esportabile e opt-in: durata, sconfitte, acquisti, ordine rami.
@@ -670,6 +939,16 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 - [ ] Release candidate e smoke test su URL pubblico.
 
 **Gate:** mediana 60–90 minuti, nessun blocco P0/P1, almeno 80% dei tester comprende storia e Sintonia senza spiegazione esterna.
+
+### 12.1 Separazione degli scope e criteri di promozione
+
+| Livello | Include | Non include | Criterio per procedere |
+|---|---|---|---|
+| **MVP-0** | Vertical slice Valdaluce, un incontro, Sintonia, Wayline, reload/deep link, Via Smarrita, tastiera/mobile, test di dominio | Torre, rami, roster completo, pixel art, audio, analytics | Gate MVP-0 chiuso; altrimenti solo correzioni del slice |
+| **R1 narrativa** | Fasi 1–6: 29 nodi, 20 Echi, Torre, due rami, due finali, PWA, accessibilità, migrazioni | Challenge pubblica, Wayline firmati, contenuto opzionale non necessario | Tutti i gate 13.3 chiusi e 10–15 playtest completi |
+| **Post-R1 opzionale** | Vie Smarrite, Echi rari, replay seed, pixel atlas, telemetry opt-in | Qualsiasi requisito per capire o finire la storia | Non modifica schema o bilanciamento R1 senza migration e regression suite |
+
+Ogni milestone deve produrre una build installabile, un changelog e fixture riproducibili. Il lavoro narrativo successivo non può mascherare un problema del dominio, del router, dei save o del vertical slice.
 
 ---
 
@@ -695,7 +974,9 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 
 ### 13.3 Release verdict
 
-**GO** soltanto se:
+**MVP-0 GO** soltanto se il gate della fase 0 è chiuso. Questo autorizza la costruzione della release narrativa, non è un verdetto per il gioco completo.
+
+**R1 GO** soltanto se:
 
 - storia e lessico canonico sono applicati a UI, dati, test e asset;
 - i vecchi Wayline migrano senza perdita di stato;
@@ -732,6 +1013,7 @@ Una feature è completa quando:
 - [ ] aggiorna stato, feedback e Wayline atomicamente;
 - [ ] è raggiungibile nei grafi strutturale e di progressione;
 - [ ] preserva save legacy o include migrazione e fixture;
+- [ ] classifica Wayline importati come `generated`, `imported-legal` o `imported-unreachable` senza fidarsi del checksum come firma;
 - [ ] funziona con tastiera, touch e tecnologie assistive;
 - [ ] è verificata nel browser alle viewport target senza overflow;
 - [ ] funziona offline dopo una visita e si aggiorna correttamente online;
