@@ -1,4 +1,4 @@
-# GemSwap — Piano di sviluppo eseguibile (MVP Match-3 Web)
+# GemSwap — Piano di sviluppo eseguibile (Match-3 Web completo)
 
 > **Root del progetto:** `Match3/`, cioè la cartella corrente del benchmark.
 >
@@ -11,10 +11,10 @@
 
 ### 1.1 Obiettivo prodotto
 
-Realizzare un match-3 giocabile su desktop e mobile:
+Realizzare un match-3 completo, rifinito e giocabile su desktop e mobile:
 
 ```text
-start → input swap → validazione → match → clear → gravity → refill
+start → input swap → validazione → match → creazione/attivazione speciali → clear → gravity → refill
       → cascade fino a stabilità → score → game over → restart
 ```
 
@@ -29,7 +29,7 @@ I valori configurati e il best score sono separati per modalità e persistiti in
 
 ### 1.2 Scope del primo rilascio
 
-**MVP giocabile (P0):**
+**Vertical slice giocabile (P0):**
 
 - core puro e deterministico: board, match, swap, clear, gravity, refill,
   cascade, deadlock e score;
@@ -39,8 +39,10 @@ I valori configurati e il best score sono separati per modalità e persistiti in
 - reset/restart affidabile e persistenza difensiva;
 - test unitari e di integrazione del core.
 
-**Release v1 (P1, dopo il core):**
+**Release v1 completa (P1, obiettivo del progetto):**
 
+- pezzi speciali creati da match di 4, 5, L/T, con attivazioni, reazioni a
+  catena e combo tra speciali definite in §1.3;
 - pause, timer completo, animazioni rifinite, accessibilità, particelle, audio,
   best score e verifica responsive/performance;
 - coverage branch del core ≥ 90% come gate finale, non come prerequisito per il
@@ -48,27 +50,37 @@ I valori configurati e il best score sono separati per modalità e persistiti in
 
 **Fuori scope v1:**
 
-- special tile (bombe, razzi, rainbow/wild), booster e livelli;
+- booster consumabili, livelli/campagna e monetizzazione;
 - backend, account, classifiche online e analytics;
 - asset binari: forme, colori e suoni sono procedurali;
 - Playwright, CI e deploy automatico: sono stretch goal documentati in §11.
 
-### 1.3 Decisione sulle special tile
+### 1.3 Pezzi speciali v1
 
-Le special tile **non fanno parte dell'MVP né dell'architettura attiva di v1**.
-`Tile` non contiene quindi `specialType`, `MatchEngine` non genera effetti
-secondari e `ScoreManager` non assegna bonus per bombe/linee.
+Le special tile sono parte della release v1 e conservano colore e identità:
 
-Il punteggio può comunque riconoscere la geometria del match normale:
+| Match che le crea | Speciale | Effetto base |
+|---|---|---|
+| 4 in linea | `ROW_CLEAR` o `COLUMN_CLEAR`, secondo l'asse del match | elimina riga o colonna |
+| 5 o più in linea | `COLOR_BOMB` | elimina tutte le tile del colore scambiato |
+| forma L/T | `AREA_BOMB` | elimina un'area 3×3 |
 
-- linea di 3: `shapeBonus = 0`;
-- linea di 4 o 5: bonus configurabile, ma tutte le tile vengono rimosse
-  normalmente;
-- forma L/T o sovrapposizione: bonus configurabile.
+La speciale nasce nella cella della tile mossa se appartiene al match; nelle
+cascade nasce sull'intersezione L/T oppure sulla cella minima per `(row, col)`.
+La tile ancorata viene trasformata, non eliminata, e le altre vengono clearate.
+Se più pattern reclamano la stessa cella prevale `COLOR_BOMB > AREA_BOMB >
+ROW/COLUMN_CLEAR`; ogni match genera al massimo una speciale per componente
+connessa. Queste regole rendono replay e test deterministici.
 
-Le special tile saranno una milestone P2 separata, con schema dati, regole,
-test e animazioni proprie. Non si devono lasciare hook parziali o codice morto
-nel core v1.
+Una speciale si attiva quando entra in un match o viene colpita da un altro
+effetto. `COLOR_BOMB` può essere scambiata con qualsiasi tile anche senza creare
+un match: con una tile normale elimina quel colore; con una speciale trasforma
+tutte le tile di quel colore nello stesso `specialType` e le attiva. Due color
+bomb eliminano l'intera board; lo scambio tra altre due speciali attiva entrambe
+dalle rispettive celle di arrivo. Gli effetti si risolvono con una coda per ID:
+ogni speciale si attiva al massimo una volta per ciclo, le tile colpite sono
+deduplicate e score/gravity/refill partono solo a coda esaurita. Le combo hanno
+bonus configurabili, ma non consumano mosse aggiuntive.
 
 ---
 
@@ -80,8 +92,8 @@ nel core v1.
 |---|---|---|
 | **G0 Riproducibile** | fine setup | installazione da lockfile, typecheck, lint e test dummy verdi |
 | **G1 Vertical slice** | prima demo | una partita Moves completa con swap, match, cascade e restart |
-| **G2 Core robusto** | prima di polish | invarianti board, deadlock, cap cascade, identità tile e test verdi |
-| **G3 MVP** | fine funzionalità | Moves + Time, persistenza difensiva, responsive e HUD |
+| **G2 Core robusto** | prima di polish | speciali/combo, invarianti board, deadlock, cap cascade e test verdi |
+| **G3 Feature complete** | fine funzionalità | Moves + Time, speciali/combo, persistenza, responsive e HUD |
 | **G4 Release v1** | fine verifica | coverage, performance, accessibilità, browser smoke e build produzione |
 
 Un fallimento P1 non deve impedire G1: si consegna prima il core giocabile e si
@@ -95,6 +107,8 @@ aggiunge il polish in seguito.
   core è completo);
 - nessun `any` nel core e nessun accesso indicizzato non verificato;
 - una partita completa funziona in Moves e Time;
+- match di 4/5/L/T creano la speciale corretta; attivazioni, catene e combo non
+  duplicano clear o score e terminano sempre;
 - reset e restart azzerano score, board, selezione, transazioni, mosse e timer,
   ma non cancellano i best score;
 - dati `localStorage` corrotti, mancanti, di versione sconosciuta o inaccessibili
@@ -233,6 +247,15 @@ export const TILE_TYPES = {
 
 export type TileType = typeof TILE_TYPES[keyof typeof TILE_TYPES];
 
+export const SPECIAL_TYPES = {
+  ROW_CLEAR: 'ROW_CLEAR',
+  COLUMN_CLEAR: 'COLUMN_CLEAR',
+  AREA_BOMB: 'AREA_BOMB',
+  COLOR_BOMB: 'COLOR_BOMB',
+} as const;
+
+export type SpecialType = typeof SPECIAL_TYPES[keyof typeof SPECIAL_TYPES];
+
 export const GAME_STATES = {
   START: 'START',
   IDLE: 'IDLE',
@@ -257,6 +280,7 @@ aggirare `noUncheckedIndexedAccess`. I tipi devono includere almeno:
 interface Tile {
   readonly id: string;
   readonly type: TileType;
+  specialType: SpecialType | null;
   row: number;
   col: number;
   state: 'IDLE' | 'CLEARING' | 'FALLING';
@@ -286,7 +310,8 @@ ambiente di test, poter essere verificato contro questi invarianti:
    valida;
 7. durante una transazione possono esistere piani temporanei e `null`, ma mai
    una tile in due destinazioni o una destinazione assegnata a due tile;
-8. una tile clearata è ritirata e non può rientrare in gravity/refill;
+8. una tile clearata è ritirata e non può rientrare in gravity/refill; l'anchor
+   trasformata in speciale mantiene ID, tipo e coordinate;
 9. un nuovo gioco ritira tutte le tile precedenti e crea nuovi ID;
 10. seed, board iniziale e lista di comandi identici producono lo stesso snapshot
     core (il clock è passato esplicitamente).
@@ -325,8 +350,8 @@ far sembrare che una tile sia un'altra.
   oppure dal piano di animazione; non diventano una seconda fonte di verità.
 
 Test obbligatori: ID preservati nello swap valido e invalido, coordinate corrette
-post-swap, coordinate corrette dopo colonne con gap multipli, ID nuovi nel refill,
-nessun commit dopo reset e IDs preservati nel reshuffle normale.
+post-swap e dopo colonne con gap multipli, ID nuovi nel refill, anchor delle
+speciali preservata, nessun commit dopo reset e ID preservati nel reshuffle.
 
 ### 4.6 FSM formale
 
@@ -351,8 +376,9 @@ attiva. Solo `GameSession` invia eventi alla FSM.
 Regole aggiuntive:
 
 - `REQUEST_SWAP` è accettato solo in `IDLE`, per due celle adiacenti e con due
-  tile presenti;
-- una mossa viene decrementata solo quando lo swap produce almeno un match;
+  tile presenti; uno swap con `COLOR_BOMB` è valido anche senza match normale;
+- una mossa viene decrementata solo quando lo swap produce un match o una
+  attivazione speciale valida;
 - durante `SWAPPING`/`REVERTING`/`MATCHING`/`CLEARING`/`FALLING`/`REFILLING`
   ogni input di gioco è ignorato, non accodato;
 - `PAUSE` congela clock di gioco, Animator e transazione; `RESUME` riprende lo
@@ -363,6 +389,16 @@ Regole aggiuntive:
   commit; reset/restart azzerano il flag;
 - ogni transizione illegale è un errore di sviluppo e un no-op controllato in
   produzione, mai una mutazione parziale.
+
+### 4.7 Risoluzione di match e speciali
+
+`MatchEngine` restituisce un `ResolutionPlan` immutabile con match, anchor da
+trasformare, ID da eliminare, effetti speciali ordinati e contributi di score.
+`GameSession` risolve prima tutte le attivazioni e solo dopo esegue un unico
+clear atomico. L'ordine è stabile: effetto iniziale, quindi catene in ordine
+`row`, `col`, `tileId`. Il piano separa calcolo e animazione e impone un limite
+di 64 attivazioni (massimo le celle della board); superarlo è un errore di
+sviluppo e attiva la stabilizzazione sicura in produzione.
 
 ---
 
@@ -475,7 +511,7 @@ indipendenti. Ogni task deve produrre codice/test o un artefatto verificabile.
   pointer events e mapping cella. **Done:** swap via mouse e touch su viewport
   desktop/mobile; nessuna logica core nel DOM.
 
-### M2 — Cascade, identità e deadlock (2–3 giorni) — G2
+### M2 — Speciali, cascade, identità e deadlock (3–4 giorni) — G2
 
 - [ ] **M2.1 Gravity plan** — `applyGravity` ritorna movimenti per ID, compatti
   ogni colonna verso il basso e committa coordinate solo a fine animazione.
@@ -486,7 +522,13 @@ indipendenti. Ogni task deve produrre codice/test o un artefatto verificabile.
 - [ ] **M2.3 Cascade orchestrata** — `CLEARING → FALLING → REFILLING →
   MATCHING` fino a stabilità; `cascadeLevel` incrementa solo per un nuovo
   clear. **Done:** fixture deterministica multi-cascade e nessun teleport.
-- [ ] **M2.4 Cap cascade esplicito** — usare `MAX_CASCADE_DEPTH = 20`. Quando il
+- [ ] **M2.4 Creazione speciali** — riconoscere match di 4/5/L/T, scegliere
+  anchor e trasformarla secondo §1.3 senza perderne ID/tipo. **Done:** fixture
+  per orientamenti, overlap, priorità e creazione durante una cascade.
+- [ ] **M2.5 Attivazioni e combo** — produrre `ResolutionPlan`, risolvere riga,
+  colonna, area, colore, catene e swap tra speciali con deduplica per ID.
+  **Done:** ogni combinazione di §1.3, score una sola volta e coda sempre finita.
+- [ ] **M2.6 Cap cascade esplicito** — usare `MAX_CASCADE_DEPTH = 20`. Quando il
   refill produrrebbe la cascade 21, non assegnare score né bonus aggiuntivi e
   invocare `forceStabilize`. L'algoritmo tenta al massimo 1000 permutazioni
   deterministiche delle tile esistenti per ottenere board piena, senza match e
@@ -494,11 +536,11 @@ indipendenti. Ogni task deve produrre codice/test o un artefatto verificabile.
   ID e mostra una breve transizione `EMERGENCY_STABILIZING`. Non consuma mosse,
   non crea loop e azzera `cascadeLevel` a 0. **Done:** test cap, score invariato
   durante la stabilizzazione, board stabile e fallback finito.
-- [ ] **M2.5 Deadlock** — a fine cascade eseguire `hasValidMoves`; se falso,
+- [ ] **M2.7 Deadlock** — a fine cascade eseguire `hasValidMoves`; se falso,
   `RESHUFFLING` con Fisher–Yates limitato a 100 tentativi, preservando ID/tipi.
   Fallback deterministico a board stabile se necessario. **Done:** fixture
   senza mosse, reshuffle finito e nessun loop infinito.
-- [ ] **M2.6 Test identità/reset** — test espliciti per swap, gravity, refill,
+- [ ] **M2.8 Test identità/reset** — test espliciti per swap, speciali, gravity, refill,
   reshuffle, coordinate e callback tardivo dopo reset. **Done:** invarianti
   verificati dopo ogni commit e nessun ID duplicato.
 
@@ -523,16 +565,19 @@ indipendenti. Ogni task deve produrre codice/test o un artefatto verificabile.
 ### M4 — Rendering, UX e accessibilità (2–3 giorni) — G3/P1
 
 - [ ] **M4.1 Animator** — tween con delta-time, easing, cancellazione tramite
-  session token e piani swap/clear/fall/refill. **Done:** completamento singolo,
-  pausa/ripresa e reset senza callback stantii.
+  session token e piani swap/clear/special/fall/refill. Ogni speciale deve avere
+  forma e animazione distinguibili senza dipendere solo dal colore. **Done:**
+  completamento singolo, catene leggibili, pausa/ripresa e reset senza callback
+  stantii.
 - [ ] **M4.2 Responsive layout** — `ResizeObserver`, DPR clamp a 2, trasformazione
   Canvas corretta e hit-test derivato dallo stesso layout. **Done:** tre
   viewport della DoD senza blur/overflow o celle errate.
 - [ ] **M4.3 HUD/overlay** — score, best, modalità, moves/time, pause e game-over;
-  elementi HTML semantici, focus visibile e pulsanti utilizzabili da tastiera.
-  **Done:** `prefers-reduced-motion`, contrasto sufficiente e aria-label per
-  controlli non testuali.
-- [ ] **M4.4 Polish opzionale** — particelle con pool e Web Audio sintetico con
+  elementi HTML semantici, focus visibile, pulsanti e board utilizzabili da
+  tastiera tramite cursore di cella, selezione e swap. **Done:**
+  `prefers-reduced-motion`, contrasto sufficiente, stato annunciato e aria-label
+  per i controlli non testuali.
+- [ ] **M4.4 Polish audiovisivo** — particelle con pool e Web Audio sintetico con
   toggle persistito. **Done:** audio creato solo dopo gesto utente; fallback
   silenzioso; nessun calo misurabile causato dagli FX.
 
@@ -553,7 +598,7 @@ indipendenti. Ogni task deve produrre codice/test o un artefatto verificabile.
   build, verifica asset procedurali e dimensione bundle. **Done:** preview
   giocabile e artefatto `dist/` riproducibile.
 
-**Stima totale:** 8–12 giorni lavorativi per MVP/G3, 10–14 per G4 con polish e
+**Stima totale:** 10–14 giorni lavorativi per G3, 12–16 per G4 con polish e
 verifica. La coverage e la matrice browser completa non sono sovrapposte alla
 stima del vertical slice.
 
@@ -569,6 +614,7 @@ core da testare sono almeno:
 
 - `generateStableBoard(seed)`;
 - `findMatches(board)` e `shapeBonus(matches)`;
+- `createSpecials(matches, swap)` e `resolveSpecialEffects(board, triggers)`;
 - `isAdjacent`, `isValidSwap`, `swap`;
 - `clearMatches`, `applyGravity`, `createRefillPlan`;
 - `hasValidMoves`, `reshuffle`, `forceStabilize`;
@@ -584,7 +630,8 @@ core da testare sono almeno:
 - colonne vuote, gap multipli, refill completo e coordinate finali;
 - cascade 1, cascade multipla, cascade cap 20 e fallback di stabilizzazione;
 - deadlock e reshuffle con ID preservati;
-- score e shape bonus senza special tile;
+- creazione di ogni speciale, anchor e priorità su match sovrapposti;
+- attivazione diretta, catene, color bomb, swap tra speciali, deduplica e score;
 - transizioni FSM valide/illegali, input durante animazione, pause/resume;
 - timer con delta, tab sospesa, pausa e scadenza;
 - reset/restart durante e dopo un'animazione;
@@ -598,12 +645,13 @@ Per v1 i test di integrazione del core sono bloccanti; Playwright è stretch.
 La verifica manuale minima copre:
 
 1. start → swap valido → match → cascade → score;
-2. swap invalido con revert e input bloccato;
-3. Moves a zero → game-over → restart;
-4. Time a zero, pausa e resume senza perdita di secondi;
-5. reload con preferenze/best e localStorage corrotto;
-6. touch, mouse, tastiera, portrait e landscape;
-7. reduced motion, mute e assenza di supporto Web Audio.
+2. match di 4/5/L/T → creazione → attivazione → catena/score;
+3. swap invalido con revert e input bloccato;
+4. Moves a zero → game-over → restart;
+5. Time a zero, pausa e resume senza perdita di secondi;
+6. reload con preferenze/best e localStorage corrotto;
+7. touch, mouse, tastiera, portrait e landscape;
+8. reduced motion, mute e assenza di supporto Web Audio.
 
 ---
 
@@ -647,7 +695,7 @@ La verifica manuale minima copre:
 | timer drift | `performance.now`, fake clock, pausa e hidden-page testati |
 | localStorage corrotto | parse/validate/version/migrate, fallback memoria e test di eccezione |
 | dipendenze variabili | versioni esatte, `.nvmrc`, `package-lock.json`, `npm ci` |
-| scope eccessivo | special tile, E2E, CI e deploy fuori v1; G1 prima di polish |
+| scope eccessivo | set di quattro speciali chiuso; booster, livelli, E2E, CI e deploy fuori v1 |
 | jank mobile | DPR clamp, delta-time, pool, profiling registrato |
 | autoplay audio | AudioContext creato/ripreso solo durante gesto utente, fallback muto |
 
@@ -657,9 +705,7 @@ La verifica manuale minima copre:
 
 Solo dopo G4, con dipendenze sempre pinned:
 
-- **P2 Special tile:** introdurre `SpecialType` come `as const`, regole di
-  creazione/attivazione, identità/animazioni, scoring e test senza modificare le
-  invarianti base;
+- **Nuove speciali/booster:** richiedono regole, UX, scoring e test separati;
 - **E2E Playwright:** avvio, swap, score, game-over, storage e viewport mobile;
 - **CI GitHub Actions:** `npm ci`, typecheck, lint, test, coverage e build;
 - **Deploy Cloudflare Pages:** build `npm run build`, output `dist/`, preview e
