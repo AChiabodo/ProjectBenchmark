@@ -2,6 +2,8 @@
 
 ---
 
+*Documento autosufficiente di design e implementazione. È la fonte unica di verità per narrativa, sistemi, UX e architettura; ogni sezione è vincolante salvo deroga esplicita in un gate di rilascio (12.1, 13.3). Il progetto è **greenfield**: non estende né rimodella alcun progetto preesistente.*
+
 ## 1. Visione del prodotto
 
 | Campo | Direzione |
@@ -150,6 +152,24 @@ Le regole creative sono:
 - la Compagnia modifica l'eroe tramite risonanze; gli Echi non combattono in turni separati come unità intercambiabili;
 - rarità e Sintonia non alimentano monetizzazione o completionism obbligatorio.
 
+### 3.5 Personaggi canonici
+
+Ogni personaggio ha un mestiere e un conflitto (3.4) e deve rispettare il contratto dati di 11.1 (location esistente, grafo di dialogo terminante, ricompense idempotenti). I guardiani della Compagnia sono gli Echi di 6.2; qui si enumerano i personaggi umani e i nodi-chiave che li ospitano.
+
+| Nome | Mestiere | Location | Funzione nel grafo | Ricompensa / flag |
+|---|---|---|---|---|
+| **Mira Senza-Mappa** | Guida del Tracciatore | Valdaluce | Consegna la bussola d'archivio e pone la scelta inaugurale (restaurare o liberare l'Atlante); tutorial della URL come mappa | — (mentor) |
+| **Neral Vey** | Archivista (Officina dell'Atlante) | Valdaluce | Insegna a fissare un luogo nel Wayline; consegna il kit iniziale | Sigilli d'Intesa ×3, Tonico, Lanterna a Lume, Filo di Richiamo |
+| **Prefetto Dain** | Prefetto della Torre | Rocca / Torre (Atrio) | Spiega che la Torre verifica la stabilità di un Wayline | — (info) |
+| **Custode Oran** | Custode dell'Osservatorio | Torre (Osservatorio) | Sfidante non antagonista; rivela la propagazione del Protocollo Bianco | Sigillo Meridiano (atomico con la vittoria) |
+| **Syl** | Memorialista | Selva del Sussurro | Chiede di accordare i rovi con le Cesoie invece di tagliarli | Cesoie di Risonanza + accesso al passaggio della Selva |
+| **Brann** | Scalpellino | Caverne di Vetro | Confessa l'estrazione dei cristalli-memoria da parte del Consorzio | — (lore) |
+| **Nema** | Pilota | Costa di Vetro | Rivela le vie sommerse e fornisce la Vela Pieghevole | Vela Pieghevole |
+| **Eiren** | Saggia | Isola della Bruma | Racconta l'origine (comprensibile) della Marea Bianca | — (lore) |
+| **Aster Veyr** | Primo Cartografo | Picco dell'Asse | Antagonista filosofico; creatore del Protocollo Bianco | — (trigger del finale) |
+
+I guardiani e il boss finale sono gli Echi `Guardiano Rovi` (Ponte), `Bastione di Scaglia` (Torre, Contrappeso), `Fiamma Frondosa` (Torre, Osservatorio), `Spira Prismatica` (Selva), `Aurora Cinerea` (Costa) e `Leviatano Meridiano` (Picco); tutti non accordabili (6.2).
+
 ---
 
 ## 4. Trama e struttura in quattro atti
@@ -162,7 +182,7 @@ Obiettivi di onboarding:
 
 - compiere il primo viaggio usando un link;
 - leggere posizione e stato nel Wayline;
-- ricevere tre Sigilli d'Intesa e un Tonico dall'Archivista **Neral Vey**;
+- ricevere da Neral Vey tre Sigilli d'Intesa, un Tonico, la **Lanterna a Lume** e un **Filo di Richiamo**;
 - incontrare e placare il primo Eco;
 - apprendere che gli Echi forniscono risonanze passive alla Compagnia.
 
@@ -236,13 +256,15 @@ Officina / Ristoro / Emporio -- Ponte di Radica [guardiano]
                        /                    \
           Selva del Sussurro             Costa di Vetro
           |              |               |
-   Bosco profondo   Caverne di Vetro   Mare Aperto
+   Bosco profondo   Caverne di Vetro [Lanterna a Lume]   Mare Aperto
           |              |               |
    sentiero montano [Frammento]       Isola della Bruma [Cifrario]
           \___________________  __________________/
                               \/
                       Picco dell'Asse [finale]
 ```
+
+*Le **Caverne di Vetro** sono grotte buie e richiedono la **Lanterna a Lume** per essere esplorate; vi risiede la Spira Prismatica, per cui il Frammento di Memoria è raggiungibile solo dopo aver ottenuto la lanterna nel kit iniziale. **Bosco profondo** è un'area opzionale di esplorazione.*
 
 ### 5.2 Regole di progressione
 
@@ -264,12 +286,12 @@ Officina / Ristoro / Emporio -- Ponte di Radica [guardiano]
 | Selva e Caverne di Vetro | 7 | 5 pool + 1 guardiano | Strumenti, memoria, percorso difensivo |
 | Costa, Mare e Isola | 3 | 3 pool + 1 guardiano | Mobilità, rischio/ricompensa, percorso offensivo |
 | Picco dell'Asse | 3 | 2 pool + finale | Sintesi delle build e scelta conclusiva |
-| **Totale** | **29** | **17 tabelle / 20 Echi** | Scope equivalente alla prova tecnica attuale |
+| **Totale** | **29** | **17 incontri (12 pool + 5 boss; il finale è scriptato a parte) / 20 Echi** | Scope target della release R1 |
 
 ### 5.4 Contenuto opzionale
 
 - Tre **Vie Smarrite** raggiungibili inserendo indizi di path scoperti nei dialoghi.
-- Un Eco raro per regione, con risonanza che abilita build differenti ma non blocca la storia.
+- Un Eco opzionale per regione (disponibilità facoltativa, non un sistema di rarità: nessun livello o valore di rarità), con risonanza che abilita build differenti ma non blocca la storia.
 - Dialoghi di ritorno dopo Torre, prima coordinata e finale.
 - Un registro compatto dei Wayline scoperti; non una enciclopedia di creature.
 - Challenge replay con seed pubblico e inventario predefinito, senza ricompense esclusive.
@@ -291,9 +313,9 @@ Categorie di risonanza:
 
 Le risonanze si sommano con limiti espliciti. Non esistono livelli individuali, evoluzioni o mosse apprese: la profondità nasce dalla composizione della Compagnia.
 
-### 6.2 Roster target e rinomina del prototipo
+### 6.2 Roster canonico
 
-| ID legacy | Nome target | Memoria incarnata | Risonanza primaria |
+| ID (wire canonico) | Nome target | Memoria incarnata | Risonanza primaria |
 |---|---|---|---|
 | `fieldfox` | **Scintilla Rossa** | Sentieri scaldati dal sole | Impeto |
 | `grasshopper` | **Saltacanna** | Erba piegata dai passi | Intesa |
@@ -319,7 +341,7 @@ Le risonanze si sommano con limiti espliciti. Non esistono livelli individuali, 
 ### 6.3 Sintonia
 
 1. Un incontro inizia con un livello di Instabilità.
-2. Attaccare riduce HP/Instabilità ma non deve portare a una fantasia di annientamento.
+2. Attaccare riduce HP/Instabilità dell'Eco ma non lo distrugge: la sconfitta risolve il conflitto narrativo senza cancellare la memoria del luogo.
 3. Il comando **SINTONIA** consuma un Sigillo d'Intesa.
 4. La probabilità cresce al diminuire dell'Instabilità e con le risonanze Intesa.
 5. Al successo l'Eco entra nella Compagnia, oppure nell'Archivio se i quattro posti sono occupati.
@@ -343,6 +365,8 @@ P(sintonia) = clamp(10%, 95%, 10% + (1 - hp/maxHp) * 80% + bonus_intesa)
 | **SINTONIA** | Tenta il patto con un Eco accordabile | Consuma un Sigillo; fallire concede risposta nemica |
 | **USA** | Impiega un Tonico o oggetto contestuale | Consuma inventario; vietato a salute piena |
 | **RITIRATI** | Tenta di lasciare un incontro libero | Possibile fallimento; mai disponibile nei guardiani |
+
+I comandi mostrati in battaglia sono un sottoinsieme di quelli disponibili: **SINTONIA** compare solo quando `battle.canAttune` è vero (mai nei guardiani, che espongono `Sintonia non possibile`); **RITIRATI** non compare mai nei guardiani. Ogni turno segue l'ordine: il giocatore emette un comando, poi l'Eco avversario risponde se ancora attivo; i tiri derivano dai canali deterministici di 10.4. Le etichette delle azioni sono localizzate e si mappano 1:1 sui tipi canonici del dominio: `COLPISCI`→`ATTACK`, `SINTONIA`→`ATTUNE`, `USA`→`USE_ITEM`, `RITIRATI`→`RETREAT`, `VIAGGIA`→`TRAVEL`.
 
 ### 7.2 Regole di leggibilità
 
@@ -371,6 +395,8 @@ P(sintonia) = clamp(10%, 95%, 10% + (1 - hp/maxHp) * 80% + bonus_intesa)
 - Strumenti permanenti: Lanterna a Lume, Vela Pieghevole, Cesoie di Risonanza.
 - Oggetto chiave: Sigillo Meridiano; non vendibile e assegnato una sola volta.
 - Ogni strumento obbligatorio ha un produttore alternativo o un prezzo coperto dalle ricompense garantite.
+- - **Lanterna a Lume** (strumento permanente, non vendibile): consegnata da Neral Vey nel kit iniziale a Valdaluce; richiesta per entrare nelle **Caverne di Vetro** (grotte buie) e dunque per affrontare la Spira Prismatica e ottenere il Frammento di Memoria. Prerequisito di ramo, ma ottenibile senza incontri casuali obbligatori.
+- **Filo di Richiamo** (consumabile): consegnato da Neral Vey e acquistabile all'Emporio (prezzo coperto dalle ricompense garantite); consumandolo permette di scambiare uno Eco dell'Archivio con uno della Compagnia anche fuori dalla Casa del Ristoro, per riconfigurare la build sul campo. Non richiesto dalla storia.
 - Il test economico simula un giocatore che evita tutti gli incontri casuali non necessari.
 
 ---
@@ -410,7 +436,7 @@ Direzione: **cartografia notturna da console portatile**, non imitazione diretta
 - Asset raster opzionali in atlanti WebP lossless per bioma, massimo 40 KB ciascuno.
 - L'ASCII rimane nel DOM come contenuto semantico e fallback di decodifica/offline.
 
-La prova tecnica della città ha dimostrato la fattibilità del pixel mode, ma un atlas da circa 61 KB è troppo pesante per diventare default. Il remake deve ottimizzare l'atlante o mantenere l'ASCII come modalità predefinita.
+La modalità pixel art è opzionale e lazy-loaded (massimo 40 KB per bioma, mai nel precache predefinito). L'ASCII resta la modalità visiva predefinita finché un atlas non rispetta tale budget; in caso contrario l'ASCII resta il fallback offline e semantico.
 
 ### 8.3 Audio
 
@@ -461,7 +487,7 @@ Lo stato di gioco è completamente rappresentabile dal Wayline:
 | Battaglia | ID Eco, HP corrente, seed, turno, path di origine |
 | Versione | versione schema e migrazione applicata |
 
-Formato canonico condiviso: `?s=<ShortSaveVn>`. I parametri leggibili restano disponibili in sviluppo e per compatibilità con i vecchi link.
+Formato canonico condiviso: `?s=<ShortSave>` dove `ShortSave` è l'envelope `{v,p,h}` di 10.6. I parametri leggibili restano disponibili in sviluppo come forma diagnostica; la forma canonica condivisibile è `?s=`.
 
 ### 9.3 Stato non autorevole
 
@@ -479,14 +505,14 @@ Può vivere in `localStorage` senza entrare nel Wayline:
 - Le migrazioni sono una catena `Vn -> Vn+1`, mai condizioni sparse nel decoder.
 - Link futuri non supportati falliscono senza caricare stato parziale.
 - Il più grande salvataggio ufficiale deve restare sotto 2.000 caratteri.
-- Ogni rinomina usa alias legacy per almeno una major release.
-- Un refactor narrativo non può invalidare i Wayline esistenti: gli ID wire legacy vengono migrati verso gli ID canonici.
+- Quando un ID canonico cambia in una major release futura, mantenere un alias di retrocompatibilità per almeno una major release.
+- Un refactor narrativo non può invalidare i Wayline esistenti: i cambi di ID canonici avvengono solo con migrazione esplicita e alias di retrocompatibilità.
 
 ### 9.5 Contratto browser: History API, deep link e battaglia
 
 La URL è la rappresentazione persistente; `history.state` è soltanto metadato non autorevole (`entryIndex`, `schemaVersion`, `waylineDigest`). Il router non usa React Router e non duplica lo stato in un context globale.
 
-- **Avvio/deep link:** `main.tsx` legge `location.pathname` e `?s=`. Prima normalizza e migra il save, poi valida lo slug e infine renderizza. Il path e `state.node` devono coincidere; l'unica eccezione è un alias legacy che viene canonicalizzato con `replaceState`. Un path sconosciuto o un save invalido mostra una **Via Smarrita** senza eseguire transizioni e offre “Torna all'inizio”; il server statico deve rispondere con `index.html` per ogni path.
+- **Avvio/deep link:** `main.tsx` legge `location.pathname` e `?s=`. Prima normalizza e migra il save, poi valida lo slug e infine renderizza. Il path e `state.node` devono coincidere; l'unica eccezione è un alias di retrocompatibilità che viene canonicalizzato con `replaceState`. Un path sconosciuto o un save invalido mostra una **Via Smarrita** senza eseguire transizioni e offre “Torna all'inizio”; il server statico deve rispondere con `index.html` per ogni path.
 - **Comando di dominio:** ogni comando accettato produce `nextState`, eventi e URL canonica in un'unica operazione. Per un cambiamento di gioco si usa `pushState`; `replaceState` è ammesso solo per canonicalizzazione, ripristino dopo errore o modifica di preferenze UI. Lo stesso URL non viene aggiunto due volte.
 - **Back/forward fuori battaglia:** `popstate` decodifica la destinazione e la tratta come snapshot autorevole già validato; non richiama il comando precedente e non ricalcola casualità. Il log e la UI vengono ricostruiti dal nuovo stato. Forward ripristina uno snapshot esistente oppure, se la cronologia è stata sostituita, non inventa uno stato.
 - **Durante una battaglia:** ogni turno accettato crea uno snapshot con `battleId`, HP, turno, seed e path; Back/Forward può quindi ripristinare esattamente un turno precedente/successivo. I comandi di viaggio e cambio scena sono disabilitati e `transition` li rifiuta con evento `BATTLE_LOCKED`. Per evitare che il Back accidentale abbandoni lo scontro, se la destinazione non contiene lo stesso `battleId` il router torna all'indice corrente (`history.go`) e apre un dialog accessibile: “Abbandonare lo scontro?”. Solo **RITIRATI**, vittoria o sconfitta possono chiudere la battaglia e creare una nuova entry di viaggio.
@@ -775,7 +801,7 @@ roll(battleSeed, turnNumber, channel)
 
 Canali iniziali: `encounter_trigger`, `echo_selection`, `player_damage`, `critical_hit`, `enemy_attack`, `enemy_variance`, `dodge`, `attunement`, `retreat`.
 
-Aggiungere un tiro a un canale non deve spostare gli esiti di tutti gli altri. Nessun `Math.random()` è ammesso nei moduli di dominio.
+`encounter_trigger` determina se un viaggio in una zona a pool genera un incontro; i pool sono limitati a 2 incontri consecutivi prima di una zona sicura (7.3). Aggiungere un tiro a un canale non deve spostare gli esiti di tutti gli altri. Nessun `Math.random()` è ammesso nei moduli di dominio.
 
 ### 10.5 PWA e aggiornamenti
 
@@ -822,7 +848,7 @@ La firma server-side/HMAC di Wayline ufficiali è **fuori MVP e fuori dalla rele
 
 Le skill e i deliverable di implementazione sono quelli di un'applicazione React browser: TypeScript strict, DOM semantico, CSS responsive, History API, Web Audio, Clipboard, Service Worker, Vitest e Playwright. Unity, Unreal, C e raylib non fanno parte del runtime o della toolchain di release perché non producono la PWA condivisibile richiesta.
 
-Un eventuale prototipo C/raylib può essere usato solo come laboratorio offline per numeri di bilanciamento o PRNG, con fixture esportate e nessuna autorità sul gioco. Ogni formula e risultato deve essere riscritto e verificato in `src/domain`; il piano non accetta un secondo motore. Le review devono quindi includere routing browser, accessibilità, ciclo di vita React, cache PWA e sicurezza del parsing, non rendering loop, ECS o asset pipeline 3D.
+Ogni formula e bilanciamento deve essere definita e verificata in `src/domain` (TypeScript puro, testabile in Node); il piano non accetta un secondo motore. Le review devono quindi includere routing browser, accessibilità, ciclo di vita React, cache PWA e sicurezza del parsing, non rendering loop, ECS o asset pipeline 3D.
 
 ---
 
@@ -835,7 +861,9 @@ Un eventuale prototipo C/raylib può essere usato solo come laboratorio offline 
 - **Personaggi:** location esistente, grafi di dialogo terminanti, ricompense note e idempotenti.
 - **Oggetti:** ID coerente, tipo valido, prezzo non negativo, campi richiesti per categoria.
 - **Progressione:** ogni flag, strumento, coordinata e finale richiesto ha un produttore raggiungibile.
-- **Codec:** ogni ID ufficiale e alias legacy ha token compatto stabile.
+- **Codec:** ogni ID canonico e relativo alias di retrocompatibilità ha token compatto stabile.
+
+Il roster personaggi completo è definito in §3.5; ogni personaggio deve rispettare questo contratto (location esistente, grafo di dialogo terminante, ricompense idempotenti) prima del gate R1.
 
 ### 11.2 Raggiungibilità
 
@@ -991,7 +1019,7 @@ Ogni milestone deve produrre una build installabile, un changelog e fixture ripr
 
 | Rischio | Prob. | Impatto | Contromisura |
 |---|---|---|---|
-| Il rename resta cosmetico e la struttura ricorda ancora Pokémon | Alta | Alto | Riscrivere fantasia, loop, ruoli e progressione insieme ai nomi; review narrativa esterna |
+| La struttura o i nomi continuano a evocare franchise rimossi (es. Pokémon) | Alta | Alto | Riscrivere fantasia, loop, ruoli e progressione insieme ai nomi; review narrativa esterna |
 | URL troppo lungo con Archivio e battaglia | Media | Alto | Dizionario stabile, codec compatto, diagnostica e limite CI di 2.000 caratteri |
 | Cache PWA mantiene vecchi dati o flag | Alta | Alto | Versione cache, network-first, test update da versione precedente |
 | Doppia fonte dati diverge | Media | Alto | Una fonte canonica e generazione/validazione automatica |
@@ -1012,7 +1040,7 @@ Una feature è completa quando:
 - [ ] ha contratto dati e transizione di dominio testati senza DOM;
 - [ ] aggiorna stato, feedback e Wayline atomicamente;
 - [ ] è raggiungibile nei grafi strutturale e di progressione;
-- [ ] preserva save legacy o include migrazione e fixture;
+- [ ] preserva i save delle versioni precedenti o include migrazione e fixture;
 - [ ] classifica Wayline importati come `generated`, `imported-legal` o `imported-unreachable` senza fidarsi del checksum come firma;
 - [ ] funziona con tastiera, touch e tecnologie assistive;
 - [ ] è verificata nel browser alle viewport target senza overflow;
@@ -1020,4 +1048,4 @@ Una feature è completa quando:
 - [ ] rispetta i budget di codice, asset e lunghezza save;
 - [ ] aggiorna documentazione, dati e test nello stesso work package.
 
-Il gioco è **release-ready** soltanto quando tutti i gate della sezione 13.3 sono chiusi. Fino ad allora il verdetto rimane **NO-GO per il narrativo**, anche se la prova tecnica esistente è giocabile.
+Il gioco è **release-ready** soltanto quando tutti i gate della sezione 13.3 sono chiusi. Fino ad allora il verdetto rimane **NO-GO per il narrativo**.
