@@ -1,0 +1,24 @@
+{
+  "id": "neon-vanguard",
+  "title": "NEON VANGUARD",
+  "kind": "benchmark",
+  "tier": 5,
+  "spec_language": "it",
+  "impl_languages": ["C++20"],
+  "stack": ["raylib 5.5", "CMake 3.22+", "--smoke harness"],
+  "runtime": "native",
+  "plan": "PLAN.md",
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review", "codebase-design", "improve-codebase-architecture", "to-spec", "to-tickets", "implement-spec", "wayfinder"],
+  "milestones": [
+    { "id": "M0", "weight": 10, "slice": true, "title": "Scaffold + game loop + smoke" },
+    { "id": "M1", "weight": 25, "slice": true, "title": "Core gameplay" },
+    { "id": "M2", "weight": 15, "slice": false, "title": "Sistemi: nemici, spawner, collisioni, juice e audio" },
+    { "id": "M3", "weight": 12, "slice": false, "title": "Integrazione" },
+    { "id": "M4", "weight": 15, "slice": false, "title": "Roguelite + UI" },
+    { "id": "M5", "weight": 15, "slice": false, "title": "Boss + bilanciamento + polish" },
+    { "id": "M6", "weight": 8, "slice": false, "title": "Review indipendente + fix pass" }
+  ]
+}

@@ -1,3 +1,29 @@
+> **Banner di vincolo — condizioni non negoziabili della sessione**
+>
+> - Una sessione, un host: nessun intervento umano di design; al massimo 3 turni di chiarimento con l'operatore.
+> - Nessuna richiesta di rete a runtime: niente API esterne, asset remoti o servizi; ogni risorsa è locale o generata dal codice.
+> - Dipendenze build-time ammesse solo se pinnate (lockfile, oppure tag + hash).
+> - Più di un nodo (FE/BE/DB/worker) ⇒ un profilo Docker Compose che sale con un solo comando.
+> - Deploy, hosting, publishing, CI e release automation: fuori scope, non valutati.
+> - `./verify.sh` è non interattivo, termina entro 600 s, exit 0 = pass, e scrive `verify.json` con tutti gli id milestone del `meta.json`.
+> - `RESULT.md` è obbligatorio: modello, wall-clock, turni, token e verdetto dell'harness.
+> - Nessun tetto wall-clock o di token: si registrano, non si impongono.
+
+## Milestone pesate
+
+Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/index.mjs --check` ne verifica la coerenza.
+
+| id | peso | slice | titolo |
+|----|-----:|:-----:|--------|
+| M0 | 12 | sì | Bootstrap, CMake e test headless |
+| M1 | 20 | sì | Core playable senza sistemi accessori |
+| M2 | 15 | — | Collisioni robuste e testate |
+| M3 | 10 | — | Stati, vite, punteggio e tipi di mattone |
+| M4 | 10 | — | Loader TXT e progressione |
+| M5 | 10 | — | Power-up e multiball |
+| M6 | 8 | — | UI, asset e audio |
+| M7 | 8 | — | Game feel e bilanciamento |
+| M8 | 7 | — | Release, sanitizers, packaging e QA finale |
 # Piano di sviluppo — Breakout
 
 ## 0. Obiettivo e criteri di progetto

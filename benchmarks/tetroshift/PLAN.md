@@ -1,3 +1,25 @@
+> **Banner di vincolo — condizioni non negoziabili della sessione**
+>
+> - Una sessione, un host: nessun intervento umano di design; al massimo 3 turni di chiarimento con l'operatore.
+> - Nessuna richiesta di rete a runtime: niente API esterne, asset remoti o servizi; ogni risorsa è locale o generata dal codice.
+> - Dipendenze build-time ammesse solo se pinnate (lockfile, oppure tag + hash).
+> - Più di un nodo (FE/BE/DB/worker) ⇒ un profilo Docker Compose che sale con un solo comando.
+> - Deploy, hosting, publishing, CI e release automation: fuori scope, non valutati.
+> - `./verify.sh` è non interattivo, termina entro 600 s, exit 0 = pass, e scrive `verify.json` con tutti gli id milestone del `meta.json`.
+> - `RESULT.md` è obbligatorio: modello, wall-clock, turni, token e verdetto dell'harness.
+> - Nessun tetto wall-clock o di token: si registrano, non si impongono.
+
+## Milestone pesate
+
+Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/index.mjs --check` ne verifica la coerenza.
+
+| id | peso | slice | titolo |
+|----|-----:|:-----:|--------|
+| M0 | 40 | sì | Setup progetto e core Tetris classico (MVP baseline) |
+| M1 | 20 | — | Motore fisico e deformabilità (soft-body layer) |
+| M2 | 20 | — | Architettura roguelike e sistema carte |
+| M3 | 12 | — | Game juice, shader, particelle e audio |
+| M4 | 8 | — | Estensibilità geometrica (proof of concept) |
 # 📐 PLAN.md — Progetto "TetroShift / MorphoTetris" (Raylib C++)
 
 Un clone innovativo di Tetris sviluppato in **C++20** e **Raylib 5.x**, che unisce meccaniche di **fisica e deformabilità**, un sistema **Roguelike a modificatori/carte**, e un'architettura modulare predisposta per **geometrie non standard** (ortogonale, esagonale, radiale).

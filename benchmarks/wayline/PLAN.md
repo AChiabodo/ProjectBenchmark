@@ -1,3 +1,27 @@
+> **Banner di vincolo — condizioni non negoziabili della sessione**
+>
+> - Una sessione, un host: nessun intervento umano di design; al massimo 3 turni di chiarimento con l'operatore.
+> - Nessuna richiesta di rete a runtime: niente API esterne, asset remoti o servizi; ogni risorsa è locale o generata dal codice.
+> - Dipendenze build-time ammesse solo se pinnate (lockfile, oppure tag + hash).
+> - Più di un nodo (FE/BE/DB/worker) ⇒ un profilo Docker Compose che sale con un solo comando.
+> - Deploy, hosting, publishing, CI e release automation: fuori scope, non valutati.
+> - `./verify.sh` è non interattivo, termina entro 600 s, exit 0 = pass, e scrive `verify.json` con tutti gli id milestone del `meta.json`.
+> - `RESULT.md` è obbligatorio: modello, wall-clock, turni, token e verdetto dell'harness.
+> - Nessun tetto wall-clock o di token: si registrano, non si impongono.
+
+## Milestone pesate
+
+Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/index.mjs --check` ne verifica la coerenza.
+
+| id | peso | slice | titolo |
+|----|-----:|:-----:|--------|
+| M0 | 30 | sì | MVP-0: vertical slice bloccato |
+| M1 | 15 | — | Fondamenta deterministiche e hardening del MVP |
+| M2 | 15 | — | R1: Atto I e Torre |
+| M3 | 12 | — | R1: i due rami |
+| M4 | 10 | — | R1: finale e reattività |
+| M5 | 10 | — | RC: presentazione e hardening |
+| M6 | 8 | — | RC: bilanciamento e release |
 # WAYLINE — L'Atlante Spezzato
 
 ---

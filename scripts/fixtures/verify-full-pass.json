@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "benchmark": "demo",
+  "milestones": [
+    { "id": "M0", "pass": true, "detail": "build verde, 12/12 test" },
+    { "id": "M1", "pass": true, "detail": "slice giocabile end-to-end" },
+    { "id": "M2", "pass": true, "detail": "tutti i sistemi accessori attivi" },
+    { "id": "M3", "pass": true, "detail": "pacchetto e QA finale" }
+  ],
+  "notes": "fixture: caso full-pass, --exit 0"
+}

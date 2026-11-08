@@ -1,0 +1,83 @@
+{
+  "id": "breakout",
+  "title": "Breakout",
+  "kind": "benchmark",
+  "tier": 2,
+  "spec_language": "it",
+  "impl_languages": [
+    "C17"
+  ],
+  "stack": [
+    "raylib 5.5",
+    "CMake",
+    "CTest"
+  ],
+  "runtime": "native",
+  "plan": "PLAN.md",
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": [
+    "implement",
+    "tdd",
+    "diagnosing-bugs",
+    "prototype",
+    "code-review"
+  ],
+  "milestones": [
+    {
+      "id": "M0",
+      "weight": 12,
+      "slice": true,
+      "title": "Bootstrap, CMake e test headless"
+    },
+    {
+      "id": "M1",
+      "weight": 20,
+      "slice": true,
+      "title": "Core playable senza sistemi accessori"
+    },
+    {
+      "id": "M2",
+      "weight": 15,
+      "slice": false,
+      "title": "Collisioni robuste e testate"
+    },
+    {
+      "id": "M3",
+      "weight": 10,
+      "slice": false,
+      "title": "Stati, vite, punteggio e tipi di mattone"
+    },
+    {
+      "id": "M4",
+      "weight": 10,
+      "slice": false,
+      "title": "Loader TXT e progressione"
+    },
+    {
+      "id": "M5",
+      "weight": 10,
+      "slice": false,
+      "title": "Power-up e multiball"
+    },
+    {
+      "id": "M6",
+      "weight": 8,
+      "slice": false,
+      "title": "UI, asset e audio"
+    },
+    {
+      "id": "M7",
+      "weight": 8,
+      "slice": false,
+      "title": "Game feel e bilanciamento"
+    },
+    {
+      "id": "M8",
+      "weight": 7,
+      "slice": false,
+      "title": "Release, sanitizers, packaging e QA finale"
+    }
+  ]
+}

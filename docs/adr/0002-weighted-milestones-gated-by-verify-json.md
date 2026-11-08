@@ -1,0 +1,3 @@
+# Weighted milestones gated by verify.json
+
+Milestone weights live only in `meta.json` (the table in `PLAN.md` is a rendered copy, checked for drift), and credit is granted exclusively through the `verify.json` written by the non-interactive `./verify.sh`. If any vertical-slice milestone fails, the score is capped at the sum of the *passing* slice weights: stretch work is worth nothing until the slice passes. Trade-off: a proportional, slice-gated score is less forgiving than a holistic human judgement and can feel harsh on near-misses, but the score is reproducible, cannot drift from stale prose, and unverified claims are worth exactly zero — see `docs/agents/scoring.md` and `scripts/score.mjs`.
