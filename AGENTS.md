@@ -1,6 +1,6 @@
 # Benchmark
 
-A collection of independent benchmark projects (`Breakout`, `Match3`, `NEON VANGUARD`, `StaticWeb`, `Tetris`, `WAYLINE`, `paper-feed`), each with its own `PLAN.md`. Skills for these projects live in `.agents/skills/`.
+A collection of independent benchmark projects under `benchmarks/` (`breakout`, `match3`, `neon-vanguard`, `staticweb`, `tetroshift`, `wayline`, `paper-feed`), each with its own `PLAN.md`. Skills for these projects live in `.agents/skills/`.
 
 ## Agent skills
 

@@ -17,7 +17,7 @@ Tutte le cartelle contengono solamente specifiche di progetto (`PLAN.md` o promp
 
 ---
 
-## 1. `Breakout/PLAN.md`
+## 1. `benchmarks/breakout/PLAN.md`
 
 **Complessità:** media. Il progetto è adatto a un MVP incrementale, ma collisioni, power-up, livelli e audio introducono diversi casi limite.
 
@@ -50,7 +50,7 @@ Tutte le cartelle contengono solamente specifiche di progetto (`PLAN.md` o promp
 
 ---
 
-## 2. `Match3/PLAN.md`
+## 2. `benchmarks/match3/PLAN.md`
 
 **Complessità:** alta. Board, cascade, animazioni, modalità di gioco, persistenza, responsive design e test costituiscono un progetto articolato.
 
@@ -66,7 +66,7 @@ Tutte le cartelle contengono solamente specifiche di progetto (`PLAN.md` o promp
 
 **Problemi individuati:**
 
-- La struttura indica `Match3Deepseek/`, mentre il benchmark è `Match3/`.
+- La struttura indica `Match3Deepseek/`, mentre il benchmark è `benchmarks/match3/`.
 - `TileType` viene descritto come `enum`, mentre la skill TypeScript raccomanda oggetti `as const`.
 - Le special tile sono dichiarate nell’architettura e nello scoring, ma poi rinviate fuori scope: c’è una piccola incoerenza funzionale.
 - “Stabilizzazione forzata” dopo il limite di 20 cascade non spiega quale comportamento adottare.
@@ -84,7 +84,7 @@ Tutte le cartelle contengono solamente specifiche di progetto (`PLAN.md` o promp
 
 ---
 
-## 3. `WAYLINE/PLAN.md`
+## 3. `benchmarks/wayline/PLAN.md`
 
 **Complessità:** molto alta. È un RPG completo con dominio narrativo, combattimento, salvataggi condivisibili, PWA, accessibilità, due rami narrativi e due finali.
 
@@ -120,7 +120,7 @@ Tutte le cartelle contengono solamente specifiche di progetto (`PLAN.md` o promp
 
 ---
 
-## 4. `paper-feed/PLAN.md`
+## 4. `benchmarks/paper-feed/PLAN.md`
 
 **Complessità:** molto alta. Integra fonti eterogenee, database, scheduler, ranking, embeddings, LLM, rendering, SMTP e UI amministrativa.
 
@@ -163,7 +163,7 @@ Non sono presenti skill specifiche nella cartella.
 
 Questi file sono prompt di generazione, non veri file di planning. La qualità dipende quindi soprattutto da chiarezza, completezza dei requisiti e fattibilità del prompt.
 
-## 5. `StaticWeb/cammelli.txt`
+## 5. `benchmarks/staticweb/_wording-source/cammelli.txt`
 
 **Complessità:** media.
 
@@ -187,7 +187,7 @@ Questi file sono prompt di generazione, non veri file di planning. La qualità d
 
 ---
 
-## 6. `StaticWeb/car_rental.txt`
+## 6. `benchmarks/staticweb/_wording-source/car_rental.txt`
 
 **Complessità:** alta, soprattutto per numero di pagine, filtri, galleria e coerenza globale.
 
@@ -211,7 +211,7 @@ Questi file sono prompt di generazione, non veri file di planning. La qualità d
 
 ---
 
-## 7. `StaticWeb/online_auction.txt`
+## 7. `benchmarks/staticweb/_wording-source/online_auction.txt`
 
 **Complessità:** molto alta. È il prompt StaticWeb più difficile: dataset dinamico, countdown multipli, pagina dettaglio, simulazione offerte, filtri, temi e aggiornamenti live.
 
@@ -245,7 +245,7 @@ Questi file sono prompt di generazione, non veri file di planning. La qualità d
 
 ---
 
-## 8. `StaticWeb/vintage_watches.txt`
+## 8. `benchmarks/staticweb/_wording-source/vintage_watches.txt`
 
 **Complessità:** alta.
 
