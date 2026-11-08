@@ -1,0 +1,419 @@
+## Advanced Static Website
+
+## Role
+
+Act as a **Senior Frontend Developer & UI/UX Designer** specialized in static websites built with HTML5, CSS3, and modern vanilla JavaScript (ES6+).
+
+You have strong expertise in:
+
+- frontend performance optimization;
+- web accessibility;
+- advanced CSS and JavaScript animations;
+- responsive and mobile-first design;
+- scalable design systems without frontend frameworks;
+- maintainable, modular vanilla JavaScript architecture.
+
+## Project Context
+
+Create a polished static e-commerce website for **"Cammelli Peluche Digitali"**, a fictional store dedicated to animated and interactive camel plush toys designed for children and families.
+
+The visual identity should evoke **magic, playfulness, warmth, and imagination**.
+
+Do **not** use technology-themed visual elements such as circuits, terminals, code interfaces, digital grids, screens, or futuristic UI patterns as part of the visual narrative.
+
+The interface should simultaneously communicate:
+
+- **trust and reliability to parents**, through a clean layout, intuitive navigation, clear visual hierarchy, readable information, and predictable interactions;
+- **wonder and playfulness to children**, through rounded shapes, pastel colors, soft illustrations, playful animations, and gentle micro-interactions.
+
+The overall experience must feel friendly, polished, and fluid across desktop, tablet, and mobile devices.
+
+Mobile and tablet interfaces must prioritize:
+
+- large touch targets;
+- comfortable spacing;
+- immediate visual feedback;
+- simple navigation;
+- responsive interaction patterns.
+
+The website is a **static frontend prototype**. Implement the product catalog, shopping cart, checkout interface, and related interactions entirely on the client side. No backend, payment gateway, authentication system, or real order processing is required.
+
+## Technical Specifications
+
+### Core Stack
+
+- Semantic **HTML5**
+- Modern **CSS3**, including:
+  - CSS custom properties;
+  - Grid;
+  - Flexbox;
+  - Container Queries;
+  - modern responsive techniques.
+- Vanilla **JavaScript ES6+**
+
+### Framework Policy
+
+Do **not** use frontend frameworks.
+
+Small CDN-hosted libraries are allowed only when strictly necessary, but custom implementations using vanilla JavaScript should always be preferred when reasonably achievable.
+
+Avoid unnecessary dependencies.
+
+### Required Technical Complexity
+
+Implement the following features where appropriate:
+
+- `IntersectionObserver` for:
+  - scroll-triggered animations;
+  - lazy initialization of visual elements;
+  - product image lazy-loading behavior where useful.
+
+- **Multi-layer parallax effects**, combining CSS and JavaScript when necessary, using decorative elements such as:
+  - clouds;
+  - stars;
+  - stylized hills or mountains;
+  - soft illustrated background shapes.
+
+- A **custom product lightbox/modal** featuring:
+  - keyboard navigation;
+  - focus management;
+  - Escape-to-close behavior;
+  - image zoom;
+  - dynamic overlay;
+  - accessible ARIA attributes.
+
+- An animated **mobile navigation menu** featuring:
+  - an SVG morphing menu icon;
+  - smooth transitions;
+  - `backdrop-filter` where supported;
+  - appropriate fallback behavior.
+
+- A **Light/Dark theme toggle**, presented as `"Day / Night"`, with:
+  - theme persistence using `localStorage`;
+  - sensible integration with `prefers-color-scheme` for first-time visitors.
+
+- **Real-time form validation** for checkout and newsletter forms, including:
+  - inline validation;
+  - clear visual states;
+  - accessible error messages;
+  - success states;
+  - disabled/loading states where relevant.
+
+- An optional **custom cursor**, synchronized with interactive hover states:
+  - soft and rounded visual style;
+  - enabled only on devices where a pointer-based cursor makes sense;
+  - disabled on touch-oriented devices.
+
+- CSS `@property` where useful for smooth animation of:
+  - gradients;
+  - opacity-related custom properties;
+  - other animatable CSS variables.
+
+### Motion Accessibility
+
+Animations, parallax effects, continuous decorative movement, and non-essential transitions must respect:
+
+```css
+@media (prefers-reduced-motion: reduce)
+```
+
+Users requesting reduced motion should receive a simplified experience without losing functionality or information.
+
+### Performance Target
+
+Aim for a Lighthouse score above **90** in:
+
+- Performance;
+- Accessibility;
+- Best Practices.
+
+Avoid implementing visual effects that significantly compromise these targets.
+
+---
+
+## Design & UX Guidelines
+
+### Color Palette
+
+Use the following colors as the foundation of the design system:
+
+- `#FF9AA2` — soft coral
+- `#B5EAD7` — mint
+- `#FFDAC1` — peach
+- `#E2F0CB` — pastel green
+- `#2D3436` — dark text
+- `#FFFFFF` — light background
+
+You may introduce additional derived shades when required for:
+
+- hover states;
+- borders;
+- disabled states;
+- dark mode;
+- accessible contrast;
+- shadows;
+- visual hierarchy.
+
+Do not compromise accessibility merely to preserve the base palette.
+
+### Typography
+
+Use a playful but highly readable display typeface for headings, such as:
+
+- `Baloo 2`;
+- `Fredoka`.
+
+Use a rounded and highly legible sans-serif typeface for body text, such as:
+
+- `Nunito`;
+- `Quicksand`.
+
+Limit the number of font families and weights to protect loading performance.
+
+### Layout
+
+Use a **mobile-first responsive layout**.
+
+The product catalog should use a responsive card-based grid featuring:
+
+- strongly rounded corners (`border-radius: 20px` or greater);
+- soft shadows;
+- clear product hierarchy;
+- generous internal spacing;
+- floating or illustrated decorative elements;
+- prominent CTAs;
+- comfortable visual separation between sections.
+
+Avoid overcrowding the interface.
+
+Primary actions must remain easy to find and interact with across all viewport sizes.
+
+### Micro-interactions
+
+Include subtle, purposeful interactions such as:
+
+- gentle bounce effects on appropriate hover interactions;
+- smooth state transitions;
+- immediate visual feedback when adding products to the cart;
+- restrained continuous CSS animations, for example elements that:
+  - slowly float;
+  - gently breathe;
+  - subtly move in the background;
+- consistent transitions between major interface states.
+
+Animations should support the experience rather than distract from it.
+
+### Accessibility
+
+Target **WCAG 2.1 AA** compliance.
+
+Include:
+
+- minimum touch targets of approximately `44px × 44px`;
+- clearly visible keyboard focus states;
+- appropriate ARIA labels and attributes;
+- skip navigation links;
+- full keyboard navigation;
+- semantic HTML;
+- accessible forms and error messages;
+- sufficient color contrast;
+- accessibility checks for both Day and Night themes;
+- proper focus trapping and focus restoration for modal interfaces;
+- appropriate `alt` text for meaningful images.
+
+Decorative illustrations should not create unnecessary noise for screen readers.
+
+---
+
+## Suggested Page Structure
+
+The homepage should include, at minimum:
+
+1. **Header / Navigation**
+2. **Hero section**
+3. **Featured products**
+4. **Product catalog**
+5. **Why choose our camels / key benefits**
+6. **Interactive or animated product feature section**
+7. **Family / trust section**
+8. **Newsletter**
+9. **Footer**
+
+Also implement client-side interfaces for:
+
+- product details;
+- shopping cart;
+- checkout form.
+
+Since the project is static, these features may be implemented as sections, drawers, overlays, or modal interfaces rather than separate server-powered pages.
+
+---
+
+## Expected File Structure
+
+Provide complete, ready-to-use code using the following structure:
+
+```text
+/
+├── index.html
+├── css/
+│   ├── main.css
+│   └── utilities.css
+├── js/
+│   ├── app.js
+│   ├── scroll-animations.js
+│   └── components.js
+└── assets/
+    └── images/
+        └── placeholders with descriptive names such as:
+            camel-hero,
+            product-card-1,
+            product-card-2,
+            bg-clouds,
+            etc.
+```
+
+`components.js` should contain or coordinate reusable functionality for components such as:
+
+- product lightbox;
+- mobile menu;
+- theme switcher;
+- forms;
+- cart UI.
+
+---
+
+## Output Requirements
+
+1. Provide **complete code for every required file**.
+
+2. Add comments **in Italian where they are genuinely useful**, especially for non-obvious architectural or technical decisions. Avoid excessive comments that merely restate the code.
+
+3. Use semantic HTML elements such as:
+
+```html
+<header>
+<nav>
+<main>
+<section>
+<article>
+<footer>
+```
+
+and appropriate `aria-*` attributes where required.
+
+4. Organize the CSS using:
+
+- CSS custom properties;
+- a modern CSS reset;
+- utility classes;
+- clearly separated logical sections;
+- a consistent naming methodology such as BEM or a similarly structured convention.
+
+5. Keep JavaScript modular.
+
+Use either:
+
+- ES modules; or
+- carefully scoped IIFEs where appropriate.
+
+Avoid polluting the global namespace.
+
+6. Prefer progressive enhancement:
+
+The core product information and navigation should remain understandable even if some JavaScript-driven visual enhancements fail.
+
+7. Provide **local execution instructions**.
+
+If ES modules are used, recommend serving the project through a local HTTP server such as:
+
+- VS Code Live Server;
+- `python -m http.server`;
+- another minimal static development server.
+
+Do not rely on opening `index.html` directly through `file://` if doing so would break module loading or other browser security restrictions.
+
+8. Add a short **Technical Notes** section explaining:
+
+- the overall architecture;
+- JavaScript module responsibilities;
+- responsive strategy;
+- accessibility considerations;
+- performance considerations;
+- the main technically advanced features implemented.
+
+---
+
+## Image and Asset Guidelines
+
+Use placeholder images while keeping the project structured so that real assets can easily replace them later.
+
+Prefer placeholder URLs from:
+
+```text
+https://placehold.co/
+```
+
+You may also use suitable remote images when appropriate, but avoid making the functionality dependent on third-party image availability.
+
+Use descriptive local filenames or placeholder references such as:
+
+```text
+camel-hero
+camel-family
+camel-product-pink
+camel-product-mint
+bg-clouds
+bg-stars
+decorative-hills
+```
+
+When searching or selecting image subjects, use concepts such as:
+
+```text
+camel, plush toy, children, family, illustration, pastel, soft toy
+```
+
+Use vector icons or custom inline SVG whenever practical.
+
+Avoid emojis unless they are genuinely necessary for the intended interaction or meaning.
+
+---
+
+## Final Instructions
+
+- Build the implementation in this order:
+  1. HTML structure;
+  2. CSS and responsive design;
+  3. JavaScript behavior and advanced interactions.
+
+- Maintain strict consistency between HTML classes, CSS selectors, JavaScript hooks, and component states.
+
+- Do not introduce features that are not actually implemented in the provided code.
+
+- Avoid over-engineering. Technical complexity must directly support usability, accessibility, maintainability, or visual quality.
+
+- Prioritize robust native browser APIs over unnecessary libraries.
+
+- Make every interaction functional rather than merely decorative.
+
+- Do not sacrifice accessibility or performance to implement visual effects.
+
+- Respect `prefers-reduced-motion`, touch input, keyboard navigation, and different viewport sizes.
+
+- Prefer vector icons and SVG graphics over emojis.
+
+- **The final response must be written in Italian.**
+
+- Present each source file in its own clearly labeled code block using the appropriate language identifier, for example:
+
+  ```html
+  ```
+
+  ```css
+  ```
+
+  ```js
+  ```
+
+- Ensure the final result can be copied into the proposed folder structure and run with minimal setup.
