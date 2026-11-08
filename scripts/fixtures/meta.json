@@ -1,0 +1,21 @@
+{
+  "id": "demo",
+  "title": "Demo (fixture score.mjs)",
+  "kind": "benchmark",
+  "tier": 2,
+  "spec_language": "it",
+  "impl_languages": ["C17"],
+  "stack": ["fixture"],
+  "runtime": "native",
+  "plan": null,
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement"],
+  "milestones": [
+    { "id": "M0", "weight": 10, "slice": true, "title": "Fondamenta" },
+    { "id": "M1", "weight": 25, "slice": true, "title": "Vertical slice" },
+    { "id": "M2", "weight": 40, "slice": false, "title": "Completezza" },
+    { "id": "M3", "weight": 25, "slice": false, "title": "Rilascio" }
+  ]
+}

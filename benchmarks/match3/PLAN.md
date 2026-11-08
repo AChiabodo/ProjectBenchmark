@@ -1,3 +1,26 @@
+> **Banner di vincolo — condizioni non negoziabili della sessione**
+>
+> - Una sessione, un host: nessun intervento umano di design; al massimo 3 turni di chiarimento con l'operatore.
+> - Nessuna richiesta di rete a runtime: niente API esterne, asset remoti o servizi; ogni risorsa è locale o generata dal codice.
+> - Dipendenze build-time ammesse solo se pinnate (lockfile, oppure tag + hash).
+> - Più di un nodo (FE/BE/DB/worker) ⇒ un profilo Docker Compose che sale con un solo comando.
+> - Deploy, hosting, publishing, CI e release automation: fuori scope, non valutati.
+> - `./verify.sh` è non interattivo, termina entro 600 s, exit 0 = pass, e scrive `verify.json` con tutti gli id milestone del `meta.json`.
+> - `RESULT.md` è obbligatorio: modello, wall-clock, turni, token e verdetto dell'harness.
+> - Nessun tetto wall-clock o di token: si registrano, non si impongono.
+
+## Milestone pesate
+
+Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/index.mjs --check` ne verifica la coerenza.
+
+| id | peso | slice | titolo |
+|----|-----:|:-----:|--------|
+| M0 | 8 | sì | Fondamenta riproducibili (G0) |
+| M1 | 22 | sì | Core board e vertical slice Moves (G1) |
+| M2 | 26 | — | Speciali, cascade, identità e deadlock (G2) |
+| M3 | 15 | — | Game flow, Time e persistenza (G3) |
+| M4 | 19 | — | Rendering, UX e accessibilità (G3/P1) |
+| M5 | 10 | — | Verifica e packaging (G4) |
 # GemSwap — Piano di sviluppo eseguibile (Match-3 Web completo)
 
 > **Root del progetto:** `Match3/`, cioè la cartella corrente del benchmark.

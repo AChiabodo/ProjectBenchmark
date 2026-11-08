@@ -1,0 +1,80 @@
+{
+  "id": "wayline",
+  "title": "WAYLINE — L'Atlante Spezzato",
+  "kind": "benchmark",
+  "tier": 5,
+  "spec_language": "it",
+  "impl_languages": [
+    "TypeScript"
+  ],
+  "stack": [
+    "React 19",
+    "Vite",
+    "TypeScript strict",
+    "Vitest",
+    "React Testing Library",
+    "Playwright"
+  ],
+  "runtime": "browser",
+  "plan": "PLAN.md",
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": [
+    "implement",
+    "tdd",
+    "diagnosing-bugs",
+    "prototype",
+    "code-review",
+    "codebase-design",
+    "improve-codebase-architecture",
+    "to-spec",
+    "to-tickets",
+    "implement-spec",
+    "wayfinder"
+  ],
+  "milestones": [
+    {
+      "id": "M0",
+      "weight": 30,
+      "slice": true,
+      "title": "MVP-0: vertical slice bloccato"
+    },
+    {
+      "id": "M1",
+      "weight": 15,
+      "slice": false,
+      "title": "Fondamenta deterministiche e hardening del MVP"
+    },
+    {
+      "id": "M2",
+      "weight": 15,
+      "slice": false,
+      "title": "R1: Atto I e Torre"
+    },
+    {
+      "id": "M3",
+      "weight": 12,
+      "slice": false,
+      "title": "R1: i due rami"
+    },
+    {
+      "id": "M4",
+      "weight": 10,
+      "slice": false,
+      "title": "R1: finale e reattività"
+    },
+    {
+      "id": "M5",
+      "weight": 10,
+      "slice": false,
+      "title": "RC: presentazione e hardening"
+    },
+    {
+      "id": "M6",
+      "weight": 8,
+      "slice": false,
+      "title": "RC: bilanciamento e release"
+    }
+  ]
+}

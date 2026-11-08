@@ -1,0 +1,3 @@
+# benchmarks/ root with a generated index
+
+Every benchmark lives in `benchmarks/<id>/` with a `meta.json` as the machine-readable contract (id, tier, runtime, skills allowlist, weighted milestones), the wording sources stay flat under `benchmarks/staticweb/_wording-source/` with a single `index.meta.json`, and `scripts/index.mjs` validates all contracts, then regenerates the committed `benchmarks.json` and the README index table between `INDEX` markers; `--check` fails on any drift between metadata, plans and generated output. Trade-off: a mass rename of the legacy top-level directories and machine-generated files committed in the repo, versus a browsable suite whose index and contracts are verifiable by one command instead of by trust.

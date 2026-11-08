@@ -1,0 +1,22 @@
+{
+  "id": "tetroshift",
+  "title": "TetroShift / MorphoTetris",
+  "kind": "benchmark",
+  "tier": 3,
+  "spec_language": "it",
+  "impl_languages": ["C++20"],
+  "stack": ["raylib 5.0+", "CMake 3.22+", "Raygui", "Verlet 2D custom"],
+  "runtime": "native",
+  "plan": "PLAN.md",
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review", "codebase-design", "improve-codebase-architecture"],
+  "milestones": [
+    { "id": "M0", "weight": 40, "slice": true, "title": "Setup progetto e core Tetris classico (MVP baseline)" },
+    { "id": "M1", "weight": 20, "slice": false, "title": "Motore fisico e deformabilità (soft-body layer)" },
+    { "id": "M2", "weight": 20, "slice": false, "title": "Architettura roguelike e sistema carte" },
+    { "id": "M3", "weight": 12, "slice": false, "title": "Game juice, shader, particelle e audio" },
+    { "id": "M4", "weight": 8, "slice": false, "title": "Estensibilità geometrica (proof of concept)" }
+  ]
+}

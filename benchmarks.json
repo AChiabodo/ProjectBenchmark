@@ -1,0 +1,765 @@
+{
+  "schema": 1,
+  "benchmarks": [
+    {
+      "id": "breakout",
+      "title": "Breakout",
+      "kind": "benchmark",
+      "tier": 2,
+      "spec_language": "it",
+      "impl_languages": [
+        "C17"
+      ],
+      "stack": [
+        "raylib 5.5",
+        "CMake",
+        "CTest"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 12,
+          "slice": true,
+          "title": "Bootstrap, CMake e test headless"
+        },
+        {
+          "id": "M1",
+          "weight": 20,
+          "slice": true,
+          "title": "Core playable senza sistemi accessori"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Collisioni robuste e testate"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Stati, vite, punteggio e tipi di mattone"
+        },
+        {
+          "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "Loader TXT e progressione"
+        },
+        {
+          "id": "M5",
+          "weight": 10,
+          "slice": false,
+          "title": "Power-up e multiball"
+        },
+        {
+          "id": "M6",
+          "weight": 8,
+          "slice": false,
+          "title": "UI, asset e audio"
+        },
+        {
+          "id": "M7",
+          "weight": 8,
+          "slice": false,
+          "title": "Game feel e bilanciamento"
+        },
+        {
+          "id": "M8",
+          "weight": 7,
+          "slice": false,
+          "title": "Release, sanitizers, packaging e QA finale"
+        }
+      ]
+    },
+    {
+      "id": "staticweb-camels",
+      "title": "StaticWeb — Cammelli (e-commerce vetrina)",
+      "kind": "benchmark",
+      "tier": 2,
+      "spec_language": "it",
+      "impl_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "stack": [
+        "HTML/CSS/JS vanilla"
+      ],
+      "runtime": "browser",
+      "plan": null,
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 10,
+          "slice": true,
+          "title": "Bootstrap e layout"
+        },
+        {
+          "id": "M1",
+          "weight": 20,
+          "slice": true,
+          "title": "Dataset e rendering lista"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": true,
+          "title": "Dettaglio e filtri"
+        },
+        {
+          "id": "M3",
+          "weight": 20,
+          "slice": false,
+          "title": "Interazione caratterizzante"
+        },
+        {
+          "id": "M4",
+          "weight": 15,
+          "slice": false,
+          "title": "Accessibilità"
+        },
+        {
+          "id": "M5",
+          "weight": 15,
+          "slice": false,
+          "title": "Responsive"
+        },
+        {
+          "id": "M6",
+          "weight": 10,
+          "slice": false,
+          "title": "Verify: Playwright pinnato + verify.sh"
+        }
+      ]
+    },
+    {
+      "id": "staticweb-classic-cars",
+      "title": "StaticWeb — Auto d'epoca (noleggio)",
+      "kind": "benchmark",
+      "tier": 2,
+      "spec_language": "it",
+      "impl_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "stack": [
+        "HTML/CSS/JS vanilla"
+      ],
+      "runtime": "browser",
+      "plan": null,
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 10,
+          "slice": true,
+          "title": "Bootstrap e layout"
+        },
+        {
+          "id": "M1",
+          "weight": 20,
+          "slice": true,
+          "title": "Dataset e rendering lista"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": true,
+          "title": "Dettaglio e filtri"
+        },
+        {
+          "id": "M3",
+          "weight": 20,
+          "slice": false,
+          "title": "Interazione caratterizzante"
+        },
+        {
+          "id": "M4",
+          "weight": 15,
+          "slice": false,
+          "title": "Accessibilità"
+        },
+        {
+          "id": "M5",
+          "weight": 15,
+          "slice": false,
+          "title": "Responsive"
+        },
+        {
+          "id": "M6",
+          "weight": 10,
+          "slice": false,
+          "title": "Verify: Playwright pinnato + verify.sh"
+        }
+      ]
+    },
+    {
+      "id": "match3",
+      "title": "GemSwap (Match-3 Web)",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "it",
+      "impl_languages": [
+        "TypeScript"
+      ],
+      "stack": [
+        "Vite 7.0.6",
+        "TypeScript 5.8.3",
+        "Vitest 4.0.0",
+        "ESLint 9"
+      ],
+      "runtime": "browser",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 8,
+          "slice": true,
+          "title": "Fondamenta riproducibili (G0)"
+        },
+        {
+          "id": "M1",
+          "weight": 22,
+          "slice": true,
+          "title": "Core board e vertical slice Moves (G1)"
+        },
+        {
+          "id": "M2",
+          "weight": 26,
+          "slice": false,
+          "title": "Speciali, cascade, identità e deadlock (G2)"
+        },
+        {
+          "id": "M3",
+          "weight": 15,
+          "slice": false,
+          "title": "Game flow, Time e persistenza (G3)"
+        },
+        {
+          "id": "M4",
+          "weight": 19,
+          "slice": false,
+          "title": "Rendering, UX e accessibilità (G3/P1)"
+        },
+        {
+          "id": "M5",
+          "weight": 10,
+          "slice": false,
+          "title": "Verifica e packaging (G4)"
+        }
+      ]
+    },
+    {
+      "id": "staticweb-auction",
+      "title": "StaticWeb — Aste virtuali online",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "it",
+      "impl_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "stack": [
+        "HTML/CSS/JS vanilla"
+      ],
+      "runtime": "browser",
+      "plan": null,
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 10,
+          "slice": true,
+          "title": "Bootstrap e layout"
+        },
+        {
+          "id": "M1",
+          "weight": 20,
+          "slice": true,
+          "title": "Dataset e rendering lista"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": true,
+          "title": "Dettaglio e filtri"
+        },
+        {
+          "id": "M3",
+          "weight": 20,
+          "slice": false,
+          "title": "Interazione caratterizzante"
+        },
+        {
+          "id": "M4",
+          "weight": 15,
+          "slice": false,
+          "title": "Accessibilità"
+        },
+        {
+          "id": "M5",
+          "weight": 15,
+          "slice": false,
+          "title": "Responsive"
+        },
+        {
+          "id": "M6",
+          "weight": 10,
+          "slice": false,
+          "title": "Verify: Playwright pinnato + verify.sh"
+        }
+      ]
+    },
+    {
+      "id": "staticweb-watches",
+      "title": "StaticWeb — Orologi d'epoca",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "it",
+      "impl_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "stack": [
+        "HTML/CSS/JS vanilla"
+      ],
+      "runtime": "browser",
+      "plan": null,
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 10,
+          "slice": true,
+          "title": "Bootstrap e layout"
+        },
+        {
+          "id": "M1",
+          "weight": 20,
+          "slice": true,
+          "title": "Dataset e rendering lista"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": true,
+          "title": "Dettaglio e filtri"
+        },
+        {
+          "id": "M3",
+          "weight": 20,
+          "slice": false,
+          "title": "Interazione caratterizzante"
+        },
+        {
+          "id": "M4",
+          "weight": 15,
+          "slice": false,
+          "title": "Accessibilità"
+        },
+        {
+          "id": "M5",
+          "weight": 15,
+          "slice": false,
+          "title": "Responsive"
+        },
+        {
+          "id": "M6",
+          "weight": 10,
+          "slice": false,
+          "title": "Verify: Playwright pinnato + verify.sh"
+        }
+      ]
+    },
+    {
+      "id": "tetroshift",
+      "title": "TetroShift / MorphoTetris",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "it",
+      "impl_languages": [
+        "C++20"
+      ],
+      "stack": [
+        "raylib 5.0+",
+        "CMake 3.22+",
+        "Raygui",
+        "Verlet 2D custom"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Setup progetto e core Tetris classico (MVP baseline)"
+        },
+        {
+          "id": "M1",
+          "weight": 20,
+          "slice": false,
+          "title": "Motore fisico e deformabilità (soft-body layer)"
+        },
+        {
+          "id": "M2",
+          "weight": 20,
+          "slice": false,
+          "title": "Architettura roguelike e sistema carte"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "Game juice, shader, particelle e audio"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Estensibilità geometrica (proof of concept)"
+        }
+      ]
+    },
+    {
+      "id": "neon-vanguard",
+      "title": "NEON VANGUARD",
+      "kind": "benchmark",
+      "tier": 5,
+      "spec_language": "it",
+      "impl_languages": [
+        "C++20"
+      ],
+      "stack": [
+        "raylib 5.5",
+        "CMake 3.22+",
+        "--smoke harness"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 10,
+          "slice": true,
+          "title": "Scaffold + game loop + smoke"
+        },
+        {
+          "id": "M1",
+          "weight": 25,
+          "slice": true,
+          "title": "Core gameplay"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Sistemi: nemici, spawner, collisioni, juice e audio"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "Integrazione"
+        },
+        {
+          "id": "M4",
+          "weight": 15,
+          "slice": false,
+          "title": "Roguelite + UI"
+        },
+        {
+          "id": "M5",
+          "weight": 15,
+          "slice": false,
+          "title": "Boss + bilanciamento + polish"
+        },
+        {
+          "id": "M6",
+          "weight": 8,
+          "slice": false,
+          "title": "Review indipendente + fix pass"
+        }
+      ]
+    },
+    {
+      "id": "paper-feed",
+      "title": "AI/ML Newsletter (paper-feed)",
+      "kind": "benchmark",
+      "tier": 5,
+      "spec_language": "it",
+      "impl_languages": [
+        "Python"
+      ],
+      "stack": [
+        "Python 3.12",
+        "FastAPI",
+        "Typer",
+        "SQLAlchemy 2",
+        "Alembic",
+        "APScheduler",
+        "Jinja2",
+        "Docker Compose"
+      ],
+      "runtime": "container",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 15,
+          "slice": true,
+          "title": "Fondazioni e persistenza"
+        },
+        {
+          "id": "M1",
+          "weight": 20,
+          "slice": true,
+          "title": "Ingestione e deduplicazione"
+        },
+        {
+          "id": "M2",
+          "weight": 25,
+          "slice": false,
+          "title": "Ranking e selezione"
+        },
+        {
+          "id": "M3",
+          "weight": 25,
+          "slice": false,
+          "title": "Curatela e pubblicazione"
+        },
+        {
+          "id": "M4",
+          "weight": 15,
+          "slice": false,
+          "title": "Scheduler, UI minima e hardening"
+        }
+      ]
+    },
+    {
+      "id": "wayline",
+      "title": "WAYLINE — L'Atlante Spezzato",
+      "kind": "benchmark",
+      "tier": 5,
+      "spec_language": "it",
+      "impl_languages": [
+        "TypeScript"
+      ],
+      "stack": [
+        "React 19",
+        "Vite",
+        "TypeScript strict",
+        "Vitest",
+        "React Testing Library",
+        "Playwright"
+      ],
+      "runtime": "browser",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 30,
+          "slice": true,
+          "title": "MVP-0: vertical slice bloccato"
+        },
+        {
+          "id": "M1",
+          "weight": 15,
+          "slice": false,
+          "title": "Fondamenta deterministiche e hardening del MVP"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "R1: Atto I e Torre"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "R1: i due rami"
+        },
+        {
+          "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "R1: finale e reattività"
+        },
+        {
+          "id": "M5",
+          "weight": 10,
+          "slice": false,
+          "title": "RC: presentazione e hardening"
+        },
+        {
+          "id": "M6",
+          "weight": 8,
+          "slice": false,
+          "title": "RC: bilanciamento e release"
+        }
+      ]
+    }
+  ],
+  "wordingSources": [
+    {
+      "file": "cammelli.txt",
+      "title": "Sito Web Statico Avanzato — Cammelli (IT)",
+      "tier": 1,
+      "kind": "wording-source"
+    },
+    {
+      "file": "cammelli_inglese.txt",
+      "title": "Advanced Static Website — Camels (EN)",
+      "tier": 1,
+      "kind": "wording-source"
+    },
+    {
+      "file": "car_rental.txt",
+      "title": "Sito Web Statico Multipagina — Noleggio Auto d'Epoca",
+      "tier": 1,
+      "kind": "wording-source"
+    },
+    {
+      "file": "online_auction.txt",
+      "title": "Sito Web Statico Multipagina — Aste Virtuali Online",
+      "tier": 1,
+      "kind": "wording-source"
+    },
+    {
+      "file": "vintage_watches.txt",
+      "title": "Sito Web Statico Multipagina — Orologi d'Epoca",
+      "tier": 1,
+      "kind": "wording-source"
+    }
+  ]
+}

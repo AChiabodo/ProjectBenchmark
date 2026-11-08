@@ -1,0 +1,23 @@
+{
+  "id": "match3",
+  "title": "GemSwap (Match-3 Web)",
+  "kind": "benchmark",
+  "tier": 3,
+  "spec_language": "it",
+  "impl_languages": ["TypeScript"],
+  "stack": ["Vite 7.0.6", "TypeScript 5.8.3", "Vitest 4.0.0", "ESLint 9"],
+  "runtime": "browser",
+  "plan": "PLAN.md",
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review", "codebase-design", "improve-codebase-architecture"],
+  "milestones": [
+    { "id": "M0", "weight": 8, "slice": true, "title": "Fondamenta riproducibili (G0)" },
+    { "id": "M1", "weight": 22, "slice": true, "title": "Core board e vertical slice Moves (G1)" },
+    { "id": "M2", "weight": 26, "slice": false, "title": "Speciali, cascade, identità e deadlock (G2)" },
+    { "id": "M3", "weight": 15, "slice": false, "title": "Game flow, Time e persistenza (G3)" },
+    { "id": "M4", "weight": 19, "slice": false, "title": "Rendering, UX e accessibilità (G3/P1)" },
+    { "id": "M5", "weight": 10, "slice": false, "title": "Verifica e packaging (G4)" }
+  ]
+}

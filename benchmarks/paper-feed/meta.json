@@ -1,0 +1,22 @@
+{
+  "id": "paper-feed",
+  "title": "AI/ML Newsletter (paper-feed)",
+  "kind": "benchmark",
+  "tier": 5,
+  "spec_language": "it",
+  "impl_languages": ["Python"],
+  "stack": ["Python 3.12", "FastAPI", "Typer", "SQLAlchemy 2", "Alembic", "APScheduler", "Jinja2", "Docker Compose"],
+  "runtime": "container",
+  "plan": "PLAN.md",
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review", "codebase-design", "improve-codebase-architecture", "to-spec", "to-tickets", "implement-spec", "wayfinder"],
+  "milestones": [
+    { "id": "M0", "weight": 15, "slice": true, "title": "Fondazioni e persistenza" },
+    { "id": "M1", "weight": 20, "slice": true, "title": "Ingestione e deduplicazione" },
+    { "id": "M2", "weight": 25, "slice": false, "title": "Ranking e selezione" },
+    { "id": "M3", "weight": 25, "slice": false, "title": "Curatela e pubblicazione" },
+    { "id": "M4", "weight": 15, "slice": false, "title": "Scheduler, UI minima e hardening" }
+  ]
+}

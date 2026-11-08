@@ -1,3 +1,27 @@
+> **Banner di vincolo — condizioni non negoziabili della sessione**
+>
+> - Una sessione, un host: nessun intervento umano di design; al massimo 3 turni di chiarimento con l'operatore.
+> - Nessuna richiesta di rete a runtime: niente API esterne, asset remoti o servizi; ogni risorsa è locale o generata dal codice.
+> - Dipendenze build-time ammesse solo se pinnate (lockfile, oppure tag + hash).
+> - Più di un nodo (FE/BE/DB/worker) ⇒ un profilo Docker Compose che sale con un solo comando.
+> - Deploy, hosting, publishing, CI e release automation: fuori scope, non valutati.
+> - `./verify.sh` è non interattivo, termina entro 600 s, exit 0 = pass, e scrive `verify.json` con tutti gli id milestone del `meta.json`.
+> - `RESULT.md` è obbligatorio: modello, wall-clock, turni, token e verdetto dell'harness.
+> - Nessun tetto wall-clock o di token: si registrano, non si impongono.
+
+## Milestone pesate
+
+Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/index.mjs --check` ne verifica la coerenza.
+
+| id | peso | slice | titolo |
+|----|-----:|:-----:|--------|
+| M0 | 10 | sì | Scaffold + game loop + smoke |
+| M1 | 25 | sì | Core gameplay |
+| M2 | 15 | — | Sistemi: nemici, spawner, collisioni, juice e audio |
+| M3 | 12 | — | Integrazione |
+| M4 | 15 | — | Roguelite + UI |
+| M5 | 15 | — | Boss + bilanciamento + polish |
+| M6 | 8 | — | Review indipendente + fix pass |
 # 📐 PLAN.md — NEON VANGUARD
 
 **Piano di sviluppo completo per la realizzazione da zero di un arena survival twin-stick shooter roguelite in C++20 + raylib 5.5.**

@@ -1,0 +1,9 @@
+{
+  "entries": [
+    { "file": "cammelli.txt", "title": "Sito Web Statico Avanzato — Cammelli (IT)", "tier": 1, "kind": "wording-source" },
+    { "file": "cammelli_inglese.txt", "title": "Advanced Static Website — Camels (EN)", "tier": 1, "kind": "wording-source" },
+    { "file": "car_rental.txt", "title": "Sito Web Statico Multipagina — Noleggio Auto d'Epoca", "tier": 1, "kind": "wording-source" },
+    { "file": "online_auction.txt", "title": "Sito Web Statico Multipagina — Aste Virtuali Online", "tier": 1, "kind": "wording-source" },
+    { "file": "vintage_watches.txt", "title": "Sito Web Statico Multipagina — Orologi d'Epoca", "tier": 1, "kind": "wording-source" }
+  ]
+}

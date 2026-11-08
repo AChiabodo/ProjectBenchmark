@@ -1,0 +1,24 @@
+{
+  "id": "staticweb-camels",
+  "title": "StaticWeb — Cammelli (e-commerce vetrina)",
+  "kind": "benchmark",
+  "tier": 2,
+  "spec_language": "it",
+  "impl_languages": ["HTML", "CSS", "JavaScript"],
+  "stack": ["HTML/CSS/JS vanilla"],
+  "runtime": "browser",
+  "plan": null,
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review"],
+  "milestones": [
+    { "id": "M0", "weight": 10, "slice": true, "title": "Bootstrap e layout" },
+    { "id": "M1", "weight": 20, "slice": true, "title": "Dataset e rendering lista" },
+    { "id": "M2", "weight": 10, "slice": true, "title": "Dettaglio e filtri" },
+    { "id": "M3", "weight": 20, "slice": false, "title": "Interazione caratterizzante" },
+    { "id": "M4", "weight": 15, "slice": false, "title": "Accessibilità" },
+    { "id": "M5", "weight": 15, "slice": false, "title": "Responsive" },
+    { "id": "M6", "weight": 10, "slice": false, "title": "Verify: Playwright pinnato + verify.sh" }
+  ]
+}
