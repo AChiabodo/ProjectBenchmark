@@ -364,6 +364,82 @@
       ]
     },
     {
+      "id": "kotlin-desktop",
+      "title": "Kotlin Desktop — expense tracker on the JVM without the Android SDK",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "Kotlin"
+      ],
+      "stack": [
+        "Kotlin 2.0.21",
+        "JDK 21",
+        "Gradle 8.10.2 (wrapper, dependency locking)",
+        "Swing/AWT from the JDK (no UI dependency)",
+        "java.nio versioned text store",
+        "JUnit Jupiter 5.11.3"
+      ],
+      "runtime": "jvm",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Gradle project, domain core and the persisted slice"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Domain model, validation rules and the JVM domain suite"
+        },
+        {
+          "id": "M2",
+          "weight": 12,
+          "slice": false,
+          "title": "Versioned local store, schema version and corrupt-store path"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "Desktop UI: insert, list, edit and delete"
+        },
+        {
+          "id": "M4",
+          "weight": 13,
+          "slice": false,
+          "title": "Report view with declared aggregates"
+        },
+        {
+          "id": "M5",
+          "weight": 6,
+          "slice": false,
+          "title": "Empty, loading and validation-error states"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json over build, JVM tests and headless smoke"
+        }
+      ]
+    },
+    {
       "id": "match3",
       "title": "GemSwap (Match-3 Web)",
       "kind": "benchmark",
