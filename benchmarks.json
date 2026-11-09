@@ -364,6 +364,80 @@
       ]
     },
     {
+      "id": "go-http-server",
+      "title": "go-http-server — concurrent service with a bounded worker pool",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "Go"
+      ],
+      "stack": [
+        "Go 1.22",
+        "net/http (standard library only)",
+        "go vet",
+        "go test -race"
+      ],
+      "runtime": "go",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, routes, worker-pool slice and drain-on-shutdown"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Declared route table, handlers and error codes"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Middleware chain: panic recovery, logging, rate limit"
+        },
+        {
+          "id": "M3",
+          "weight": 15,
+          "slice": false,
+          "title": "Fixed worker pool, bounded queue and backpressure"
+        },
+        {
+          "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "Race-detector-clean functional and concurrency suite"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Health and textual metrics endpoints"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
       "id": "match3",
       "title": "GemSwap (Match-3 Web)",
       "kind": "benchmark",
