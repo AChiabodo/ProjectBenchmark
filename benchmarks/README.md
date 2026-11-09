@@ -11,6 +11,7 @@ Ogni benchmark vive in `benchmarks/<id>/` e dichiara i propri contratti in `meta
 | staticweb-classic-cars | StaticWeb — Auto d'epoca (noleggio) | T2 | browser | HTML, CSS, JavaScript | PLAN.md |
 | connect4-minimax | Connect4-Minimax — deterministic Connect Four search engine | T3 | dotnet | C# | PLAN.md |
 | go-http-server | go-http-server — concurrent service with a bounded worker pool | T3 | go | Go | PLAN.md |
+| kotlin-desktop | Kotlin Desktop — expense tracker on the JVM without the Android SDK | T3 | jvm | Kotlin | PLAN.md |
 | match3 | GemSwap (Match-3 Web) | T3 | browser | TypeScript | PLAN.md |
 | rust-tui-editor | Rust TUI editor — headless-testable editor core | T3 | native | Rust | PLAN.md |
 | staticweb-auction | StaticWeb — Aste virtuali online | T3 | browser | HTML, CSS, JavaScript | PLAN.md |
