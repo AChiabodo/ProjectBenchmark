@@ -289,6 +289,81 @@
       ]
     },
     {
+      "id": "connect4-minimax",
+      "title": "Connect4-Minimax — deterministic Connect Four search engine",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "C#"
+      ],
+      "stack": [
+        ".NET 8",
+        "C# 12",
+        "xUnit 2.9.2",
+        "dotnet test",
+        "dotnet CLI"
+      ],
+      "runtime": "dotnet",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, board, rules and playable CLI"
+        },
+        {
+          "id": "M1",
+          "weight": 10,
+          "slice": false,
+          "title": "Win and draw detection over the full board"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Negamax with alpha-beta pruning"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Window evaluation function"
+        },
+        {
+          "id": "M4",
+          "weight": 12,
+          "slice": false,
+          "title": "Fixed-position and perft test suite"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Deterministic timing benchmark"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
       "id": "match3",
       "title": "GemSwap (Match-3 Web)",
       "kind": "benchmark",
