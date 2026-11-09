@@ -15,18 +15,20 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 30 | sì | MVP-0: vertical slice bloccato |
-| M1 | 15 | — | Fondamenta deterministiche e hardening del MVP |
-| M2 | 15 | — | R1: Atto I e Torre |
-| M3 | 12 | — | R1: i due rami |
-| M4 | 10 | — | R1: finale e reattività |
-| M5 | 10 | — | RC: presentazione e hardening |
-| M6 | 8 | — | RC: bilanciamento e release |
+| M0 | 40 | sì | Bootstrap e vertical slice: Valdaluce → incontro → Sintonia → Wayline → copia URL → reload/deep link |
+| M1 | 12 | — | Codec Wayline: checksum, validazione, messaggio per link invalido |
+| M2 | 10 | — | Combattimento con il sistema tattico leggero |
+| M3 | 10 | — | Roster Echi del target (8–10) con risonanze |
+| M4 | 8 | — | Economia e consumabili |
+| M5 | 8 | — | Le tre regioni del target e 12–15 nodi |
+| M6 | 5 | — | Accessibilità: tastiera, touch, screen reader, 320 px |
+| M7 | 4 | — | PWA installabile e giocabile offline |
+| M8 | 3 | — | verify.sh e verify.json |
 # WAYLINE — L'Atlante Spezzato
 
 ---
 
-*Documento autosufficiente di design e implementazione. È la fonte unica di verità per narrativa, sistemi, UX e architettura; ogni sezione è vincolante salvo deroga esplicita in un gate di rilascio (12.1, 13.3). Il progetto è **greenfield**: non estende né rimodella alcun progetto preesistente.*
+*Documento autosufficiente di design e implementazione. È la fonte unica di verità per narrativa, sistemi, UX e architettura; ogni sezione è vincolante salvo deroga esplicita in un gate di rilascio (12.1, 14.3). Il progetto è **greenfield**: non estende né rimodella alcun progetto preesistente.*
 
 ## 1. Visione del prodotto
 
@@ -36,11 +38,11 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 | **Codename tecnico** | `route-explorer` |
 | **Genere** | RPG d'esplorazione testuale, combattimento tattico leggero, avventura narrativa |
 | **Piattaforma** | Browser desktop e mobile, PWA installabile e giocabile offline |
-| **Durata obiettivo** | 60–90 minuti alla prima partita; 35–50 minuti in replay |
+| **Durata obiettivo** | 25–45 minuti alla prima partita nel target di release; 60–90 minuti con l'espansione completa di §5.4 |
 | **Pubblico** | 12+, giocatori di avventure compatte, sistemi leggibili e interfacce retro |
 | **Promessa centrale** | Ogni indirizzo è un luogo; ogni link è un sentiero; ogni URL condiviso è una storia giocabile |
 | **Modello commerciale** | Distribuzione gratuita o pay-what-you-want, senza pubblicità, gacha o acquisti in gioco |
-| **Scope release target** | 29 nodi di mondo, 20 Echi, 5 regioni principali, 6 scontri chiave, 2 finali |
+| **Scope release target** | 12–15 nodi di mondo, 8–10 Echi, 3 regioni principali, 3 scontri chiave, 1 finale; il design completo del mondo sopravvive come espansione opzionale a peso zero (§5.4) |
 
 ### 1.1 High concept
 
@@ -91,7 +93,7 @@ Il slice usa una sola scena, un solo Eco accordabile, un solo consumabile e un s
 - un flusso completo da tastiera, touch, screen reader e viewport 320 px;
 - nessun `Math.random()`, stato React autorevole o accesso DOM nel dominio.
 
-**Fuori dal vertical slice:** Torre, due rami, roster completo, economia avanzata, pixel art, audio, analytics, challenge e contenuti opzionali. Se il gate MVP-0 fallisce, si corregge il slice: non si aggiungono regioni.
+**Fuori dal vertical slice:** Torre, i rami dell'espansione (§5.4), roster completo, economia avanzata, pixel art, audio, analytics, challenge e contenuti opzionali. Se il gate MVP-0 fallisce, si corregge il slice: non si aggiungono regioni.
 
 ### 2.1 La Via è l'interfaccia
 
@@ -198,6 +200,8 @@ I guardiani e il boss finale sono gli Echi `Guardiano Rovi` (Ponte), `Bastione d
 
 ## 4. Trama e struttura in quattro atti
 
+*La struttura narrativa resta integra come design del mondo. Nel target di release ridotto (§1, §5.3) la sequenza implementata è Prologo → Atto I → Atto II → Atto IV con un solo finale; gli Atti III-A/III-B, il secondo finale e gli epiloghi regionali differenzianti appartengono all'espansione completa, contenuto opzionale a peso zero (§5.4).*
+
 ### Prologo — Il sentiero che dimentica
 
 Il protagonista raggiunge **Valdaluce** seguendo un Wayline lasciato da un familiare scomparso. La scritta sul cartello del villaggio si dissolve davanti ai suoi occhi. Mira insegna a fissare un luogo nella bussola d'archivio e segnala che la strada verso la Rocca delle Soglie è stata divorata dalla Marea Bianca.
@@ -288,20 +292,38 @@ Officina / Ristoro / Emporio -- Ponte di Radica [guardiano]
                       Picco dell'Asse [finale]
 ```
 
+*La mappa rappresenta il mondo completo, incluso il contenuto dell'espansione opzionale (§5.4); il target di release implementa le sole tre regioni di §5.3.*
+
 *Le **Caverne di Vetro** sono grotte buie e richiedono la **Lanterna a Lume** per essere esplorate; vi risiede la Spira Prismatica, per cui il Frammento di Memoria è raggiungibile solo dopo aver ottenuto la lanterna nel kit iniziale. **Bosco profondo** è un'area opzionale di esplorazione.*
 
 ### 5.2 Regole di progressione
 
 - Il prologo è lineare per non più di 8 minuti.
 - Dopo il Ponte, la Torre costituisce il primo controllo di padronanza dei sistemi.
-- Dopo la Torre, Selva e Costa sono affrontabili in qualsiasi ordine.
-- Nessuno dei due rami può essere saltato nella prima partita, ma ogni ramo contiene almeno un'area opzionale.
+- **Target ridotto:** dopo la Torre, il Picco dell'Asse è raggiungibile con il solo Sigillo Meridiano; Frammento di Memoria e Cifrario di Marea tornano requisiti del Picco solo nell'espansione completa (§5.4).
+- Dopo la Torre, Selva e Costa sono affrontabili in qualsiasi ordine (espansione completa).
+- Nessuno dei due rami può essere saltato nella prima partita completa, ma ogni ramo contiene almeno un'area opzionale (regola dell'espansione; nel target ridotto i due rami non sono presenti).
 - Il ritorno alle città deve essere sempre possibile senza consumare una risorsa rara.
 - Ogni cancello usa al massimo due requisiti e comunica produttore, zona e stato mancante.
 - Strumenti e valuta necessari alla storia devono essere ottenibili senza incontri casuali obbligatori.
 - Le rotte visitate dopo il finale mostrano epiloghi contestuali, dando valore al backtracking.
 
-### 5.3 Inventario di lancio
+### 5.3 Inventario di lancio — target di release
+
+Inventario del **target di release ridotto**; l'inventario completo dell'espansione (regioni, nodi e incontri surplus) è conservato in §5.4.
+
+| Regione | Nodi target | Incontri | Funzione |
+|---|---:|---:|---|
+| Valdaluce e dintorni | 7 | 1 pool + 1 guardiano (Rovi) | Onboarding, primo Eco, economia iniziale |
+| Rocca delle Soglie e Torre Meridiana | 3 | 1 prova (Osservatorio) | Verifica padronanza, sblocco macro |
+| Picco dell'Asse | 3 | 1 pool + finale scriptato | Sintesi delle build e conclusione |
+| **Totale** | **13** | **3 scontri chiave (2 guardiani + finale scriptato) / 9 Echi (6 accordabili + 3 non accordabili)** | Scope target della release |
+
+### 5.4 Contenuto opzionale, fuori dal target di release (peso 0)
+
+Nulla del design completo viene cancellato: tutto ciò che eccede il target di release (§1, §5.3) vive in questa sezione come **contenuto opzionale a peso zero**. Non compare in `meta.json`, non è richiesto da `verify.sh`, non vale punti e non può aprire cancelli necessari al target. Si costruisce solo dopo la release del target ridotto, senza modificare schema o bilanciamento senza migrazione e regression suite.
+
+**Espansione completa del mondo (inventario originale, conservato integro):**
 
 | Regione | Nodi target | Incontri | Funzione |
 |---|---:|---:|---|
@@ -310,9 +332,19 @@ Officina / Ristoro / Emporio -- Ponte di Radica [guardiano]
 | Selva e Caverne di Vetro | 7 | 5 pool + 1 guardiano | Strumenti, memoria, percorso difensivo |
 | Costa, Mare e Isola | 3 | 3 pool + 1 guardiano | Mobilità, rischio/ricompensa, percorso offensivo |
 | Picco dell'Asse | 3 | 2 pool + finale | Sintesi delle build e scelta conclusiva |
-| **Totale** | **29** | **17 incontri (12 pool + 5 boss; il finale è scriptato a parte) / 20 Echi** | Scope target della release R1 |
+| **Totale** | **29** | **17 incontri (12 pool + 5 boss; il finale è scriptato a parte) / 20 Echi** | Scope dell'espansione completa |
 
-### 5.4 Contenuto opzionale
+**Contenuto narrativo dell'espansione:**
+
+- Gli Atti III-A e III-B: Selva del Sussurro (con Bosco profondo), Caverne di Vetro, Costa di Vetro, Mare Aperto e Isola della Bruma, con Syl, Brann, Nema ed Eiren.
+- La prova della **Camera del Contrappeso** (Bastione di Scaglia) nella Torre Meridiana.
+- Le coordinate **Frammento di Memoria** e **Cifrario di Marea**, che nell'espansione tornano prerequisiti del Picco dell'Asse accanto al Sigillo Meridiano.
+- Il secondo finale: nel target di release il confronto finale si conclude con **Restaurare l'Atlante**; il finale **Liberare le Vie**, la scelta conclusiva tra i due epiloghi e gli epiloghi regionali differenzianti appartengono all'espansione.
+- Gli strumenti da campo legati ai rami: Cesoie di Risonanza e Vela Pieghevole (la Lanterna a Lume resta nel kit iniziale del target perché consegnata a Valdaluce).
+
+**Roster surplus (11 Echi fuori target, nessun peso):** `woodowl`, `mossmole`, `shadowlynx`, `groveguardian`, `echobat`, `shadowbat`, `spiregolem`, `crystaldragon`, `tideturtle`, `deepshark`, `phoenixbird` (§6.2).
+
+**Contenuto opzionale di rifinitura (già previsto dal design originale):**
 
 - Tre **Vie Smarrite** raggiungibili inserendo indizi di path scoperti nei dialoghi.
 - Un Eco opzionale per regione (disponibilità facoltativa, non un sistema di rarità: nessun livello o valore di rarità), con risonanza che abilita build differenti ma non blocca la storia.
@@ -573,7 +605,7 @@ DOM, History API, audio e cache non devono essere importati dal dominio puro. Re
 
 ### 10.2 Stack
 
-**Verdetto:** React + TypeScript è possibile e compatibile con la natura del gioco, a due condizioni: TypeScript copre tutto il codice (contratti, codec, transizioni, UI), mentre React vive **solo** nello strato di presentazione, senza toccare il dominio puro (principio 10.1). Il costo è una build statica e un bundle più pesante, gestito con decisione esplicita sul budget (13.2).
+**Verdetto:** React + TypeScript è possibile e compatibile con la natura del gioco, a due condizioni: TypeScript copre tutto il codice (contratti, codec, transizioni, UI), mentre React vive **solo** nello strato di presentazione, senza toccare il dominio puro (principio 10.1). Il costo è una build statica e un bundle più pesante, gestito con decisione esplicita sul budget (14.2).
 
 | Livello | Scelta | Motivazione |
 |---|---|---|
@@ -597,6 +629,7 @@ Non sono ammessi file di produzione `.js` o `.jsx`: il codice applicativo è `.t
 
 ```text
 package.json
+package-lock.json
 index.html
 vite.config.ts
 tsconfig.json
@@ -650,7 +683,9 @@ tests/
   e2e/
 ```
 
-Manifest minimo da creare in `package.json` (le versioni esatte vengono fissate dal lockfile e aggiornate solo con una verifica completa):
+`package.json`, `package-lock.json` e i quattro file di configurazione (`vite.config.ts`, `tsconfig.json`, `tsconfig.node.json`, `index.html`) sono **deliverable**: senza di loro il progetto non si avvia e nessuna milestone è valutabile. Regola di pinning: nessun `@latest`, nessuna installazione fuori dal lockfile; `package-lock.json` è committato, è la fonte esatta delle versioni e si aggiorna solo con una verifica completa. `npm ci` è l'unico comando di install ammesso, incluso `./verify.sh` (§13).
+
+Manifest minimo da creare in `package.json` (i range indicano la linea ammessa; le versioni esatte sono quelle del lockfile committato):
 
 ```json
 {
@@ -898,9 +933,9 @@ Due test distinti:
 
 Il test deve dimostrare:
 
-- entrambi i rami possono essere completati in qualsiasi ordine;
-- Sigillo, Frammento e Cifrario permettono di raggiungere il Picco;
-- ogni finale è producibile e persistente;
+- nel target ridotto il Picco è raggiungibile con il solo Sigillo Meridiano, senza Frammento né Cifrario;
+- nell'espansione completa (§5.4) entrambi i rami sono completabili in qualsiasi ordine e Sigillo, Frammento e Cifrario permettono di raggiungere il Picco;
+- il finale del target è producibile e persistente, e nell'espansione lo sono entrambi i finali;
 - esiste sempre un percorso di ritorno verso una Casa del Ristoro;
 - nessun requisito viene richiesto prima che il suo produttore sia raggiungibile.
 
@@ -922,99 +957,151 @@ La raggiungibilità strutturale non sostituisce il test economico o il playtest 
 
 ## 12. Piano di produzione da zero
 
-### Fase 0 — MVP-0: vertical slice bloccato (settimana 1)
+Le fasi corrispondono 1:1 alle milestone pesate di `meta.json`: stesso id, stesso peso, stessa slice. Il target è quello ridotto di §5.3; il contenuto dell'espansione completa (§5.4) ha peso 0 e non fa parte di questo piano.
+
+### M0 — Bootstrap e vertical slice (peso 40, slice) — settimana 1
 
 - [ ] Approvare solo il lessico e il contratto narrativo necessari a Valdaluce.
-- [ ] Creare repository TypeScript/React con `package.json`, Vite, `tsconfig`, CSS e test runner funzionanti.
+- [ ] Creare repository TypeScript/React con `package.json`, Vite, `tsconfig`, CSS e test runner funzionanti (10.3).
 - [ ] Definire schema V1, stato iniziale, comandi, eventi, codec e router secondo i contratti 10.3.1.
 - [ ] Implementare soltanto: Valdaluce → Prato → un incontro → Sintonia → Wayline condiviso.
 - [ ] Coprire reload, nuova scheda, back/forward, link corrotto e Via Smarrita.
 - [ ] Validare il loop con 5 giocatori e il tono con 3 lettori esterni.
 
-**Gate MVP-0, stop/go:** il vertical slice comunica il concept senza riferimenti a Pokémon, è giocabile da tastiera e touch, ripristina lo stato tramite URL in tre browser e passa `npm run validate`. Nessun lavoro su Torre o altri Echi è autorizzato prima di questo gate.
+**Gate MVP-0, stop/go:** il vertical slice comunica il concept senza riferimenti a Pokémon, è giocabile da tastiera e touch, ripristina lo stato tramite URL in tre browser e passa `npm run validate`. Nessun lavoro su Torre o altri Echi è autorizzato prima di questo gate. Superare questa milestone è il cancello di punteggio di `docs/agents/scoring.md`: se fallisce, il credito si ferma ai soli pesi slice superati.
 
-### Fase 1 — Fondamenta deterministiche e hardening del MVP (settimana 2)
+### M1 — Codec Wayline (peso 12) — settimana 2
 
-- [ ] Router, codec, schema e migrazioni.
-- [ ] PRNG a canali nominati.
-- [ ] Transizioni pure di battaglia, quest e Archivio.
-- [ ] Golden save e fuzz deterministico.
-- [ ] Shell accessibile desktop/mobile.
+- [ ] Codec `?s=` con envelope `{v,p,h}`, checksum e limiti di lunghezza (10.6).
+- [ ] Migrazioni `Vn -> Vn+1` e rifiuto dei link futuri non supportati (9.4).
+- [ ] Validazione strutturale e semantica con classificazione `generated`/`imported-legal`/`imported-unreachable` (10.6).
+- [ ] Via Smarrita con motivo comprensibile e “Torna all'inizio” per ogni link rifiutato.
+- [ ] Golden save e fuzz deterministico del decoder.
 
-**Gate:** replay identico su tre browser; Short Save massimo sotto 2.000 caratteri.
+**Gate:** replay identico su tre browser; Short Save massimo sotto 2.000 caratteri; nessun link invalido carica uno stato parziale.
 
-### Fase 2 — Release narrativa R1: Atto I e Torre (settimana 3)
+### M2 — Combattimento con il sistema tattico leggero (peso 10) — settimana 3
 
-- [ ] Valdaluce, Ponte di Radica e Rocca delle Soglie.
-- [ ] 6 Echi comuni e 3 scontri chiave.
-- [ ] Economia iniziale senza grind e primo strumento.
-- [ ] Torre completa e assegnazione atomica del Sigillo Meridiano.
-- [ ] E2E: guardiano ponte → Torre → ricompensa → apertura porte.
+- [ ] PRNG a canali nominati (10.4) e transizioni di battaglia pure, senza DOM.
+- [ ] COLPISCI/SINTONIA/USA/RITIRATI mappati 1:1 sui comandi canonici, con i casi della matrice 11.3.
+- [ ] Guardiano Rovi al Ponte di Radica; viaggio e cambio scena rifiutati con `BATTLE_LOCKED` (9.5).
+- [ ] Snapshot per turno (`battleId`, HP, turno, seed, path) ricostruibile da URL e da back/forward.
 
-**Gate:** un nuovo giocatore raggiunge lo split in 20–30 minuti senza assistenza.
+**Gate:** matrice del dominio di 11.3 verde; ogni turno è ripristinabile da URL senza alterare gli esiti.
 
-### Fase 3 — Release narrativa R1: i due rami (settimane 4–5)
+### M3 — Roster Echi del target (peso 10) — settimane 3–4
 
-- [ ] Selva, Caverne, Frammento di Memoria.
-- [ ] Costa, Mare, Isola, Cifrario di Marea.
-- [ ] Strumenti da campo e almeno quattro archetipi Compagnia.
-- [ ] Dialoghi reattivi all'ordine scelto.
-- [ ] Simulazione di raggiungibilità e test economico.
+- [ ] I 9 Echi del target di §5.3 (6 accordabili + 3 non accordabili) con risonanze entro i limiti di 6.1.
+- [ ] Compagnia da quattro posti, Archivio e scambio dentro e fuori dalla Casa del Ristoro.
+- [ ] Sintonia con la formula di 6.3; i guardiani espongono sempre `Sintonia non possibile`.
+- [ ] Contratti dati degli Echi di 11.1 validati automaticamente.
 
-**Gate:** entrambi gli ordini di ramo sono validi, senza soft-lock o backtracking eccessivo.
+**Gate:** nessun Eco del target è ottenibile fuori dal proprio nodo; i tre non accordabili non entrano mai in Compagnia.
 
-### Fase 4 — Release narrativa R1: finale e reattività (settimana 6)
+### M4 — Economia e consumabili (peso 8) — settimana 4
 
-- [ ] Salita al Picco, Aster Veyr e Leviatano Meridiano.
-- [ ] Due finali persistenti.
-- [ ] Epiloghi regionali e Wayline di vittoria condivisibile.
-- [ ] Vie Smarrite e contenuto opzionale prioritario.
+- [ ] Gettoni di Rotta, Tonico, Tonico Integro, Sigillo d'Intesa e Filo di Richiamo (7.4).
+- [ ] Kit iniziale di Neral Vey con la Lanterna a Lume consegnata a Valdaluce.
+- [ ] Sigillo Meridiano assegnato atomicamente con la vittoria dell'Osservatorio.
+- [ ] Test economico senza incontri casuali obbligatori.
 
-**Gate:** storia completa, motivazioni comprensibili e finale raggiungibile da ogni build valida.
+**Gate:** il test economico di 7.4 passa con zero grind obbligatorio; nessun oggetto chiave è vendibile.
 
-### Fase 5 — Release candidate: presentazione e hardening (settimana 7)
+### M5 — Le tre regioni del target e 12–15 nodi (peso 8) — settimana 5
 
-- [ ] Pass ASCII completo e differenziato per regione.
-- [ ] Audio sintetizzato, riduzione movimento, screen reader e zoom 200%.
-- [ ] PWA offline, update flow e deep-link su hosting statico.
-- [ ] Performance budget e audit dipendenze/licenze.
-- [ ] E2E su desktop e 390×844 senza overflow documento.
+- [ ] Valdaluce e dintorni (7 nodi), Rocca delle Soglie e Torre Meridiana (3 nodi), Picco dell'Asse (3 nodi): 13 nodi complessivi (§5.3).
+- [ ] Sequenza Prologo → Atto I → Atto II → Atto IV, senza i rami dell'espansione (§4).
+- [ ] Finale unico “Restaurare l'Atlante” con Wayline di vittoria condivisibile.
+- [ ] Raggiungibilità di 11.2 sul solo target ridotto: il Picco è raggiungibile con il solo Sigillo Meridiano.
 
-**Gate:** nessun errore console, nessuna azione essenziale fuori viewport, cache aggiornata correttamente.
+**Gate:** un nuovo giocatore arriva al Picco in 25–45 minuti senza assistenza e senza soft-lock.
 
-### Fase 6 — Release candidate: bilanciamento e release (settimana 8)
+### M6 — Accessibilità (peso 5) — settimana 6
 
-- [ ] 10–15 playtest esterni completi.
-- [ ] Telemetria locale esportabile e opt-in: durata, sconfitte, acquisti, ordine rami.
-- [ ] Correggere punti di abbandono, economia e boss.
-- [ ] Verificare README, crediti, privacy, licenze e deployment.
-- [ ] Release candidate e smoke test su URL pubblico.
+- [ ] Tastiera con focus sempre visibile, ordine stabile e tasti 1–4 allineati ai comandi visibili (7.2).
+- [ ] Touch con bersagli da almeno 44×44 px e safe-area rispettata (8.1).
+- [ ] Screen reader: `aria-live` per log e cambi di stato, dialoghi etichettati, nessuna informazione solo cromatica (8.4).
+- [ ] Viewport 320 px, zoom 200%, `prefers-reduced-motion` e contrasto WCAG AA.
+- [ ] Shell accessibile desktop/mobile senza overflow del documento.
 
-**Gate:** mediana 60–90 minuti, nessun blocco P0/P1, almeno 80% dei tester comprende storia e Sintonia senza spiegazione esterna.
+**Gate:** il flusso completo del target è giocabile con tastiera, touch e screen reader alle viewport di 14.2.
+
+### M7 — PWA installabile e giocabile offline (peso 4) — settimana 7
+
+- [ ] `vite-plugin-pwa` in `injectManifest`, service worker versionato e manifest installabile (10.3, 10.5).
+- [ ] Network-first per HTML, JS, CSS e dati; fallback offline dopo una visita.
+- [ ] Update flow con prompt esplicito e `SKIP_WAITING` solo su azione dell'utente.
+- [ ] Deep link su hosting statico senza rewrite manuale (9.5).
+
+**Gate:** dopo una visita il gioco riparte offline, un aggiornamento non serve codice o dati obsoleti e nessun asset remoto è richiesto.
+
+### M8 — `verify.sh` e `verify.json` (peso 3) — settimana 7
+
+- [ ] `./verify.sh` non interattivo, entro 600 s, con `npm ci` e dipendenze pinnate dal lockfile.
+- [ ] `verify.json` con gli id `M0`–`M8` del `meta.json` ed exit code concorde.
+- [ ] Pass Playwright pinnato sul percorso end-to-end di §13.
+
+**Gate:** `./verify.sh` esce 0 su un albero pulito e `node scripts/score.mjs` legge il `verify.json` senza violazioni.
+
+### Fase E — Espansione completa (peso 0, fuori dal target di release)
+
+Non è una milestone: non compare in `meta.json`, non vale punti e non è richiesta da `./verify.sh`. Si costruisce solo dopo la release del target ridotto, senza modificare schema o bilanciamento senza migrazione e regression suite (§5.4).
+
+- [ ] Atti III-A e III-B: Selva del Sussurro, Caverne di Vetro, Costa di Vetro, Mare Aperto, Isola della Bruma.
+- [ ] Camera del Contrappeso e secondo guardiano della Torre; Frammento di Memoria e Cifrario di Marea come prerequisiti del Picco.
+- [ ] Roster completo dell'espansione (§5.4), secondo finale “Liberare le Vie” ed epiloghi regionali differenzianti.
+- [ ] Vie Smarrite, Echi opzionali per regione e challenge replay con seed pubblico.
 
 ### 12.1 Separazione degli scope e criteri di promozione
 
 | Livello | Include | Non include | Criterio per procedere |
 |---|---|---|---|
-| **MVP-0** | Vertical slice Valdaluce, un incontro, Sintonia, Wayline, reload/deep link, Via Smarrita, tastiera/mobile, test di dominio | Torre, rami, roster completo, pixel art, audio, analytics | Gate MVP-0 chiuso; altrimenti solo correzioni del slice |
-| **R1 narrativa** | Fasi 1–6: 29 nodi, 20 Echi, Torre, due rami, due finali, PWA, accessibilità, migrazioni | Challenge pubblica, Wayline firmati, contenuto opzionale non necessario | Tutti i gate 13.3 chiusi e 10–15 playtest completi |
-| **Post-R1 opzionale** | Vie Smarrite, Echi rari, replay seed, pixel atlas, telemetry opt-in | Qualsiasi requisito per capire o finire la storia | Non modifica schema o bilanciamento R1 senza migration e regression suite |
+| **MVP-0** | Milestone `M0`: vertical slice Valdaluce, un incontro, Sintonia, Wayline, reload/deep link, Via Smarrita, tastiera/mobile, test di dominio | Torre, roster del target, economia, pixel art, audio, analytics | Gate MVP-0 chiuso; altrimenti solo correzioni del slice |
+| **Target di release (R1)** | Milestone `M1`–`M8`: 12–15 nodi, 8–10 Echi, 3 regioni, 3 scontri chiave, 1 finale, codec, PWA, accessibilità, migrazioni | Espansione di §5.4, challenge pubblica, Wayline firmati | Tutti i gate 14.3 chiusi e 10–15 playtest completi |
+| **Post-release opzionale (peso 0)** | Espansione completa di §5.4: rami, secondo finale, Vie Smarrite, Echi rari, replay seed, pixel atlas, telemetry opt-in | Qualsiasi requisito per capire o finire la storia | Non modifica schema o bilanciamento R1 senza migration e regression suite |
 
 Ogni milestone deve produrre una build installabile, un changelog e fixture riproducibili. Il lavoro narrativo successivo non può mascherare un problema del dominio, del router, dei save o del vertical slice.
 
 ---
 
-## 13. KPI e criteri di successo
+## 13. Verify — `./verify.sh` e `verify.json`
 
-### 13.1 Esperienza
+`./verify.sh` è un deliverable del progetto, risiede nella root `benchmarks/wayline/` ed è l'unico comando di verifica dell'harness: non interattivo, termina entro 600 s, exit 0 = pass, e scrive `verify.json` con esattamente gli id milestone del `meta.json` (`M0`–`M8`, schema 1, benchmark `wayline`, una voce `{id, pass, detail}` per milestone, `weight` facoltativo ma coerente con il `meta.json`). L'exit code concorda con il file: 0 se e solo se tutte le milestone sono `pass: true`.
+
+Sequenza eseguita dallo script, con tutte le dipendenze pinnate nel lockfile (10.3):
+
+```bash
+npm ci
+npm run typecheck
+vitest --run          # test unitari del dominio: codec, transizioni, PRNG, raggiungibilità
+npm run build
+npx playwright test   # pass pinnato: @playwright/test, Chromium
+```
+
+Il pass Playwright è **uno solo** e copre il percorso end-to-end del target:
+
+1. apertura di Valdaluce e primo incontro;
+2. Sintonia e ingresso del primo Eco in Compagnia;
+3. generazione del Wayline, copia della URL e verifica del checksum;
+4. reload della URL con stato identico;
+5. deep link in una nuova scheda sullo stesso nodo e sullo stesso turno di battaglia;
+6. link manomesso o troncato: Via Smarrita con motivo, nessuno stato parziale caricato.
+
+Solo **assert su DOM e stato** (testo del nodo corrente, HP, turno, `battleId`, presenza della Via Smarrita): nessun giudizio visivo, vietati screenshot diff e confronti di pixel. Le milestone ricevono `pass` dai risultati che competono loro: unit test del dominio per `M1`–`M5`, build e assert Playwright per `M0`, `M6`, `M7`, esecuzione dello script stesso per `M8`. `npm run dev`, la matrice E2E estesa su tre browser e il playtest umano restano attività di sviluppo, non passi di `./verify.sh`.
+
+---
+
+## 14. KPI e criteri di successo
+
+### 14.1 Esperienza
 
 - 90% dei tester completa la prima Sintonia entro 8 minuti.
 - 85% comprende che il Wayline è il salvataggio senza aprire la guida.
 - 80% sa spiegare perché gli Echi non vengono “catturati”.
-- Almeno il 30% dei giocatori sceglie ciascun ramo per primo: nessun ordine appare obbligatorio.
+- Almeno il 30% dei giocatori sceglie ciascun ramo per primo: nessun ordine appare obbligatorio (KPI dell'espansione completa, §5.4; nel target ridotto non ci sono rami).
 - Meno del 10% delle sessioni termina per soft-lock percepito o requisito non compreso.
 
-### 13.2 Qualità tecnica
+### 14.2 Qualità tecnica
 
 - 100% test dominio e contratti dati verdi.
 - Matrice E2E verde su Chromium, Firefox e WebKit.
@@ -1024,22 +1111,22 @@ Ogni milestone deve produrre una build installabile, un changelog e fixture ripr
 - Atlas opzionale <40 KB per bioma e mai nel precache predefinito.
 - Short Save massimo ufficiale <2.000 caratteri.
 
-### 13.3 Release verdict
+### 14.3 Release verdict
 
-**MVP-0 GO** soltanto se il gate della fase 0 è chiuso. Questo autorizza la costruzione della release narrativa, non è un verdetto per il gioco completo.
+**MVP-0 GO** soltanto se il gate della milestone `M0` è chiuso. Questo autorizza la costruzione della release narrativa, non è un verdetto per il gioco completo.
 
 **R1 GO** soltanto se:
 
 - storia e lessico canonico sono applicati a UI, dati, test e asset;
 - i vecchi Wayline migrano senza perdita di stato;
-- i due rami e i due finali sono verificati end-to-end;
+- il Picco dell'Asse è raggiungibile con il solo Sigillo Meridiano e il finale del target è verificato end-to-end (rami e secondo finale valgono per l'espansione di §5.4);
 - il flusso service worker non serve codice o dati obsoleti;
 - performance, accessibilità e licenze superano i gate;
 - almeno 10 playtest umani completi non evidenziano blocchi critici.
 
 ---
 
-## 14. Rischi e contromisure
+## 15. Rischi e contromisure
 
 | Rischio | Prob. | Impatto | Contromisura |
 |---|---|---|---|
@@ -1048,15 +1135,15 @@ Ogni milestone deve produrre una build installabile, un changelog e fixture ripr
 | Cache PWA mantiene vecchi dati o flag | Alta | Alto | Versione cache, network-first, test update da versione precedente |
 | Doppia fonte dati diverge | Media | Alto | Una fonte canonica e generazione/validazione automatica |
 | Economia obbliga grinding | Media | Medio | Ricompense garantite e simulazione no-random-encounters |
-| Due rami creano combinazioni non testate | Media | Alto | Test di raggiungibilità per entrambe le permutazioni + E2E mirati |
+| I due rami dell'espansione creano combinazioni non testate | Media | Alto | Test di raggiungibilità per entrambe le permutazioni + E2E mirati |
 | ASCII illeggibile su mobile | Media | Medio | Budget righe/colonne, snapshot viewport e fallback testuale |
 | Pixel art aumenta peso e rompe offline | Media | Medio | Opt-in lazy, limite 40 KB/bioma, ASCII sempre disponibile |
 | Passivi della Compagnia producono build dominante | Alta | Medio | Cap espliciti, quattro archetipi benchmark, telemetry playtest |
-| Il finale morale appare arbitrario | Media | Alto | Foreshadowing in entrambi i rami e dialoghi reattivi alle scelte |
+| Il finale morale dell'espansione appare arbitrario | Media | Alto | Foreshadowing in entrambi i rami e dialoghi reattivi alle scelte |
 
 ---
 
-## 15. Definition of Done
+## 16. Definition of Done
 
 Una feature è completa quando:
 
@@ -1072,4 +1159,4 @@ Una feature è completa quando:
 - [ ] rispetta i budget di codice, asset e lunghezza save;
 - [ ] aggiorna documentazione, dati e test nello stesso work package.
 
-Il gioco è **release-ready** soltanto quando tutti i gate della sezione 13.3 sono chiusi. Fino ad allora il verdetto rimane **NO-GO per il narrativo**.
+Il gioco è **release-ready** soltanto quando tutti i gate della sezione 14.3 sono chiusi. Fino ad allora il verdetto rimane **NO-GO per il narrativo**.

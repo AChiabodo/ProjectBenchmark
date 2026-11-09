@@ -5,18 +5,21 @@
   "tier": 3,
   "spec_language": "it",
   "impl_languages": ["C++20"],
-  "stack": ["raylib 5.0+", "CMake 3.22+", "Raygui", "Verlet 2D custom"],
+  "stack": ["raylib 5.0+", "CMake 3.24+", "Raygui", "Verlet 2D custom"],
   "runtime": "native",
   "plan": "PLAN.md",
-  "audit": null,
+  "audit": "AUDIT.md",
   "verify": "./verify.sh",
   "verify_timeout_s": 600,
   "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review", "codebase-design", "improve-codebase-architecture"],
   "milestones": [
-    { "id": "M0", "weight": 40, "slice": true, "title": "Setup progetto e core Tetris classico (MVP baseline)" },
-    { "id": "M1", "weight": 20, "slice": false, "title": "Motore fisico e deformabilità (soft-body layer)" },
-    { "id": "M2", "weight": 20, "slice": false, "title": "Architettura roguelike e sistema carte" },
-    { "id": "M3", "weight": 12, "slice": false, "title": "Game juice, shader, particelle e audio" },
-    { "id": "M4", "weight": 8, "slice": false, "title": "Estensibilità geometrica (proof of concept)" }
+    { "id": "M0", "weight": 40, "slice": true, "title": "Core Tetris classico: spawn, movimento, rotazione, lock, line clear e game over con FSM valida" },
+    { "id": "M1", "weight": 10, "slice": false, "title": "Griglia e operazioni pezzo tramite l'interfaccia astratta IGrid" },
+    { "id": "M2", "weight": 10, "slice": false, "title": "Regole di lock, line clear e punteggio" },
+    { "id": "M3", "weight": 8, "slice": false, "title": "Stati e transizioni della FSM" },
+    { "id": "M4", "weight": 10, "slice": false, "title": "Draft carte e modificatori con seed deterministico" },
+    { "id": "M5", "weight": 6, "slice": false, "title": "Negozio ed economia" },
+    { "id": "M6", "weight": 8, "slice": false, "title": "Juice visivo, rendering e audio" },
+    { "id": "M7", "weight": 8, "slice": false, "title": "Suite di test headless, incluso il test di indipendenza fisica/logica" }
   ]
 }
