@@ -1,0 +1,25 @@
+{
+  "id": "taskboard",
+  "title": "Taskboard — board full stack on Docker Compose",
+  "kind": "benchmark",
+  "tier": 4,
+  "spec_language": "en",
+  "impl_languages": ["TypeScript", "SQL"],
+  "stack": ["Node.js 22", "Fastify 5.2.1", "Svelte 5.2.7", "Vite 7.0.6", "TypeScript 5.8.3", "PostgreSQL 16.4", "nginx 1.27.2", "Vitest 4.0.0", "Playwright 1.65.0", "Docker Compose"],
+  "runtime": "container",
+  "plan": "PLAN.md",
+  "audit": null,
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review", "codebase-design", "improve-codebase-architecture", "to-spec", "to-tickets", "implement-spec", "wayfinder"],
+  "milestones": [
+    { "id": "M0", "weight": 40, "slice": true, "title": "Compose stack up, board and vertical slice" },
+    { "id": "M1", "weight": 12, "slice": false, "title": "Schema, migrations and migration runner" },
+    { "id": "M2", "weight": 12, "slice": false, "title": "CRUD API with declared errors" },
+    { "id": "M3", "weight": 10, "slice": false, "title": "Ordering and atomic move invariants" },
+    { "id": "M4", "weight": 10, "slice": false, "title": "Frontend board and empty/loading/error states" },
+    { "id": "M5", "weight": 6, "slice": false, "title": "Deterministic seed" },
+    { "id": "M6", "weight": 5, "slice": false, "title": "API tests in-container and headless end-to-end check" },
+    { "id": "M7", "weight": 5, "slice": false, "title": "verify.sh and verify.json" }
+  ]
+}
