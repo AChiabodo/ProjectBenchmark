@@ -1,0 +1,26 @@
+{
+  "id": "match3",
+  "title": "GemSwap (Match-3 Web)",
+  "kind": "benchmark",
+  "tier": 3,
+  "spec_language": "it",
+  "impl_languages": ["TypeScript"],
+  "stack": ["Vite 7.0.6", "TypeScript 5.8.3", "Vitest 4.0.0", "Playwright 1.65.0", "ESLint 9.32.0"],
+  "runtime": "browser",
+  "plan": "PLAN.md",
+  "audit": "AUDIT.md",
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review", "codebase-design", "improve-codebase-architecture", "code-reviewer", "typescript-pro"],
+  "milestones": [
+    { "id": "M0", "weight": 40, "slice": true, "title": "Core puro e slice verticale giocabile (board deterministica, FSM minima, rendering e HUD minimi, Moves)" },
+    { "id": "M1", "weight": 12, "slice": false, "title": "Invarianti board, deadlock e stabilizzazione forzata al cap di cascade" },
+    { "id": "M2", "weight": 10, "slice": false, "title": "FSM completa e contratto di input lock" },
+    { "id": "M3", "weight": 8, "slice": false, "title": "Modalità Moves configurabile (5-50 mosse)" },
+    { "id": "M4", "weight": 8, "slice": false, "title": "Modalità Time configurabile (30-300 s)" },
+    { "id": "M5", "weight": 10, "slice": false, "title": "Special tile: creazione, attivazioni, catene e combo" },
+    { "id": "M6", "weight": 4, "slice": false, "title": "Persistenza difensiva versionata (localStorage)" },
+    { "id": "M7", "weight": 3, "slice": false, "title": "Accessibilità, performance e polish audiovisivo" },
+    { "id": "M8", "weight": 5, "slice": false, "title": "verify.sh non interattivo con verify.json" }
+  ]
+}

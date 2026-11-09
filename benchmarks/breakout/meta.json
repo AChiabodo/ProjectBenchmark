@@ -1,0 +1,72 @@
+{
+  "id": "breakout",
+  "title": "Breakout",
+  "kind": "benchmark",
+  "tier": 2,
+  "spec_language": "it",
+  "impl_languages": [
+    "C17"
+  ],
+  "stack": [
+    "raylib 5.5",
+    "CMake",
+    "CTest"
+  ],
+  "runtime": "native",
+  "plan": "PLAN.md",
+  "audit": "AUDIT.md",
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": [
+    "implement",
+    "tdd",
+    "diagnosing-bugs",
+    "prototype",
+    "code-review",
+    "build-raylib-c-games"
+  ],
+  "milestones": [
+    {
+      "id": "M0",
+      "weight": 40,
+      "slice": true,
+      "title": "Bootstrap, build, test headless e core giocabile con game over"
+    },
+    {
+      "id": "M1",
+      "weight": 15,
+      "slice": false,
+      "title": "Collisioni deterministiche e testate"
+    },
+    {
+      "id": "M2",
+      "weight": 12,
+      "slice": false,
+      "title": "Livelli: caricamento e validazione del formato"
+    },
+    {
+      "id": "M3",
+      "weight": 15,
+      "slice": false,
+      "title": "Power-up con durata, stacking e scadenza"
+    },
+    {
+      "id": "M4",
+      "weight": 8,
+      "slice": false,
+      "title": "Stati, punteggio, HUD, audio, game feel e transizioni"
+    },
+    {
+      "id": "M5",
+      "weight": 5,
+      "slice": false,
+      "title": "Release, sanitizers e packaging redistribuibile"
+    },
+    {
+      "id": "M6",
+      "weight": 5,
+      "slice": false,
+      "title": "verify.sh che emette verify.json per ogni milestone"
+    }
+  ]
+}

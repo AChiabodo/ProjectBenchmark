@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "benchmark": "demo",
+  "milestones": [
+    { "id": "M0", "pass": true, "weight": 12, "detail": "peso dichiarato 12 contro 10 del meta.json" },
+    { "id": "M1", "pass": true, "detail": "slice giocabile end-to-end" },
+    { "id": "M2", "pass": true, "detail": "tutti i sistemi accessori attivi" },
+    { "id": "M3", "pass": true, "detail": "pacchetto e QA finale" }
+  ],
+  "notes": "fixture: peso divergente fra verify.json e meta.json, deve essere una violazione"
+}

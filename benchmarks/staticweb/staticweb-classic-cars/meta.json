@@ -1,0 +1,25 @@
+{
+  "id": "staticweb-classic-cars",
+  "title": "StaticWeb — Auto d'epoca (noleggio)",
+  "kind": "benchmark",
+  "tier": 2,
+  "spec_language": "it",
+  "impl_languages": ["HTML", "CSS", "JavaScript"],
+  "stack": ["HTML/CSS/JS vanilla"],
+  "runtime": "browser",
+  "plan": "PLAN.md",
+  "audit": "AUDIT.md",
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review"],
+  "milestones": [
+    {"id": "M0", "weight": 40, "slice": true, "title": "Slice verticale: home, flotta filtrata e scheda auto"},
+    {"id": "M1", "weight": 12, "slice": false, "title": "Dataset unico AUTO con schema, enum e validateDataset()"},
+    {"id": "M2", "weight": 10, "slice": false, "title": "Filtri, conteggi e stato nella query string"},
+    {"id": "M3", "weight": 12, "slice": false, "title": "Interazione caratterizzante: galleria con lightbox e parallax"},
+    {"id": "M4", "weight": 8, "slice": false, "title": "Stati vuoto, errore e non valido"},
+    {"id": "M5", "weight": 8, "slice": false, "title": "Accessibilità, reduced motion e contrasto"},
+    {"id": "M6", "weight": 5, "slice": false, "title": "Responsive sui breakpoint dichiarati"},
+    {"id": "M7", "weight": 5, "slice": false, "title": "Verify: Playwright pinnato e verify.json"}
+  ]
+}

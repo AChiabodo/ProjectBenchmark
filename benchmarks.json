@@ -1,0 +1,1419 @@
+{
+  "schema": 1,
+  "benchmarks": [
+    {
+      "id": "breakout",
+      "title": "Breakout",
+      "kind": "benchmark",
+      "tier": 2,
+      "spec_language": "it",
+      "impl_languages": [
+        "C17"
+      ],
+      "stack": [
+        "raylib 5.5",
+        "CMake",
+        "CTest"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "build-raylib-c-games"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, build, test headless e core giocabile con game over"
+        },
+        {
+          "id": "M1",
+          "weight": 15,
+          "slice": false,
+          "title": "Collisioni deterministiche e testate"
+        },
+        {
+          "id": "M2",
+          "weight": 12,
+          "slice": false,
+          "title": "Livelli: caricamento e validazione del formato"
+        },
+        {
+          "id": "M3",
+          "weight": 15,
+          "slice": false,
+          "title": "Power-up con durata, stacking e scadenza"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Stati, punteggio, HUD, audio, game feel e transizioni"
+        },
+        {
+          "id": "M5",
+          "weight": 5,
+          "slice": false,
+          "title": "Release, sanitizers e packaging redistribuibile"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh che emette verify.json per ogni milestone"
+        }
+      ]
+    },
+    {
+      "id": "rulechat",
+      "title": "RuleChat — deterministic conversational chatbot",
+      "kind": "benchmark",
+      "tier": 2,
+      "spec_language": "en",
+      "impl_languages": [
+        "Python"
+      ],
+      "stack": [
+        "Python 3.12",
+        "Flask 3.0.3",
+        "SQLite (stdlib sqlite3)",
+        "pytest 8.3.3",
+        "Docker Compose"
+      ],
+      "runtime": "container",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, HTTP API and vertical slice"
+        },
+        {
+          "id": "M1",
+          "weight": 15,
+          "slice": false,
+          "title": "Utterance corpus and intent matcher"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Slot filling and dialogue FSM"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Session persistence (SQLite)"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Fallback and escalation"
+        },
+        {
+          "id": "M5",
+          "weight": 7,
+          "slice": false,
+          "title": "Table-driven tests and held-out accuracy"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
+      "id": "staticweb-camels",
+      "title": "StaticWeb — Cammelli (e-commerce vetrina)",
+      "kind": "benchmark",
+      "tier": 2,
+      "spec_language": "it",
+      "impl_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "stack": [
+        "HTML/CSS/JS vanilla"
+      ],
+      "runtime": "browser",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Slice verticale: home, catalogo filtrato e pagina prodotto"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Dataset unico PRODOTTI con schema, enum e validateDataset()"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Filtri, conteggi e stato nella query string"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "Interazione caratterizzante: lightbox prodotto, parallax e carrello locale"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Stati vuoto, errore e non valido"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Accessibilità, reduced motion e contrasto"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "Responsive sui breakpoint dichiarati"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "Verify: Playwright pinnato e verify.json"
+        }
+      ]
+    },
+    {
+      "id": "staticweb-classic-cars",
+      "title": "StaticWeb — Auto d'epoca (noleggio)",
+      "kind": "benchmark",
+      "tier": 2,
+      "spec_language": "it",
+      "impl_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "stack": [
+        "HTML/CSS/JS vanilla"
+      ],
+      "runtime": "browser",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Slice verticale: home, flotta filtrata e scheda auto"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Dataset unico AUTO con schema, enum e validateDataset()"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Filtri, conteggi e stato nella query string"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "Interazione caratterizzante: galleria con lightbox e parallax"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Stati vuoto, errore e non valido"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Accessibilità, reduced motion e contrasto"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "Responsive sui breakpoint dichiarati"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "Verify: Playwright pinnato e verify.json"
+        }
+      ]
+    },
+    {
+      "id": "connect4-minimax",
+      "title": "Connect4-Minimax — deterministic Connect Four search engine",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "C#"
+      ],
+      "stack": [
+        ".NET 8",
+        "C# 12",
+        "xUnit 2.9.2",
+        "dotnet test",
+        "dotnet CLI"
+      ],
+      "runtime": "dotnet",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, board, rules and playable CLI"
+        },
+        {
+          "id": "M1",
+          "weight": 10,
+          "slice": false,
+          "title": "Win and draw detection over the full board"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Negamax with alpha-beta pruning"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Window evaluation function"
+        },
+        {
+          "id": "M4",
+          "weight": 12,
+          "slice": false,
+          "title": "Fixed-position and perft test suite"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Deterministic timing benchmark"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
+      "id": "go-http-server",
+      "title": "go-http-server — concurrent service with a bounded worker pool",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "Go"
+      ],
+      "stack": [
+        "Go 1.22",
+        "net/http (standard library only)",
+        "go vet",
+        "go test -race"
+      ],
+      "runtime": "go",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, routes, worker-pool slice and drain-on-shutdown"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Declared route table, handlers and error codes"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Middleware chain: panic recovery, logging, rate limit"
+        },
+        {
+          "id": "M3",
+          "weight": 15,
+          "slice": false,
+          "title": "Fixed worker pool, bounded queue and backpressure"
+        },
+        {
+          "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "Race-detector-clean functional and concurrency suite"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Health and textual metrics endpoints"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
+      "id": "kotlin-desktop",
+      "title": "Kotlin Desktop — expense tracker on the JVM without the Android SDK",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "Kotlin"
+      ],
+      "stack": [
+        "Kotlin 2.0.21",
+        "JDK 21",
+        "Gradle 8.10.2 (wrapper, dependency locking)",
+        "Swing/AWT from the JDK (no UI dependency)",
+        "java.nio versioned text store",
+        "JUnit Jupiter 5.11.3"
+      ],
+      "runtime": "jvm",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Gradle project, domain core and the persisted slice"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Domain model, validation rules and the JVM domain suite"
+        },
+        {
+          "id": "M2",
+          "weight": 12,
+          "slice": false,
+          "title": "Versioned local store, schema version and corrupt-store path"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "Desktop UI: insert, list, edit and delete"
+        },
+        {
+          "id": "M4",
+          "weight": 13,
+          "slice": false,
+          "title": "Report view with declared aggregates"
+        },
+        {
+          "id": "M5",
+          "weight": 6,
+          "slice": false,
+          "title": "Empty, loading and validation-error states"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json over build, JVM tests and headless smoke"
+        }
+      ]
+    },
+    {
+      "id": "match3",
+      "title": "GemSwap (Match-3 Web)",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "it",
+      "impl_languages": [
+        "TypeScript"
+      ],
+      "stack": [
+        "Vite 7.0.6",
+        "TypeScript 5.8.3",
+        "Vitest 4.0.0",
+        "Playwright 1.65.0",
+        "ESLint 9.32.0"
+      ],
+      "runtime": "browser",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "code-reviewer",
+        "typescript-pro"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Core puro e slice verticale giocabile (board deterministica, FSM minima, rendering e HUD minimi, Moves)"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Invarianti board, deadlock e stabilizzazione forzata al cap di cascade"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "FSM completa e contratto di input lock"
+        },
+        {
+          "id": "M3",
+          "weight": 8,
+          "slice": false,
+          "title": "Modalità Moves configurabile (5-50 mosse)"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Modalità Time configurabile (30-300 s)"
+        },
+        {
+          "id": "M5",
+          "weight": 10,
+          "slice": false,
+          "title": "Special tile: creazione, attivazioni, catene e combo"
+        },
+        {
+          "id": "M6",
+          "weight": 4,
+          "slice": false,
+          "title": "Persistenza difensiva versionata (localStorage)"
+        },
+        {
+          "id": "M7",
+          "weight": 3,
+          "slice": false,
+          "title": "Accessibilità, performance e polish audiovisivo"
+        },
+        {
+          "id": "M8",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh non interattivo con verify.json"
+        }
+      ]
+    },
+    {
+      "id": "rust-tui-editor",
+      "title": "Rust TUI editor — headless-testable editor core",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "Rust"
+      ],
+      "stack": [
+        "Rust stable (edition 2021)",
+        "ratatui 0.30.2",
+        "crossterm 0.29.0",
+        "Cargo",
+        "cargo test"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Headless slice: open, edit, undo, redo, save, reopen"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Gap buffer with a declared edit cost shape"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Cursor and selection over grapheme clusters"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Undo and redo with run grouping and bounded depth"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Forward search with wrap and match navigation"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Save and load: encoding, newline and BOM policy, error path"
+        },
+        {
+          "id": "M6",
+          "weight": 7,
+          "slice": false,
+          "title": "Keymap, command layer and TUI view rendering"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
+      "id": "staticweb-auction",
+      "title": "StaticWeb — Aste virtuali online",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "it",
+      "impl_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "stack": [
+        "HTML/CSS/JS vanilla"
+      ],
+      "runtime": "browser",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Slice verticale: home, catalogo lotti filtrato e pagina lotto"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Dataset unico LOTTI con schema, enum e validateDataset()"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Filtri, ricerca, conteggi e stato nella query string"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "Interazione caratterizzante: countdown deterministico e offerta simulata"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Stati vuoto, errore e non valido"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Accessibilità, reduced motion e contrasto"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "Responsive sui breakpoint dichiarati"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "Verify: Playwright pinnato e verify.json"
+        }
+      ]
+    },
+    {
+      "id": "staticweb-watches",
+      "title": "StaticWeb — Orologi d'epoca",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "it",
+      "impl_languages": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "stack": [
+        "HTML/CSS/JS vanilla"
+      ],
+      "runtime": "browser",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Slice verticale: home, collezione filtrata e scheda orologio"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Dataset unico OROLOGI con schema, enum e validateDataset()"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Filtri, conteggi e stato nella query string"
+        },
+        {
+          "id": "M3",
+          "weight": 12,
+          "slice": false,
+          "title": "Interazione caratterizzante: orologio analogico e ombre dinamiche"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Stati vuoto, errore e non valido"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Accessibilità, reduced motion e contrasto"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "Responsive sui breakpoint dichiarati"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "Verify: Playwright pinnato e verify.json"
+        }
+      ]
+    },
+    {
+      "id": "tetroshift",
+      "title": "TetroShift / MorphoTetris",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "it",
+      "impl_languages": [
+        "C++20"
+      ],
+      "stack": [
+        "raylib 5.0+",
+        "CMake 3.24+",
+        "Raygui",
+        "Verlet 2D custom"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Core Tetris classico: spawn, movimento, rotazione, lock, line clear e game over con FSM valida"
+        },
+        {
+          "id": "M1",
+          "weight": 10,
+          "slice": false,
+          "title": "Griglia e operazioni pezzo tramite l'interfaccia astratta IGrid"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Regole di lock, line clear e punteggio"
+        },
+        {
+          "id": "M3",
+          "weight": 8,
+          "slice": false,
+          "title": "Stati e transizioni della FSM"
+        },
+        {
+          "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "Draft carte e modificatori con seed deterministico"
+        },
+        {
+          "id": "M5",
+          "weight": 6,
+          "slice": false,
+          "title": "Negozio ed economia"
+        },
+        {
+          "id": "M6",
+          "weight": 8,
+          "slice": false,
+          "title": "Juice visivo, rendering e audio"
+        },
+        {
+          "id": "M7",
+          "weight": 8,
+          "slice": false,
+          "title": "Suite di test headless, incluso il test di indipendenza fisica/logica"
+        }
+      ]
+    },
+    {
+      "id": "minilang",
+      "title": "MiniLang — mini-language interpreter",
+      "kind": "benchmark",
+      "tier": 4,
+      "spec_language": "en",
+      "impl_languages": [
+        "Rust"
+      ],
+      "stack": [
+        "Rust (std only, edition 2021)",
+        "Cargo",
+        "cargo test"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, slice program and positioned diagnostics"
+        },
+        {
+          "id": "M1",
+          "weight": 15,
+          "slice": false,
+          "title": "Lexer, parser and AST for the full declared grammar"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Tree-walking evaluator: precedence, scope, if and while"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Functions, parameters and call semantics"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "REPL and file mode with exit codes"
+        },
+        {
+          "id": "M5",
+          "weight": 7,
+          "slice": false,
+          "title": "Table-driven suite with output and diagnostic snapshots"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
+      "id": "taskboard",
+      "title": "Taskboard — board full stack on Docker Compose",
+      "kind": "benchmark",
+      "tier": 4,
+      "spec_language": "en",
+      "impl_languages": [
+        "TypeScript",
+        "SQL"
+      ],
+      "stack": [
+        "Node.js 22",
+        "Fastify 5.2.1",
+        "Svelte 5.2.7",
+        "Vite 7.0.6",
+        "TypeScript 5.8.3",
+        "PostgreSQL 16.4",
+        "nginx 1.27.2",
+        "Vitest 4.0.0",
+        "Playwright 1.65.0",
+        "Docker Compose"
+      ],
+      "runtime": "container",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Compose stack up, board and vertical slice"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Schema, migrations and migration runner"
+        },
+        {
+          "id": "M2",
+          "weight": 12,
+          "slice": false,
+          "title": "CRUD API with declared errors"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Ordering and atomic move invariants"
+        },
+        {
+          "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "Frontend board and empty/loading/error states"
+        },
+        {
+          "id": "M5",
+          "weight": 6,
+          "slice": false,
+          "title": "Deterministic seed"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "API tests in-container and headless end-to-end check"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
+      "id": "neon-vanguard",
+      "title": "NEON VANGUARD",
+      "kind": "benchmark",
+      "tier": 5,
+      "spec_language": "it",
+      "impl_languages": [
+        "C++20"
+      ],
+      "stack": [
+        "raylib 5.5",
+        "CMake 3.22+",
+        "--smoke harness"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Slice verticale: arena giocabile con player, dash, sparo, un tipo di nemico, morte e restart"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Spawn Director con curva di budget seedata"
+        },
+        {
+          "id": "M2",
+          "weight": 12,
+          "slice": false,
+          "title": "Orb XP, level-up e draft di 3 carte con seed riproducibile"
+        },
+        {
+          "id": "M3",
+          "weight": 8,
+          "slice": false,
+          "title": "Boss a due fasi"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Juice: particelle, screenshake, hit-stop"
+        },
+        {
+          "id": "M5",
+          "weight": 6,
+          "slice": false,
+          "title": "Audio procedurale con criterio di inizializzazione headless"
+        },
+        {
+          "id": "M6",
+          "weight": 6,
+          "slice": false,
+          "title": "Check automatico: nessun asset binario e build senza warning"
+        },
+        {
+          "id": "M7",
+          "weight": 3,
+          "slice": false,
+          "title": "Costanti di bilanciamento sotto test"
+        },
+        {
+          "id": "M8",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh che emette verify.json"
+        }
+      ]
+    },
+    {
+      "id": "paper-feed",
+      "title": "AI/ML Newsletter (paper-feed)",
+      "kind": "benchmark",
+      "tier": 5,
+      "spec_language": "it",
+      "impl_languages": [
+        "Python"
+      ],
+      "stack": [
+        "Python 3.12",
+        "FastAPI",
+        "Typer",
+        "SQLAlchemy 2",
+        "Alembic",
+        "APScheduler",
+        "Jinja2",
+        "PostgreSQL",
+        "MailHog",
+        "Docker Compose"
+      ],
+      "runtime": "container",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, Compose e vertical slice"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Ingestione fixture e normalizzazione"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Deduplicazione spiegabile"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Scoring deterministico"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Scoring semantico via provider stub"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Rendering Markdown e HTML sanitizzato"
+        },
+        {
+          "id": "M6",
+          "weight": 7,
+          "slice": false,
+          "title": "Lock del worker e scheduling idempotente"
+        },
+        {
+          "id": "M7",
+          "weight": 3,
+          "slice": false,
+          "title": "Consegna via MailHog"
+        },
+        {
+          "id": "M8",
+          "weight": 2,
+          "slice": false,
+          "title": "Verifica e rerun byte-per-byte"
+        }
+      ]
+    },
+    {
+      "id": "wayline",
+      "title": "WAYLINE — L'Atlante Spezzato",
+      "kind": "benchmark",
+      "tier": 5,
+      "spec_language": "it",
+      "impl_languages": [
+        "TypeScript"
+      ],
+      "stack": [
+        "React 19",
+        "Vite",
+        "TypeScript strict",
+        "Vitest",
+        "React Testing Library",
+        "Playwright"
+      ],
+      "runtime": "browser",
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap e vertical slice: Valdaluce → incontro → Sintonia → Wayline → copia URL → reload/deep link"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Codec Wayline: checksum, validazione, messaggio per link invalido"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Combattimento con il sistema tattico leggero"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Roster Echi del target (8–10) con risonanze"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Economia e consumabili"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Le tre regioni del target e 12–15 nodi"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "Accessibilità: tastiera, touch, screen reader, 320 px"
+        },
+        {
+          "id": "M7",
+          "weight": 4,
+          "slice": false,
+          "title": "PWA installabile e giocabile offline"
+        },
+        {
+          "id": "M8",
+          "weight": 3,
+          "slice": false,
+          "title": "verify.sh e verify.json"
+        }
+      ]
+    }
+  ],
+  "wordingSources": [
+    {
+      "file": "cammelli.txt",
+      "title": "Sito Web Statico Avanzato — Cammelli (IT)",
+      "tier": 1,
+      "kind": "wording-source",
+      "sha256": "03c3d09085a31922a02226c733a8df6275c19e52f0781ad697e308a67f8e6b27"
+    },
+    {
+      "file": "cammelli_inglese.txt",
+      "title": "Advanced Static Website — Camels (EN)",
+      "tier": 1,
+      "kind": "wording-source",
+      "sha256": "8520e07fd2eec49bafe0b4e8ae527830760b81cabc0659ff70816969d1509415"
+    },
+    {
+      "file": "car_rental.txt",
+      "title": "Sito Web Statico Multipagina — Noleggio Auto d'Epoca",
+      "tier": 1,
+      "kind": "wording-source",
+      "sha256": "0adb534f1ac767f705ef1ae767c9fb1c44572bd523c787677703f63e75a58edf"
+    },
+    {
+      "file": "online_auction.txt",
+      "title": "Sito Web Statico Multipagina — Aste Virtuali Online",
+      "tier": 1,
+      "kind": "wording-source",
+      "sha256": "b8e59325d39be0d8004e90c8dedcd87fb556205c173b4ba9942ac4c2468e3213"
+    },
+    {
+      "file": "vintage_watches.txt",
+      "title": "Sito Web Statico Multipagina — Orologi d'Epoca",
+      "tier": 1,
+      "kind": "wording-source",
+      "sha256": "fced89f7182f1dccdb2a2460b54965e7797449f5857ecb741decae4bccdcbce8"
+    }
+  ]
+}

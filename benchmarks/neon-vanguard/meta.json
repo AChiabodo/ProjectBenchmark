@@ -1,0 +1,26 @@
+{
+  "id": "neon-vanguard",
+  "title": "NEON VANGUARD",
+  "kind": "benchmark",
+  "tier": 5,
+  "spec_language": "it",
+  "impl_languages": ["C++20"],
+  "stack": ["raylib 5.5", "CMake 3.22+", "--smoke harness"],
+  "runtime": "native",
+  "plan": "PLAN.md",
+  "audit": "AUDIT.md",
+  "verify": "./verify.sh",
+  "verify_timeout_s": 600,
+  "skills": ["implement", "tdd", "diagnosing-bugs", "prototype", "code-review", "codebase-design", "improve-codebase-architecture", "to-spec", "to-tickets", "implement-spec", "wayfinder"],
+  "milestones": [
+    { "id": "M0", "weight": 40, "slice": true, "title": "Slice verticale: arena giocabile con player, dash, sparo, un tipo di nemico, morte e restart" },
+    { "id": "M1", "weight": 12, "slice": false, "title": "Spawn Director con curva di budget seedata" },
+    { "id": "M2", "weight": 12, "slice": false, "title": "Orb XP, level-up e draft di 3 carte con seed riproducibile" },
+    { "id": "M3", "weight": 8, "slice": false, "title": "Boss a due fasi" },
+    { "id": "M4", "weight": 8, "slice": false, "title": "Juice: particelle, screenshake, hit-stop" },
+    { "id": "M5", "weight": 6, "slice": false, "title": "Audio procedurale con criterio di inizializzazione headless" },
+    { "id": "M6", "weight": 6, "slice": false, "title": "Check automatico: nessun asset binario e build senza warning" },
+    { "id": "M7", "weight": 3, "slice": false, "title": "Costanti di bilanciamento sotto test" },
+    { "id": "M8", "weight": 5, "slice": false, "title": "verify.sh che emette verify.json" }
+  ]
+}
