@@ -34,10 +34,16 @@ condivisa; i 5 `.txt` originali restano intatti come corsia T1 per modelli debol
    - `staticweb-watches` (T3): dataset orologi; palette scura con criteri di contrasto; smooth
      scroll custom opt-in o rimosso; costo delle ombre dinamiche su mobile con fallback;
      sincronizzazione dell'orologio testabile.
-3. **Milestone**: per ciascuno, bootstrap+layout, dataset+rendering lista, dettaglio/filtri,
-   interazione caratterizzante (galleria/lightbox, countdown+offerta, orologio, parallax),
-   accessibilità, responsive, verify. Slice = home + lista/catalogo filtrata + una pagina
-   dettaglio, tutto con dataset locale.
+3. **Milestone**: lo scheletro è quello dichiarato dalla issue #10, identico per i quattro siti
+   (cambia solo l'interazione caratterizzante di `M3`), e la issue è autorevole su questo
+   documento: `M0` 40 slice — home + catalogo filtrato + una pagina dettaglio, tutto dal dataset
+   locale; `M1` 12 — modulo dati unico con schema e validazione; `M2` 10 — filtri, conteggi dei
+   risultati e stato nella query string; `M3` 12 — interazione caratterizzante (lightbox+parallax,
+   galleria+filtri, countdown+offerta simulata, orologio+ombre); `M4` 8 — stati vuoto, errore e
+   non valido; `M5` 8 — accessibilità, reduced motion, contrasto; `M6` 5 — responsive sui
+   breakpoint dichiarati; `M7` 5 — `verify.sh` che emette `verify.json`. Σ weight = 100,
+   Σ slice = 40: gli stati vuoto/errore/non valido hanno una milestone pesata propria, non sono
+   sotto-punti di un'altra.
 4. **Wording source**: verifica che i 5 `.txt` siano byte-identici agli originali (solo
    spostati in C1) e che `_wording-source/index.meta.json` li elenchi come `kind:
    wording-source`, `tier: 1`. Nessuna modifica ai testi.
