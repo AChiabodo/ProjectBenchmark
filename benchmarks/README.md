@@ -6,7 +6,7 @@ Ogni benchmark vive in `benchmarks/<id>/` e dichiara i propri contratti in `meta
 | id | titolo | tier | runtime | impl | piano |
 |----|--------|:----:|---------|------|-------|
 | breakout | Breakout | T2 | native | C17 | PLAN.md |
-| staticweb-camels | StaticWeb — Cammelli (e-commerce vetrina) | T2 | browser | HTML, CSS, JavaScript | — |
+| staticweb-camels | StaticWeb — Cammelli (e-commerce vetrina) | T2 | browser | HTML, CSS, JavaScript | PLAN.md |
 | staticweb-classic-cars | StaticWeb — Auto d'epoca (noleggio) | T2 | browser | HTML, CSS, JavaScript | — |
 | match3 | GemSwap (Match-3 Web) | T3 | browser | TypeScript | PLAN.md |
 | staticweb-auction | StaticWeb — Aste virtuali online | T3 | browser | HTML, CSS, JavaScript | — |
