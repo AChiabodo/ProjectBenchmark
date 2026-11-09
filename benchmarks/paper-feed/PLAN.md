@@ -15,196 +15,194 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 15 | sì | Fondazioni e persistenza |
-| M1 | 20 | sì | Ingestione e deduplicazione |
-| M2 | 25 | — | Ranking e selezione |
-| M3 | 25 | — | Curatela e pubblicazione |
-| M4 | 15 | — | Scheduler, UI minima e hardening |
-# Piano tecnico di sviluppo: AI/ML Newsletter
+| M0 | 40 | sì | Bootstrap, Compose e vertical slice |
+| M1 | 12 | — | Ingestione fixture e normalizzazione |
+| M2 | 10 | — | Deduplicazione spiegabile |
+| M3 | 10 | — | Scoring deterministico |
+| M4 | 8 | — | Scoring semantico via provider stub |
+| M5 | 8 | — | Rendering Markdown e HTML sanitizzato |
+| M6 | 7 | — | Lock del worker e scheduling idempotente |
+| M7 | 3 | — | Consegna via MailHog |
+| M8 | 2 | — | Verifica e rerun byte-per-byte |
+
+# Piano tecnico di sviluppo: AI/ML Newsletter (offline)
 
 ## 1. Obiettivo e principi
 
-Realizzare un sistema self-hosted che raccolga contenuti su AI e Machine Learning, li normalizzi, deduplichi e ordini per rilevanza, quindi produca un digest editoriale in Markdown e HTML. La consegna via SMTP è opzionale; il prodotto deve restare utilizzabile anche solo tramite file locali o interfaccia web.
+Realizzare un sistema self-hosted che raccolga contenuti su AI e Machine Learning da un corpus di fixture locale, li normalizzi, deduplichi e ordini per rilevanza, quindi produca un digest editoriale in Markdown e HTML e lo consegni tramite un canale email locale. Il benchmark è interamente **offline e deterministico**: nessuna richiesta di rete a runtime e, sulle stesse fixture, lo stesso risultato a ogni esecuzione.
+
+La pipeline resta completa: è il benchmark «molti servizi + scheduler + database» della suite — normalizzazione, deduplicazione, scoring deterministico e semantico, curatela, rendering, consegna, scheduling con lock — ma ogni integrazione remota è sostituita da una controparte locale dietro la **stessa interfaccia adapter**.
 
 Principi vincolanti:
 
-- scheduling, persistenza, scoring, curatela e rendering devono funzionare senza servizi di automazione esterni;
-- Miniflux gestisce feed RSS/Atom, stato di lettura e aggiornamento delle fonti;
-- un servizio Python gestisce arXiv, Hugging Face, GitHub e API personalizzate, oltre alla pipeline editoriale;
-- ogni passaggio deve essere ripetibile, osservabile e idempotente;
-- SQLite deve essere supportato per sviluppo e installazioni minime; PostgreSQL è il target consigliato per uso continuativo;
-- l'uso di un LLM deve essere sostituibile e degradabile: la raccolta e un digest basilare devono funzionare anche senza LLM;
-- UI e output non devono contenere emoji e devono adottare uno stile professionale-editoriale.
+- nessuna integrazione remota: fonti = fixture nel repository, provider = stub deterministici, consegna = MailHog nel profilo Compose;
+- ogni passaggio ripetibile, osservabile e idempotente;
+- due run sulle stesse fixture producono lo stesso digest **byte per byte**;
+- UI e output senza emoji, stile professionale-editoriale.
 
-## 2. Architettura proposta
+## 2. Sostituzioni offline (una per riga, stessa interfaccia)
+
+- Servizio esterno di aggregazione feed RSS/Atom → **rimosso**: corpus `fixtures/feeds/*.xml` (RSS 2.0 e Atom) nel repository, con date fisse e casi sporchi; l'adapter dei feed legge i file con la stessa firma `SourceAdapter`.
+- API di paper → `fixtures/arxiv/*.json`: adapter paper che legge la fixture, stessa firma `SourceAdapter`.
+- API di modelli e dataset → `fixtures/hf/*.json`: adapter modelli su fixture, stessa firma.
+- API di release e repository → `fixtures/github/*.json`: adapter release su fixture, stessa firma.
+- LLM → `DeterministicLlmProvider` dietro la stessa interfaccia `LlmProvider`: dall'hash del contenuto a un testo fisso da tabelle deterministiche.
+- Embeddings → `DeterministicEmbeddingProvider` dietro la stessa interfaccia `EmbeddingProvider`: dall'hash del contenuto a un vettore a dimensione fissa (PRNG seedato dall'hash).
+- Consegna via server di posta reale → **MailHog** nel profilo Compose; la consegna si verifica leggendo la sua API HTTP locale (porta 8025).
+
+Non esiste alcun adapter «custom URL»: dopo il redesign non resta nessun percorso configurabile verso la rete. Le sostituzioni sono totali, non alternative: il piano non promette alcuna modalità con sorgenti reali.
+
+## 3. Architettura
 
 ```text
-RSS / Atom ───────────────> Miniflux ───────┐
-                                            │
-arXiv / Hugging Face / GitHub / Custom API ─┼─> Python Curator
-                                            │    ├─ normalizzazione
-                                            │    ├─ deduplicazione
-                                            │    ├─ scoring deterministico
-                                            │    ├─ scoring semantico
-                                            │    ├─ curatela LLM opzionale
-                                            │    └─ rendering
-                                            │
-                                            └─> SQLite / PostgreSQL
-                                                     │
-                                                     ├─> Markdown
-                                                     ├─> HTML / UI locale
-                                                     └─> SMTP opzionale
+fixtures/feeds/*.xml ──┐
+fixtures/arxiv/*.json ─┤
+fixtures/hf/*.json ────┼─> adapter fixture (SourceAdapter) ─> Curator
+fixtures/github/*.json ┘                                       ├─ normalizzazione
+                                                               ├─ deduplicazione
+                                                               ├─ scoring deterministico
+                                                               ├─ scoring semantico (stub)
+                                                               ├─ curatela (stub)
+                                                               └─ rendering ─> Markdown / HTML
+PostgreSQL ── worker (lock + scheduler idempotente)
+MailHog    ── consegna email, verificata via API locale
+API web    ── health, stato pipeline, archivio, anteprima
 ```
 
-Stack raccomandato:
+Stack: Python 3.12, FastAPI per API e health check, Typer per la CLI, SQLAlchemy 2 + Alembic per modelli e migrazioni, Pydantic Settings per la configurazione validata, APScheduler per il scheduling nel worker, Jinja2 per i template, PostgreSQL, MailHog, Docker Compose. Immagini Docker pinnate per tag; dipendenze Python pinnate nel lockfile.
 
-- Python 3.12, FastAPI per API amministrative e health check, Typer per CLI;
-- SQLAlchemy 2 e Alembic per portabilità e migrazioni;
-- Pydantic Settings per configurazione validata;
-- `httpx` con timeout, retry limitati e backoff per integrazioni HTTP;
-- APScheduler nel processo worker per scheduling locale persistente;
-- Jinja2 per template Markdown e HTML;
-- Miniflux e PostgreSQL in Docker Compose; servizio Python eseguibile sia in Compose sia localmente;
-- embeddings e LLM dietro interfacce indipendenti dal provider.
+Il servizio separa API web e worker logico, anche se inizialmente condividono lo stesso pacchetto. Una sola istanza del worker detiene un lock applicativo per impedire esecuzioni duplicate (§9).
 
-Il servizio deve separare API web e worker logico, anche se inizialmente possono condividere lo stesso pacchetto e container. Una singola istanza del worker deve detenere un lock applicativo per impedire esecuzioni duplicate.
-
-## 3. Struttura del repository
+## 4. Struttura del repository
 
 ```text
-ai-ml-newsletter/
+paper-feed/
 ├─ app/
-│  ├─ api/                 # health, run status, preview, amministrazione
+│  ├─ api/                 # health, stato run, archivio, anteprima
 │  ├─ cli/                 # sync, score, curate, render, deliver, run-pipeline
 │  ├─ core/                # config, logging, errori, clock, lock
-│  ├─ db/                  # modelli, repository, migrazioni
-│  ├─ sources/             # miniflux, arxiv, huggingface, github, custom
+│  ├─ db/                  # modelli, repository, migrazioni Alembic
+│  ├─ sources/             # adapter fixture: feeds, paper, modelli, release
 │  ├─ pipeline/            # normalize, dedupe, score, curate, publish
-│  ├─ providers/           # LLM ed embeddings
+│  ├─ providers/           # LLM ed embeddings: deterministici e disabled
 │  ├─ rendering/           # view model, Jinja, sanitizzazione
-│  └─ delivery/            # filesystem e SMTP
+│  └─ delivery/            # filesystem e MailHog
+├─ fixtures/               # corpus offline: vedi §5
 ├─ templates/
 ├─ tests/
-├─ config/
+├─ config/                 # fonti e policy editoriali in YAML
 ├─ docker-compose.yml
-├─ .env.example
-└─ pyproject.toml
+├─ verify.sh
+└─ pyproject.toml          # con lockfile
 ```
 
-Le integrazioni devono dipendere da protocolli interni, non da implementazioni concrete. Le funzioni di dominio non devono conoscere FastAPI, il client Miniflux o il provider LLM.
+Le fonti dipendono da protocolli interni, non da implementazioni concrete: ogni adapter legge fixture, e le funzioni di dominio non conoscono né FastAPI né il formato dei file.
 
-## 4. Modello dati minimo
+## 5. Corpus di fixture
+
+Quattro famiglie, una per tipo di fonte, tutte nel repository e con formato dichiarato:
+
+- `fixtures/feeds/*.xml` — RSS 2.0 e Atom, con campi `title`, `link`, `published`, `summary`, `author`;
+- `fixtures/arxiv/*.json` — paper: `id`, `title`, `abstract`, `authors`, `published`, `url`, `categories`;
+- `fixtures/hf/*.json` — modelli/dataset: `id`, `title`/`name`, `abstract`/`description`, `downloads`, `likes`, `published`;
+- `fixtures/github/*.json` — release: `repo`, `tag`, `title`, `notes`, `published`, `url`.
+
+Vincoli sul corpus:
+
+- **date fisse**: ogni `published` ricade in una finestra dichiarata (2026-01-05 .. 2026-01-19 UTC); nessun timestamp viene generato a runtime;
+- **casi sporchi deliberati**, ciascuno con identificatore documentato così che i test lo coprano per nome: duplicati esatti tra famiglie, quasi-duplicati (stesso contenuto, titolo diverso), titoli vuoti, date non parseabili, HTML nell'abstract, item senza identificatore esterno;
+- il numero di item per famiglia è dichiarato nel `config/` così i contatori del `PipelineRun` sono verificabili per valore esatto.
+
+## 6. Modello dati
 
 Entità principali:
 
-- `Source`: tipo, nome, URL o identificatore, configurazione JSON, stato, frequenza, ultimo cursore;
-- `Item`: fonte, identificatore esterno, URL canonico, titolo, autori, abstract/testo, data di pubblicazione, lingua, metadati JSON, hash del contenuto;
-- `ItemIdentity`: chiavi di deduplicazione quali DOI, arXiv ID, repository e release ID;
-- `Score`: componenti deterministiche, score semantico, score finale, versione della policy e motivazioni serializzate;
+- `Source`: tipo, nome, puntatore alla fixture, configurazione JSON, stato, frequenza, ultimo cursore;
+- `Item`: fonte, identificatore esterno, URL canonico, titolo, autori, abstract/testo, data di pubblicazione, lingua, metadati JSON, hash del contenuto normalizzato;
+- `ItemIdentity`: chiavi di deduplicazione (DOI, ID paper, nome repository+dataset, repo e release tag);
+- `Score`: componenti deterministiche, score semantico, score finale, versione della policy, motivazioni serializzate;
 - `Digest`: intervallo temporale, stato, configurazione congelata, versione del template, output e checksum;
 - `DigestItem`: posizione, sezione, item, nota editoriale, motivazione di selezione;
-- `PipelineRun`: fase, tempi, contatori, stato, errore sanitizzato e correlation ID;
-- `Delivery`: digest, canale, destinatario o destinazione, tentativi, esito e timestamp.
+- `PipelineRun`: fase, tempi, contatori, stato, errore sanitizzato, correlation ID, idempotency key;
+- `Delivery`: digest, canale, destinatario, tentativi, esito, timestamp, `Message-ID`.
 
-Vincoli importanti: unicità su `(source_id, external_id)`, indice su `published_at`, URL canonico indicizzato, digest immutabile dopo la pubblicazione. Conservare la provenienza di ogni campo derivato.
+Vincoli: unicità su `(source_id, external_id)`, indice su `published_at`, URL canonico indicizzato, digest immutabile dopo la pubblicazione, provenienza conservata per ogni campo derivato. Lo schema è versionato con migrazioni Alembic (§9).
 
-## 5. Acquisizione e normalizzazione
+## 7. Acquisizione e normalizzazione
 
-Definire un contratto comune:
+Contratto comune, invariato rispetto all'architettura a servizi:
 
 ```python
 class SourceAdapter(Protocol):
     async def fetch(self, cursor: str | None) -> FetchBatch: ...
 ```
 
-`FetchBatch` contiene item grezzi, nuovo cursore, statistiche e warning. Ogni adapter traduce in un `NormalizedItem` validato, senza scrivere direttamente nel database.
+`FetchBatch` contiene item grezzi, nuovo cursore, statistiche e warning. Il cursore dell'adapter su fixture è la posizione nel corpus (file + offset), quindi rieseguire `fetch` dallo stesso cursore restituisce lo stesso batch. Implementazioni richieste: `FeedFixtureAdapter`, `PaperFixtureAdapter`, `ModelFixtureAdapter`, `ReleaseFixtureAdapter`.
 
-Implementazioni iniziali:
+Normalizzazione obbligatoria: URL canonicalizzato, date in UTC, HTML convertito in testo sicuro, whitespace uniforme, autori strutturati, identificatori estratti, metadati originali conservati. Un item non normalizzabile (data rotta, senza identificatore) viene **scartato con warning tracciato** nel `PipelineRun`, mai eliminato in silenzio; il contatore degli scarti è parte dell'esito della fase.
 
-1. `MinifluxAdapter`: usa l'API di Miniflux, importa solo entry nuove o modificate e conserva feed, categorie e stato;
-2. `ArxivAdapter`: query configurabili per categorie e parole chiave, con rispetto dei limiti del servizio;
-3. `HuggingFaceAdapter`: modelli, dataset o paper filtrati per tag, data e popolarità;
-4. `GitHubAdapter`: release e repository monitorati; autenticazione opzionale tramite token;
-5. `JsonApiAdapter`: mapping dichiarativo da payload JSON a campi normalizzati, per fonti personalizzate semplici.
+## 8. Deduplicazione e scoring
 
-Normalizzazione obbligatoria: URL canonicalizzato, date in UTC, HTML convertito in testo sicuro, whitespace uniforme, autori strutturati, identificatori estratti e metadati originali conservati. Credenziali e header sensibili non devono finire nei log o nel database.
+Deduplicazione: controlli in ordine, ciascuno con esito spiegabile e soglia dichiarata:
 
-## 6. Deduplicazione
+1. identificatori forti: DOI, ID paper, nome repository+dataset, repo e release tag — match esatto;
+2. URL canonico dopo rimozione dei parametri di tracking — match esatto;
+3. hash del contenuto normalizzato — match esatto;
+4. similarità titolo+autori ≥ 0.92 entro una finestra di 7 giorni → `possible_duplicate`;
+5. similarità semantica (embedding stub) ≥ 0.95 come **segnale di supporto**: marca, non cancella.
 
-Applicare i controlli in ordine, producendo sempre una spiegazione verificabile:
+I duplicati si raggruppano sotto un record canonico che conserva tutte le fonti; la scelta del canonico è deterministica (record più ricco, poi ordine stabile per fonte e identificatore). Ogni decisione produce una motivazione serializzata verificabile.
 
-1. corrispondenza esatta di identificatori forti: DOI, arXiv ID, URL Hugging Face, repository e release tag;
-2. URL canonico dopo rimozione dei parametri di tracking;
-3. hash del contenuto normalizzato;
-4. similarità di titolo e autori entro una finestra temporale configurabile;
-5. similarità semantica solo come segnale di supporto, mai come cancellazione automatica non tracciata.
-
-Gli item duplicati devono essere raggruppati sotto un record canonico conservando tutte le fonti. Preferire il record più ricco e autorevole, con regole deterministiche. Prevedere una soglia `possible_duplicate` per revisione o diagnosi.
-
-## 7. Relevance scoring
-
-Lo score finale deve essere riproducibile per versione di configurazione:
+Scoring, riproducibile per versione di configurazione:
 
 ```text
 final = w_rule * deterministic + w_semantic * semantic - penalties
 ```
 
-Score deterministico, normalizzato tra 0 e 1:
+Lo score deterministico (0–1) combina: corrispondenza con topic e keyword pesate, autorevolezza e tipo della fonte, recenza con decadimento temporale, segnali specifici (download, like, tipo di release). Bonus per diversità di sezione, penalità per duplicati e contenuti promozionali. Lo score semantico usa gli embedding dello stub (§2) contro profili editoriali configurabili (testo e topic positivi/negativi), con cache per hash del contenuto. La selezione impone quote e limiti per `papers`, `models`, `tools`, `industry` e `research_news`: nessuna fonte domina il digest.
 
-- corrispondenza con topic e keyword pesate;
-- autorevolezza e tipo della fonte;
-- recenza con decadimento temporale;
-- segnali specifici: citazioni disponibili, download, like, stelle, trend o tipo di release;
-- bonus per diversità di sezione e penalità per duplicati, contenuti promozionali o copertura ripetitiva.
+## 9. Lock, scheduling, transazioni, schema
 
-Score semantico:
+Reperti dell'audit resi vincoli verificabili:
 
-- embedding del titolo più abstract/testo breve;
-- confronto con profili editoriali configurabili, ciascuno descritto da testo e topic positivi/negativi;
-- cache degli embedding per hash, nome del modello e versione del preprocessing;
-- provider locale o remoto intercambiabile; batching e dimensione del vettore validati.
+- **Lock del worker**: lock su PostgreSQL (advisory lock oppure riga di lease con TTL) con meccanismo, timeout e comportamento da crash dichiarati: lease rinnovata a intervallo fisso, TTL 60 s; se il worker muore, la lease scade e un altro worker acquisisce; un secondo worker attivo esce senza eseguire. Due test obbligatori: worker concorrente rifiutato, lease scaduta acquisita.
+- **Idempotency key**: ogni `PipelineRun` è identificato da `(finestra temporale, fase, versione policy)`; rieseguire una fase già completata non duplica record né output. L'ingest è idempotente su `(source_id, external_id)` e sull'hash del contenuto.
+- **Retry policy**: tentativi limitati (max 3) con backoff fisso (1 s, 4 s) su fasi transazionali e consegna; una fonte in errore non blocca le altre. Nessun circuit breaker: non esistono endpoint remoti.
+- **Transazioni della pipeline**: una transazione per fase; il fallimento di una fase marca il run `FAILED` con errore sanitizzato e lascia il database in stato consistente; il recovery riprende dalla fase interrotta grazie all'idempotency key.
+- **Versionamento dello schema**: migrazioni Alembic versionate, `upgrade` su database vuoto in `verify.sh`; ogni migrazione ha `downgrade` testato.
+- **Retention e backup come task verificabili**: `newsletter backup` produce un dump deterministico, `newsletter restore` ricrea lo stato su un database vuoto e il test confronta i contatori; la retention elimina i digest oltre la soglia configurata, con test sul numero di righe eliminate.
 
-La selezione deve imporre quote e limiti configurabili per `papers`, `models`, `tools`, `industry` e `research_news`, evitando che una sola fonte domini il digest.
+## 10. Provider deterministici
 
-## 8. Astrazione LLM ed embeddings
-
-Definire due contratti distinti:
+Due contratti distinti, invariati:
 
 ```python
 class LlmProvider(Protocol):
     async def generate_structured(self, request: LlmRequest, schema: type[T]) -> T: ...
 
-
 class EmbeddingProvider(Protocol):
     async def embed(self, texts: list[str]) -> list[list[float]]: ...
 ```
 
-Implementazioni iniziali:
+Implementazioni richieste: `DeterministicLlmProvider` (SHA-256 del contenuto → selezione da tabelle fisse di titoli, sommari e note editoriali; output validato con Pydantic), `DeterministicEmbeddingProvider` (stesso hash → PRNG seedato → vettore a dimensione fissa, con cache per hash) e `DisabledProvider` (modalità senza curatela, per test e fallback). Nessuna implementazione raggiunge la rete: non esiste opzione configurabile con URL o modello esterno.
 
-- `OpenAICompatibleProvider`: `base_url`, `api_key`, `model`, header aggiuntivi, timeout e opzioni modello configurabili. Deve funzionare con endpoint OpenAI-compatible/OpenAI-like locali o remoti, incluso opencode-go quando espone il relativo contratto;
-- `OllamaProvider`: adapter opzionale per API native, senza renderlo il percorso privilegiato;
-- `DisabledProvider`: modalità senza LLM, utile per test e fallback;
-- equivalenti provider embeddings, separati dal modello di generazione.
+La curatela restituisce dati strutturati (titolo del digest, sommario, nota per item, sezione, motivazione); URL, autori, date e metriche sono sempre reinseriti dal database. Provider, versione delle tabelle deterministiche e parametri vengono salvati nel `Digest`.
 
-Non assumere URL, nomi modello o capacità implicite. Le capability devono essere configurate o rilevate: JSON Schema/structured output, tool calling, lunghezza del contesto e API embeddings. Per provider senza structured output nativo, validare la risposta con Pydantic e consentire un solo tentativo di riparazione controllata.
+## 11. Rendering e consegna
 
-La curatela LLM riceve solo item già filtrati e deve restituire dati strutturati: titolo del digest, sommario, nota per item, sezione e motivazione. Non può inventare fatti non presenti nel contenuto fornito; URL, autori, date e metriche vengono sempre reinseriti dal database. Salvare provider, modello, prompt version e parametri, senza memorizzare segreti.
-
-## 9. Rendering, UI e consegna
-
-Costruire prima un `DigestViewModel` indipendente dal formato. Da questo generare:
+Prima un `DigestViewModel` indipendente dal formato; da questo:
 
 - Markdown leggibile anche senza CSS;
-- HTML responsivo con CSS incorporato e compatibile con client email;
+- HTML responsivo con CSS incorporato, sanitizzato (nessun markup non fidato delle fixture sopravvive nel rendering);
 - pagina web locale di archivio, dettaglio e anteprima.
 
-Direzione editoriale: tipografia sobria, gerarchia chiara, palette neutra con un solo colore d'accento, densità informativa controllata, citazioni delle fonti visibili, nessuna emoji. Evitare dashboard decorative; privilegiare indice, sezioni, data, tempo di lettura e motivazioni concise.
+Direzione editoriale: tipografia sobria, gerarchia chiara, palette neutra con un solo accento, citazioni delle fonti visibili, indice, sezioni, data, tempo di lettura, nessuna emoji.
 
-La consegna filesystem è sempre disponibile e usa scrittura atomica. SMTP è un plugin configurabile con TLS, mittente, destinatari e modalità dry-run. Un digest già consegnato non deve essere reinviato senza flag esplicito; usare `Message-ID` stabile e registrare l'esito.
+Consegna: il canale filesystem usa scrittura atomica ed è sempre disponibile; il canale email consegna a MailHog e la verifica legge la sua API HTTP locale contando i messaggi per `Message-ID` stabile (derivato dal checksum del digest). Un digest già consegnato non viene reinviato senza flag esplicito; ogni tentativo è registrato in `Delivery`.
 
-## 10. Configurazione e operatività
+## 12. Configurazione e operatività
 
-Usare file YAML versionabile per fonti e policy editoriali; usare variabili d'ambiente o secret file per credenziali. Fornire `.env.example` privo di valori reali.
+Fonti e policy editoriali in YAML versionabile; variabili d'ambiente solo per la connessione ai servizi Compose; `.env.example` privo di valori reali.
 
 Comandi minimi:
 
@@ -214,74 +212,115 @@ newsletter source sync [--source NAME]
 newsletter pipeline run [--from DATE --to DATE] [--dry-run]
 newsletter digest render DIGEST_ID
 newsletter digest deliver DIGEST_ID [--dry-run]
+newsletter backup | newsletter restore
 newsletter doctor
 ```
 
-`doctor` verifica database, Miniflux, provider LLM/embeddings, directory di output e SMTP senza inviare email. Log JSON in produzione e leggibili in sviluppo; metriche minime: item acquisiti, errori per fonte, duplicati, latenza per fase, token/chiamate LLM e consegne.
+`doctor` verifica database, presenza e integrità delle fixture (hash confrontato con un manifest), raggiungibilità di MailHog e directory di output — tutto locale, senza inviare nulla. Log JSON in produzione e leggibili in sviluppo; metriche minime: item acquisiti, scarti per fonte, duplicati, latenza per fase, consegne.
 
-## 11. Piano di implementazione
+## 13. Compose e comandi
 
-### Fase 1: fondazioni e persistenza
+**Un solo comando di avvio**: `docker compose up --wait --build` — porta in stato healthy PostgreSQL, worker/curator, MailHog e API web, con migrazioni applicate al primo avvio e health check per ogni servizio.
 
-- inizializzare package, configurazione, logging, modelli SQLAlchemy e migrazioni;
-- preparare Compose con Miniflux, PostgreSQL e servizio Python;
-- implementare CLI, health check, repository e `PipelineRun`;
-- verificare avvio pulito sia con SQLite sia con PostgreSQL.
+**Un solo comando di verifica**: `./verify.sh` (§ Verify).
 
-Esito: schema migrabile, servizi healthy e pipeline vuota idempotente.
+Lo sviluppo locale senza Compose (servizi Python contro il profilo Compose, test unitari senza container) è una modalità di sviluppo, **mai** la Definition of Done: il DoD è il profilo Compose completo.
 
-### Fase 2: ingestione e deduplicazione
+## 14. Piano di implementazione
 
-- implementare Miniflux, arXiv, Hugging Face e GitHub;
-- aggiungere normalizzazione, cursori, retry e deduplicazione spiegabile;
-- introdurre fixture registrate e test contrattuali per ogni adapter.
+### M0 — Bootstrap, Compose e vertical slice (40, slice)
 
-Esito: due esecuzioni consecutive non duplicano record e un errore di fonte non blocca le altre.
+- Compose con PostgreSQL, worker/curator, MailHog e API web; `docker compose up --wait --build` porta tutti i servizi healthy;
+- migrazioni Alembic versionate su database vuoto e health check dell'API;
+- ingest delle fixture dalle quattro famiglie, deduplicazione base e rendering di un digest Markdown valido;
+- `verify.json` con tutti gli id milestone del `meta.json`.
 
-### Fase 3: ranking e selezione
+Esito: da ambiente pulito, un digest Markdown leggibile con un solo comando.
 
-- implementare policy deterministica versionata e report dei componenti dello score;
-- aggiungere embeddings, profili semantici, cache e fallback;
-- applicare quote editoriali e comporre il set candidato.
+### M1 — Ingestione fixture e normalizzazione (12)
 
-Esito: ranking riproducibile su fixture e digest bilanciato anche con embeddings disabilitati.
+- adapter fixture con cursori e statistiche; ingest idempotente (`(source_id, external_id)` + hash);
+- i casi sporchi del corpus vengono normalizzati o scartati con warning tracciato e contatore verificabile.
 
-### Fase 4: curatela e pubblicazione
+Esito: due sync consecutivi non duplicano record; ogni caso sporco ha un esito dichiarato e testato.
 
-- implementare provider OpenAI-compatible, Ollama opzionale e modalità disabled;
-- creare prompt versionati, output Pydantic e protezioni contro dati inventati;
-- generare Markdown e HTML, archivio locale e consegna filesystem;
-- aggiungere SMTP dry-run e invio idempotente.
+### M2 — Deduplicazione spiegabile (10)
 
-Esito: lo stesso set candidato produce un digest valido, tracciabile e renderizzato senza dipendere da un provider specifico.
+- cinque controlli in ordine con soglie dichiarate; record canonico deterministico; motivazioni serializzate; stato `possible_duplicate`.
 
-### Fase 5: scheduler, UI minima e hardening
+Esito: ogni decisione di deduplicazione è ricostruibile dal database.
 
-- attivare scheduler interno con lock, misfire policy e recupero dopo riavvio;
-- aggiungere UI di archivio, stato pipeline, preview e rilancio controllato;
-- completare limiti, sanitizzazione, retention, backup e documentazione operativa.
+### M3 — Scoring deterministico (10)
 
-Esito: esecuzione continuativa in Compose, diagnosi autonoma e ripristino documentato.
+- policy versionata, componenti 0–1, quote per sezione, report dei componenti dello score per item.
 
-## 12. Strategia di test e criteri di completamento
+Esito: lo stesso set di item produce lo stesso ranking a ogni run.
+
+### M4 — Scoring semantico via provider stub (8)
+
+- embedding deterministici con cache per hash, profili editoriali, contributo semantico isolato e riproducibile.
+
+Esito: il punteggio semantico non dipende da alcun modello e produce lo stesso contributo a ogni run.
+
+### M5 — Rendering Markdown e HTML sanitizzato (8)
+
+- `DigestViewModel`, Markdown leggibile senza CSS, HTML responsivo sanitizzato, archivio e anteprima web.
+
+Esito: nessun markup non fidato delle fixture sopravvive nell'HTML; output senza emoji.
+
+### M6 — Lock del worker e scheduling idempotente (7)
+
+- lock con lease/TTL e recovery da crash (test: worker concorrente rifiutato, lease scaduta acquisita);
+- scheduler con misfire policy e ripresa dopo riavvio; run idempotenti per idempotency key.
+
+Esito: «worker singolo» è un meccanismo osservabile, non un'affermazione.
+
+### M7 — Consegna via MailHog (3)
+
+- canale email verso MailHog, `Message-ID` stabile, verifica tramite la API locale, nessun reinvio senza flag.
+
+Esito: la consegna è verificata contando i messaggi nella coda locale.
+
+### M8 — Verifica e rerun byte-per-byte (2)
+
+- `./verify.sh` end-to-end; due run sulle stesse fixture producono digest identici byte per byte, checksum incluso.
+
+Esito: il determinismo è misurato, non assunto.
+
+## 15. Strategia di test e Definition of Done
 
 Test richiesti:
 
 - unitari per canonicalizzazione, deduplica, scoring, quote e rendering;
-- contrattuali per adapter e provider tramite server HTTP simulato;
-- integrazione su SQLite e PostgreSQL reale;
-- end-to-end dalla fixture di fonti alla generazione Markdown/HTML;
-- snapshot semantici limitati alla struttura, evitando test fragili sul testo LLM;
-- test di sicurezza su HTML non fidato, secret redaction, SSRF nelle fonti personalizzate e header injection SMTP;
-- smoke test del Compose dopo riavvio e verifica dell'idempotenza.
+- contrattuali per ogni adapter fixture e per i provider deterministici (stesso input ⇒ stesso output, incluso il vettore);
+- integrazione su PostgreSQL reale nel profilo Compose;
+- end-to-end dal corpus di fixture alla generazione Markdown/HTML e alla consegna MailHog;
+- idempotenza: due run complete non duplicano record né consegne;
+- determinismo: due digest consecutivi sulle stesse fixture sono identici byte per byte;
+- lock: worker concorrente rifiutato, lease scaduta acquisita;
+- sanitizzazione: HTML non fidato nelle fixture non sopravvive nel rendering;
+- backup/restore e retention con contatori confrontati.
 
-Definition of Done iniziale:
+Definition of Done:
 
-- una singola configurazione avvia l'intero sistema self-hosted;
-- RSS tramite Miniflux e almeno tre adapter diretti producono item normalizzati;
-- deduplicazione e scoring espongono motivazioni verificabili;
-- la pipeline funziona con provider OpenAI-compatible, con Ollama opzionale e senza LLM;
-- Markdown e HTML sono coerenti, accessibili, privi di emoji e sanitizzati;
-- SMTP è opzionale, testabile in dry-run e non causa invii duplicati;
-- migrazioni, backup, ripristino, configurazione e troubleshooting sono documentati;
-- test automatici e smoke test Compose passano in ambiente pulito.
+- `docker compose up --wait --build` avvia l'intero sistema offline da ambiente pulito;
+- le quattro famiglie di fixture producono item normalizzati con scarti tracciati;
+- deduplicazione e scoring espongono motivazioni verificabili e riproducibili;
+- la pipeline funziona con i provider deterministici e in modalità disabled;
+- Markdown e HTML sono coerenti, sanitizzati e privi di emoji;
+- la consegna verso MailHog è verificata tramite la sua API locale;
+- migrazioni, backup, ripristino e retention sono documentati e testati;
+- `./verify.sh` passa in ambiente pulito entro 600 s e scrive `verify.json` con tutti gli id del `meta.json`.
+
+## Verify
+
+`./verify.sh`, non interattivo, timeout 600 s, exit 0 = pass. Sequenza:
+
+1. `docker compose up --wait --build` — tutti i servizi healthy, migrazioni applicate su database vuoto;
+2. suite pytest nel container: ingest idempotente sulle fixture (due run non duplicano record), deduplicazione, scoring, rendering, consegna su MailHog via API locale;
+3. confronto byte-per-byte dei digest di due run consecutive sulle stesse fixture;
+4. `docker compose down` — sempre, anche in caso di fallimento.
+
+Al termine scrive `verify.json` (schema 1, `benchmark: "paper-feed"`) con tutti gli id milestone del `meta.json` (`M0`–`M8`), ciascuno con `pass` e `detail`.
+
+Determinismo dichiarato: **due run sulle stesse fixture producono lo stesso digest byte per byte**, checksum incluso; è un'asserzione verificata dallo step 3, non un'assunzione.
