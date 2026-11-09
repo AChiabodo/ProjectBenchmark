@@ -507,7 +507,7 @@
       ],
       "runtime": "native",
       "plan": "PLAN.md",
-      "audit": null,
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -526,45 +526,57 @@
       "milestones": [
         {
           "id": "M0",
-          "weight": 10,
+          "weight": 40,
           "slice": true,
-          "title": "Scaffold + game loop + smoke"
+          "title": "Slice verticale: arena giocabile con player, dash, sparo, un tipo di nemico, morte e restart"
         },
         {
           "id": "M1",
-          "weight": 25,
-          "slice": true,
-          "title": "Core gameplay"
+          "weight": 12,
+          "slice": false,
+          "title": "Spawn Director con curva di budget seedata"
         },
         {
           "id": "M2",
-          "weight": 15,
+          "weight": 12,
           "slice": false,
-          "title": "Sistemi: nemici, spawner, collisioni, juice e audio"
+          "title": "Orb XP, level-up e draft di 3 carte con seed riproducibile"
         },
         {
           "id": "M3",
-          "weight": 12,
+          "weight": 8,
           "slice": false,
-          "title": "Integrazione"
+          "title": "Boss a due fasi"
         },
         {
           "id": "M4",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Roguelite + UI"
+          "title": "Juice: particelle, screenshake, hit-stop"
         },
         {
           "id": "M5",
-          "weight": 15,
+          "weight": 6,
           "slice": false,
-          "title": "Boss + bilanciamento + polish"
+          "title": "Audio procedurale con criterio di inizializzazione headless"
         },
         {
           "id": "M6",
-          "weight": 8,
+          "weight": 6,
           "slice": false,
-          "title": "Review indipendente + fix pass"
+          "title": "Check automatico: nessun asset binario e build senza warning"
+        },
+        {
+          "id": "M7",
+          "weight": 3,
+          "slice": false,
+          "title": "Costanti di bilanciamento sotto test"
+        },
+        {
+          "id": "M8",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh che emette verify.json"
         }
       ]
     },
