@@ -15,17 +15,20 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 10 | sì | Bootstrap e layout |
-| M1 | 20 | sì | Dataset e rendering lista |
-| M2 | 10 | sì | Dettaglio e filtri |
-| M3 | 20 | — | Interazione caratterizzante: lightbox prodotto, parallax e carrello locale |
-| M4 | 15 | — | Accessibilità |
-| M5 | 15 | — | Responsive |
-| M6 | 10 | — | Verify: Playwright pinnato + verify.sh |
+| M0 | 40 | sì | Slice verticale: home, catalogo filtrato e pagina prodotto |
+| M1 | 12 | — | Dataset unico PRODOTTI con schema, enum e validateDataset() |
+| M2 | 10 | — | Filtri, conteggi e stato nella query string |
+| M3 | 12 | — | Interazione caratterizzante: lightbox prodotto, parallax e carrello locale |
+| M4 | 8 | — | Stati vuoto, errore e non valido |
+| M5 | 8 | — | Accessibilità, reduced motion e contrasto |
+| M6 | 5 | — | Responsive sui breakpoint dichiarati |
+| M7 | 5 | — | Verify: Playwright pinnato e verify.json |
 
-La vertical slice vale 40 punti su 100 (`M0`+`M1`+`M2`) ed è il cancello dello scoring
+La vertical slice vale 40 punti su 100 (`M0`) ed è il cancello dello scoring
 (`docs/agents/scoring.md`): finché non passa, il resto non vale credito. Le milestone
-`M3`–`M6` sono contenuto oltre la slice e si valutano solo dopo.
+`M1`–`M7` sono contenuto oltre la slice e si valutano solo dopo.
+
+# StaticWeb — Cammelli (e-commerce vetrina)
 
 ## Slice verticale
 
@@ -39,8 +42,9 @@ index.html ──▶ catalogo.html?collezione=…&eta=…&prezzo=…&colore=…
 
 La slice è completa quando: la home mostra i prodotti in evidenza letti dal dataset; il
 catalogo filtra, dichiara il conteggio e regge lo stato vuoto; la pagina dettaglio rende il
-prodotto richiesto per `?id=` e gestisce l'id inesistente. Nessuna delle tre pagine contiene
-dati di prodotto scritti a mano nel markup.
+prodotto richiesto per `?id=` e gestisce l'id inesistente. Gli stati vuoto, errore e non
+trovato sono pesati in `M4`. Nessuna delle tre pagine contiene dati di prodotto scritti a
+mano nel markup.
 
 ## Convenzione condivisa
 
@@ -139,7 +143,7 @@ fanno fallire il test invece di passare inosservate.
 
 ## Milestone e task
 
-### M0 — Bootstrap e layout (peso 10, slice)
+### M0 — Slice verticale: home, catalogo filtrato e pagina prodotto (peso 40, slice)
 
 - M0.1 Struttura: `index.html`, `catalogo.html`, `prodotto.html`, `css/main.css`,
   `css/utilities.css`, `js/app.js`, `js/scroll-animations.js`, `js/components.js`,
@@ -149,103 +153,149 @@ fanno fallire il test invece di passare inosservate.
 - M0.3 Layout mobile-first della home (hero, prodotti in evidenza, benefici, newsletter,
   footer) con segnaposto SVG locali al posto delle immagini.
 - M0.4 Header con `siteNav`, skip link, footer; `data-theme` e `data-motion` su `<html>`.
+- M0.5 `js/data.js` con `PRODOTTI` e 12 prodotti; `catalogo.html` rende le card dal dataset
+  (nome, collezione, età, prezzo formattato dall'intero in centesimi, badge, immagine).
+- M0.6 `prodotto.html?id=` rende il prodotto dal dataset: galleria, descrizione, specifiche,
+  prezzo, stato di disponibilità, pulsante «aggiungi al carrello».
+- M0.7 Filtro per collezione letto da `?collezione=` con conteggio «N risultati»: tanto basta
+  a chiudere la slice, mentre il contratto completo dei filtri è `M2`.
 
 **Fatto quando:** le tre pagine si aprono da server locale, senza errori in console e senza
-richieste esterne, e la home è completa a 375 px e 1280 px.
+richieste esterne; la home è completa a 375 px e 1280 px; il catalogo senza parametri mostra
+12 card e «12 risultati»; `prodotto.html?id=<id valido>` rende il prodotto del dataset.
 
-### M1 — Dataset e rendering lista (peso 20, slice)
+**Verifica:** A1, A2 e A5 del §«Verify».
 
-- M1.1 `js/data.js` con `PRODOTTI`, enum, `validateDataset()`; 12 prodotti come da schema.
-- M1.2 `catalogo.html` rende le card dal dataset (nome, collezione, età, prezzo formattato
-  dall'intero in centesimi, badge, immagine).
-- M1.3 Conteggio «N risultati» calcolato dal dataset filtrato e aggiornato a ogni cambio.
-- M1.4 Stato di errore del dataset: se `validateDataset()` fallisce, il catalogo mostra un
-  pannello di errore con la lista dei problemi e non renderizza card parziali.
+### M1 — Dataset unico PRODOTTI con schema, enum e validateDataset() (peso 12)
 
-**Fatto quando:** il catalogo senza parametri mostra 12 card e «12 risultati», e il
-conteggio coincide col numero di card in ogni combinazione di filtri.
+- M1.1 `js/data.js` esporta `PRODOTTI`, gli enum `COLLEZIONI`, `MATERIALI`, `COLORI`, `BADGE`
+  e lo schema del §«Dataset: prodotti» (campo, tipo, dominio), dichiarato nel modulo.
+- M1.2 `validateDataset()` rifiuta id duplicati, enum fuori dominio, prezzi non interi,
+  `colori` vuoti e descrizioni fuori dai 40–400 caratteri, e restituisce la lista dei
+  problemi invece di lanciare un'eccezione.
+- M1.3 Il dataset copre tutte le collezioni, tutti i materiali, ogni fascia d'età e almeno un
+  `badge: null`.
+- M1.4 Nessun dato di prodotto scritto a mano nel markup: nome, prezzo, anno e conteggi
+  vengono dal modulo.
 
-### M2 — Dettaglio e filtri (peso 10, slice)
+**Fatto quando:** un dataset manomesso produce la lista dei problemi attesi e un test Node che
+importa `js/data.js` conta 12 prodotti e verifica che ogni valore appartenga al suo enum.
 
-- M2.1 `prodotto.html?id=` rende il prodotto dal dataset: galleria, descrizione, specifiche,
-  prezzo, stato di disponibilità, pulsante «aggiungi al carrello».
-- M2.2 Id inesistente o mancante → stato «Prodotto non trovato» con link al catalogo.
-- M2.3 Filtri e ordinamento come da tabella, con stato nella query string letto al
-  caricamento e riscritto a ogni cambio (`history.replaceState`).
-- M2.4 Stato vuoto con testo esplicito e pulsante «azzera filtri».
+**Verifica:** A2 del §«Verify» (conteggio ricalcolato importando `js/data.js`) e A6 per il
+pannello di errore.
 
-**Fatto quando:** un URL con filtri applicati riproduce lo stesso sottoinsieme dopo il
-reload, e un `?id=` inesistente mostra lo stato «non trovato».
+### M2 — Filtri, conteggi e stato nella query string (peso 10)
 
-### M3 — Interazione caratterizzante (peso 20)
+- M2.1 Quattro gruppi di filtri più l'ordinamento, come da tabella del §«Filtri, conteggio e
+  query string»: `collezione`, `eta`, `prezzo`, `colore`, `ordina`.
+- M2.2 Stato letto dalla query string al caricamento e riscritto a ogni cambio con
+  `history.replaceState`: l'URL resta ricaricabile e condivisibile.
+- M2.3 Conteggio «N risultati» calcolato dal dataset filtrato, non dal DOM, e sempre uguale
+  al numero di card renderizzate.
+- M2.4 Valore di parametro fuori dominio ignorato e riportato allo stato «tutti», senza
+  errore.
+
+**Fatto quando:** ogni combinazione di filtri produce il conteggio atteso con un numero di
+card uguale al conteggio, e un URL filtrato ricarica lo stesso sottoinsieme.
+
+**Verifica:** A3 e A4 del §«Verify».
+
+### M3 — Interazione caratterizzante: lightbox prodotto, parallax e carrello locale (peso 12)
 
 - M3.1 Lightbox prodotto con zoom, frecce, `Esc`, focus trap e ripristino del focus.
 - M3.2 Parallax a tre livelli con fallback JS e spegnimento sotto `prefers-reduced-motion`.
-- M3.3 Carrello locale: aggiunta, quantità, rimozione, totale, persistenza e difesa dello
-  storage; contatore annunciato con `aria-live="polite"`.
+- M3.3 Carrello locale: aggiunta, quantità, rimozione, totale e persistenza in
+  `localStorage`; contatore annunciato con `aria-live="polite"`.
 - M3.4 Menu mobile con morphing SVG e fallback senza `backdrop-filter`.
 - M3.5 Cursore custom solo su puntatore fine; nessun cursore custom su touch.
 
 **Fatto quando:** aggiungere due volte lo stesso prodotto porta la quantità a 2 e il totale
 al doppio del prezzo, e un reload conserva il carrello.
 
-### M4 — Accessibilità (peso 15)
+**Verifica:** A7 e A8 del §«Verify».
 
-- M4.1 WCAG 2.1 AA su entrambi i temi: skip link, focus visibile, target ≥ 44×44 px,
+### M4 — Stati vuoto, errore e non valido (peso 8)
+
+- M4.1 `validateDataset()` fallito → pannello di errore con la lista dei problemi e nessuna
+  card parziale.
+- M4.2 Filtro senza risultati → stato vuoto con testo esplicito e pulsante «azzera filtri»
+  che riporta al catalogo completo.
+- M4.3 `?id=` inesistente o mancante → stato «Prodotto non trovato» con link al catalogo.
+- M4.4 Chiave `localStorage` corrotta, di versione sconosciuta o inaccessibile → dato
+  scartato, stato al default e avviso visibile, senza crash.
+
+**Fatto quando:** dataset manomesso, filtro senza risultati e `?id=` inesistente producono i
+tre stati dichiarati, ognuno con la sua via d'uscita verso il catalogo, e uno storage corrotto
+non produce eccezioni.
+
+**Verifica:** A6 del §«Verify».
+
+### M5 — Accessibilità, reduced motion e contrasto (peso 8)
+
+- M5.1 WCAG 2.1 AA su entrambi i temi: skip link, focus visibile, target ≥ 44×44 px,
   landmark semantici, `alt` descrittivi e decorativi con `alt=""`.
-- M4.2 Dialogo lightbox e drawer carrello con semantica modale, `aria-modal`, focus trap,
+- M5.2 Dialogo lightbox e drawer carrello con semantica modale, `aria-modal`, focus trap,
   chiusura con `Esc` e ripristino del focus.
-- M4.3 `aria-live="polite"` su conteggio risultati e contatore carrello, con annunci
+- M5.3 `aria-live="polite"` su conteggio risultati e contatore carrello, con annunci
   raggruppati (debounce ≥ 300 ms), mai per frame.
-- M4.4 Tabella di contrasto dei token dei due temi, con i valori misurati.
+- M5.4 Reduced motion: `data-motion="reduced"` su `<html>` e parallax, ombre e transizioni
+  spente, senza perdita di informazione.
+- M5.5 Tabella di contrasto dei token dei due temi, con i valori misurati.
 
 **Fatto quando:** tutte le asserzioni di contrasto del §«Verify» passano nei due temi e il
 percorso da tastiera copre header, filtri, card, dettaglio e carrello.
 
-### M5 — Responsive (peso 15)
+**Verifica:** A9, A10 e A11 del §«Verify».
 
-- M5.1 Breakpoint dichiarati: 375 px, 768 px, 1280 px; griglia 1/2/3 colonne con container
+### M6 — Responsive sui breakpoint dichiarati (peso 5)
+
+- M6.1 Breakpoint dichiarati: 375 px, 768 px, 1280 px; griglia 1/2/3 colonne con container
   queries sulle card.
-- M5.2 Nessun overflow orizzontale a 320 px; immagini con `aspect-ratio` per evitare
+- M6.2 Nessun overflow orizzontale a 320 px; immagini con `aspect-ratio` per evitare
   spostamenti di layout.
-- M5.3 Menu mobile, filtri e carrello usabili a 375 px con target tattili ≥ 44 px.
+- M6.3 Menu mobile, filtri e carrello usabili a 375 px con target tattili ≥ 44 px.
 
 **Fatto quando:** a 320, 375, 768 e 1280 px `document.scrollingElement.scrollWidth` non
 supera la viewport e i tre flussi principali restano completabili.
 
-### M6 — Verify (peso 10)
+**Verifica:** A12 del §«Verify».
 
-- M6.1 `package.json` con `@playwright/test` 1.65.0 e lockfile committato; nessuna
+### M7 — Verify: Playwright pinnato e verify.json (peso 5)
+
+- M7.1 `package.json` con `@playwright/test` 1.65.0 e lockfile committato; nessuna
   dipendenza di runtime.
-- M6.2 `playwright.config.*` con un solo progetto Chromium e server locale dei file statici.
-- M6.3 `./verify.sh` non interattivo che esegue il set di asserzioni del §«Verify» ed emette
-  `verify.json` con `M0`–`M6`.
-- M6.4 Mapping esplicito asserzione → milestone, così ogni `pass` ha una prova.
+- M7.2 `playwright.config.*` con un solo progetto Chromium e server locale dei file statici.
+- M7.3 `./verify.sh` non interattivo che esegue il set di asserzioni del §«Verify» ed emette
+  `verify.json` con `M0`–`M7`.
+- M7.4 Mapping esplicito asserzione → milestone, così ogni `pass` ha una prova.
 
 **Fatto quando:** `./verify.sh` esce 0 su un progetto completo ed esce 1 con
 `verify.json` coerente quando una milestone fallisce.
 
+**Verifica:** A13 del §«Verify».
+
 ## Verify — `./verify.sh` e `verify.json`
 
 `./verify.sh` è un deliverable del progetto nella root `benchmarks/staticweb/staticweb-camels/`:
-non interattivo, entro 600 s, exit 0 = pass, `verify.json` con gli id `M0`–`M6`, schema 1,
+non interattivo, entro 600 s, exit 0 = pass, `verify.json` con gli id `M0`–`M7`, schema 1,
 `benchmark` uguale a `staticweb-camels`. Le asserzioni sono solo su DOM e stato: nessun
 giudizio visivo, nessuno screenshot diff.
 
 | # | asserzione | milestone |
 |---|------------|-----------|
 | A1 | le tre pagine caricano senza errori di console e senza richieste con origine diversa dal server locale | M0 |
-| A2 | il catalogo senza parametri mostra «12 risultati» e 12 card; il conteggio è ricalcolato importando `js/data.js` in Node, non scritto a mano | M1 |
-| A3 | ogni combinazione di filtri produce il conteggio atteso e un numero di card uguale al conteggio | M1, M2 |
+| A2 | il catalogo senza parametri mostra «12 risultati» e 12 card; il conteggio è ricalcolato importando `js/data.js` in Node, non scritto a mano | M0, M2 |
+| A3 | ogni combinazione di filtri produce il conteggio atteso e un numero di card uguale al conteggio | M2 |
 | A4 | i filtri nell'URL si rileggono dopo il reload e riproducono lo stesso sottoinsieme | M2 |
-| A5 | `prodotto.html?id=<id valido>` rende il nome del dataset; `?id=inesistente` mostra lo stato «non trovato» con link al catalogo | M2 |
-| A6 | `Esc` chiude il lightbox e il focus torna sul trigger; le frecce cambiano immagine | M3 |
-| A7 | aggiunta doppia → quantità 2 e totale doppio; reload → carrello conservato; `localStorage` corrotto → carrello vuoto senza crash e avviso visibile | M3 |
-| A8 | con `emulateMedia({reducedMotion: 'reduce'})` `<html>` ha `data-motion="reduced"` e non restano animazioni in esecuzione | M3, M4 |
-| A9 | contrasto calcolato da `getComputedStyle` sulle coppie testo/sfondo dei due temi: ≥ 4,5:1 il testo, ≥ 3:1 il testo grande e i bordi informativi | M4 |
-| A10 | percorso da tastiera: skip link, filtri, card, dettaglio e carrello raggiungibili e attivabili con Tab/Invio/Spazio | M4 |
-| A11 | a 320, 375, 768 e 1280 px nessun overflow orizzontale | M5 |
-| A12 | `verify.json` contiene esattamente `M0`–`M6` e l'exit code concorda col file | M6 |
+| A5 | `prodotto.html?id=<id valido>` rende il nome del dataset | M0 |
+| A6 | dataset manomesso → pannello di errore con la lista dei problemi e nessuna card parziale; filtro senza risultati → stato vuoto con pulsante «azzera filtri»; `?id=` inesistente → stato «Prodotto non trovato» con link al catalogo | M4 |
+| A7 | `Esc` chiude il lightbox e il focus torna sul trigger; le frecce cambiano immagine | M3 |
+| A8 | aggiunta doppia → quantità 2 e totale doppio; reload → carrello conservato; `localStorage` corrotto → carrello vuoto senza crash e avviso visibile | M3 |
+| A9 | con `emulateMedia({reducedMotion: 'reduce'})` `<html>` ha `data-motion="reduced"` e non restano animazioni in esecuzione | M5 |
+| A10 | contrasto calcolato da `getComputedStyle` sulle coppie testo/sfondo dei due temi: ≥ 4,5:1 il testo, ≥ 3:1 il testo grande e i bordi informativi | M5 |
+| A11 | percorso da tastiera: skip link, filtri, card, dettaglio e carrello raggiungibili e attivabili con Tab/Invio/Spazio | M5 |
+| A12 | a 320, 375, 768 e 1280 px nessun overflow orizzontale | M6 |
+| A13 | `verify.json` contiene esattamente `M0`–`M7` e l'exit code concorda col file | M7 |
 
 ## Fuori scope
 

@@ -15,7 +15,7 @@ ragione e il punto del Plan in cui vive ora. Seguono i rilievi nuovi della revis
 | 3 | La simulazione deve essere separata con grande evidenza da un'asta reale | applied | §«Simulazione dichiarata»: badge «SIMULAZIONE», `role="note"` non chiudibile, riga su nessun pagamento e nessun invio, dichiarazione in testa a `come-funziona.html`, nessun uso di «live» da solo nel titolo della pagina lotto |
 | 4 | `aria-live` sui countdown, soprattutto con i decimi, genera annunci eccessivi | applied | §«Annunci `aria-live` a intervalli ragionevoli»: cifre fuori dalle regioni live (`role="timer"`, `aria-live="off"`), annunci solo alle soglie 60/30/10/5/1 minuto e «chiusa», prezzo coalescente a 3 s, risultati dei filtri con debounce ≥ 300 ms; A10 lo verifica con `MutationObserver` |
 | 5 | Il prompt è probabilmente troppo grande per ottenere tutti i file in una risposta | applied | Lo scope è ridotto a una slice esplicita (home, catalogo, pagina lotto) con sei milestone pesate; il resto del prompt (ticker, tilt 3D, cursore custom, text reveal, scroll-driven) è fuori dal contratto di verifica e non vale credito |
-| 6 | Mancano test, fixture e criteri per il pannello offerte | applied | `M6` e il §«Verify» con 13 asserzioni; la sequenza del rivale è una funzione pura (`rivalTick()`) verificata in Node, così non serve un fixture temporale |
+| 6 | Mancano test, fixture e criteri per il pannello offerte | applied | `M7` e il §«Verify» con 14 asserzioni; la sequenza del rivale è una funzione pura (`rivalTick()`) verificata in Node, così non serve un fixture temporale |
 | 7 | Immagini esterne, animazioni e glow possono compromettere il target Lighthouse | applied | Immagini locali procedurali (`SHARED.md` §2, A1), animazioni continue fuori scope, glow solo come decorazione con contrasto verificato (A11) |
 
 ## Reperti d'archivio (§7, «Miglioramenti»)
@@ -26,13 +26,13 @@ ragione e il punto del Plan in cui vive ora. Seguono i rilievi nuovi della revis
 | 2 | Definire un dataset deterministico con date relative | applied | §«Dataset: lotti» con 14 lotti, `chiudeTraMinuti` e `validateDataset()`; A6 confronta due run con la stessa epoca |
 | 3 | Specificare rate limit, persistenza locale e stati della simulazione | applied | Throttle 2 s sull'offerta dell'utente, attesa 8–20 s del rivale, tabelle di persistenza e stati `in-arrivo`/`live`/`in-chiusura`/`chiusa` derivati |
 | 4 | Annunciare i countdown a intervalli ragionevoli, non a ogni frame | applied | §«Annunci `aria-live`» e A10 |
-| 5 | Dividere il prompt in fasi eseguibili e verificabili | applied | Milestone `M0`–`M6` con «fatto quando» per ognuna e mapping asserzione → milestone in `M6.4` |
+| 5 | Dividere il prompt in fasi eseguibili e verificabili | applied | Milestone `M0`–`M7` con «fatto quando» per ognuna e mapping asserzione → milestone in `M7.4` |
 
 ## Rilievi nuovi (revisione C9)
 
 - **`meta.json` senza contratto.** Lo stub di C2 aveva `plan: null` e `audit: null`: nessun
   Plan, nessuna traccia d'audit, `--strict` in errore. Ora `plan: "PLAN.md"` e
-  `audit: "AUDIT.md"`, tabella `M0`–`M6` allineata al Plan (Σ pesi 100, Σ slice 40).
+  `audit: "AUDIT.md"`, tabella `M0`–`M7` allineata al Plan (Σ pesi 100, Σ slice 40).
 - **Lo stato del lotto era un campo del dataset.** Il prompt elenca `stato` fra i campi del
   lotto, il che permette a un lotto di dichiararsi `live` con il countdown a zero. Il Plan lo
   rende derivato dall'orologio e toglie il campo dallo schema: una sola fonte di verità.

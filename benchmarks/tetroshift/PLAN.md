@@ -16,7 +16,7 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
 | M0 | 40 | sì | Core Tetris classico: spawn, movimento, rotazione, lock, line clear e game over con FSM valida |
-| M1 | 10 | — | Griglia e operazioni pezzo tramite l'interfaccia astratta `IGrid` |
+| M1 | 10 | — | Griglia e operazioni pezzo tramite l'interfaccia astratta IGrid |
 | M2 | 10 | — | Regole di lock, line clear e punteggio |
 | M3 | 8 | — | Stati e transizioni della FSM |
 | M4 | 10 | — | Draft carte e modificatori con seed deterministico |

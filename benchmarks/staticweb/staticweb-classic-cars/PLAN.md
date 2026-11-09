@@ -15,16 +15,19 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 10 | sì | Bootstrap e layout |
-| M1 | 20 | sì | Dataset e rendering lista |
-| M2 | 10 | sì | Dettaglio e filtri |
-| M3 | 20 | — | Interazione caratterizzante: galleria con lightbox e parallax |
-| M4 | 15 | — | Accessibilità |
-| M5 | 15 | — | Responsive |
-| M6 | 10 | — | Verify: Playwright pinnato + verify.sh |
+| M0 | 40 | sì | Slice verticale: home, flotta filtrata e scheda auto |
+| M1 | 12 | — | Dataset unico AUTO con schema, enum e validateDataset() |
+| M2 | 10 | — | Filtri, conteggi e stato nella query string |
+| M3 | 12 | — | Interazione caratterizzante: galleria con lightbox e parallax |
+| M4 | 8 | — | Stati vuoto, errore e non valido |
+| M5 | 8 | — | Accessibilità, reduced motion e contrasto |
+| M6 | 5 | — | Responsive sui breakpoint dichiarati |
+| M7 | 5 | — | Verify: Playwright pinnato e verify.json |
 
-La vertical slice vale 40 punti su 100 (`M0`+`M1`+`M2`) ed è il cancello dello scoring
+La vertical slice vale 40 punti su 100 (`M0`) ed è il cancello dello scoring
 (`docs/agents/scoring.md`): finché non passa, il resto non vale credito.
+
+# StaticWeb — Auto d'epoca (noleggio)
 
 ## Slice verticale
 
@@ -40,7 +43,7 @@ Il prompt non elenca una pagina per la singola auto, ma la slice ne richiede una
 aggiunge `auto.html?id=` come sesta pagina e lo dichiara qui, invece di lasciarla implicita.
 La slice è completa quando la home mostra l'anteprima flotta dal dataset, la flotta filtra e
 dichiara il conteggio, e la pagina dettaglio rende l'auto richiesta o lo stato «non
-trovata».
+trovata». Gli stati vuoto, errore e non valido sono pesati in `M4`.
 
 ## Convenzione condivisa
 
@@ -99,7 +102,7 @@ Questo Plan sceglie la **duplicazione dichiarata**, l'unica opzione senza build 
   relativi identici su tutte le pagine;
 - il markup di `<header>` e `<footer>` è copiato nelle sei pagine, con lo stesso testo e
   gli stessi `aria-label`;
-- `./verify.sh` (A11) confronta i link renderizzati di ogni pagina con `siteNav` e il testo
+- `./verify.sh` (A12) confronta i link renderizzati di ogni pagina con `siteNav` e il testo
   del footer: una pagina aggiornata e le altre no fanno fallire il test.
 
 Il costo è accettato e misurato: sei copie di circa 30 righe, con un test che ne rileva la
@@ -143,7 +146,7 @@ servizio, auto desiderata, messaggio. Comportamento dichiarato:
 
 ## Milestone e task
 
-### M0 — Bootstrap e layout (peso 10, slice)
+### M0 — Slice verticale: home, flotta filtrata e scheda auto (peso 40, slice)
 
 - M0.1 Struttura a sei pagine (`index.html`, `flotta.html`, `auto.html`, `servizi.html`,
   `about.html`, `contatti.html`) con `css/main.css`, `css/utilities.css`, `js/app.js`,
@@ -154,37 +157,57 @@ servizio, auto desiderata, messaggio. Comportamento dichiarato:
   tema persistito e applicato in `<head>` per evitare il FOUC.
 - M0.4 Segnaposto SVG locali e layout della home (hero, anteprima flotta, servizi,
   testimonianze, CTA).
+- M0.5 `js/data.js` con `AUTO` e 8 auto; `flotta.html` rende le card dal dataset (marca,
+  modello, anno, categoria, prezzo al giorno formattato dal valore in centesimi, stato di
+  disponibilità, immagine).
+- M0.6 Anteprima flotta in home: le prime tre auto disponibili lette dal dataset, non scritte
+  a mano.
+- M0.7 `auto.html?id=` rende l'auto dal dataset: galleria, descrizione, specifiche, prezzo,
+  cauzione, pulsante «prenota questa auto» che porta al form con l'auto preselezionata.
+- M0.8 Filtro per categoria letto da `?categoria=` con conteggio «N vetture»: tanto basta a
+  chiudere la slice, mentre il contratto completo dei filtri è `M2`.
 
 **Fatto quando:** le sei pagine si aprono da server locale senza errori in console e senza
-richieste esterne, con header e footer coerenti.
+richieste esterne, con header e footer coerenti; la flotta senza parametri mostra 8 card e
+«8 vetture»; `auto.html?id=<id valido>` rende l'auto del dataset.
 
-### M1 — Dataset e rendering lista (peso 20, slice)
+**Verifica:** A1, A2, A5, A6 e A12 del §«Verify».
 
-- M1.1 `js/data.js` con `AUTO`, `SERVIZI`, enum e `validateDataset()`; 8 auto come da schema.
-- M1.2 `flotta.html` rende le card dal dataset (marca, modello, anno, categoria, prezzo al
-  giorno formattato dal valore in centesimi, stato di disponibilità, immagine).
-- M1.3 Conteggio «N vetture» calcolato dal dataset filtrato, aggiornato a ogni cambio.
-- M1.4 Anteprima flotta in home: le prime tre auto disponibili lette dal dataset, non scritte
-  a mano.
-- M1.5 Stato di errore del dataset: validazione fallita → pannello con i problemi e nessuna
-  card parziale.
+### M1 — Dataset unico AUTO con schema, enum e validateDataset() (peso 12)
 
-**Fatto quando:** la flotta senza parametri mostra 8 card e «8 vetture», e il conteggio
-coincide col numero di card in ogni combinazione di filtri.
+- M1.1 `js/data.js` esporta `AUTO`, gli enum `CATEGORIE`, `TRASMISSIONI`, `COLORI`, la tabella
+  `SERVIZI` usata anche dal form e lo schema del §«Dataset: flotta» (campo, tipo, dominio).
+- M1.2 `validateDataset()` rifiuta id duplicati, anni fuori dall'intervallo 1948–1979,
+  cauzione inferiore al prezzo/giorno, `immagini` vuoto o fuori da 2–4 percorsi, e restituisce
+  la lista dei problemi invece di lanciare un'eccezione.
+- M1.3 Il dataset contiene 8 auto, almeno una per categoria, almeno due cabrio e almeno una
+  non disponibile.
+- M1.4 Nessun dato scritto a mano nel markup: marca, modello, prezzo e conteggi vengono dal
+  modulo.
 
-### M2 — Dettaglio e filtri (peso 10, slice)
+**Fatto quando:** un dataset manomesso produce la lista dei problemi attesi e un test Node che
+importa `js/data.js` conta 8 auto e verifica che ogni valore appartenga al suo enum.
 
-- M2.1 `auto.html?id=` rende l'auto dal dataset: galleria, descrizione, specifiche, prezzo, cauzione,
-  pulsante «prenota questa auto» che porta al form con l'auto preselezionata.
-- M2.2 `?id=` inesistente o mancante → stato «Vettura non trovata» con link alla flotta.
-- M2.3 Filtri e ordinamento come da tabella, con stato letto dalla query string al
-  caricamento e riscritto a ogni cambio (`history.replaceState`).
-- M2.4 Stato vuoto con testo esplicito e pulsante «azzera filtri».
+**Verifica:** A2 del §«Verify» (conteggio ricalcolato importando `js/data.js`) e A7 per il
+pannello di errore.
 
-**Fatto quando:** un URL con filtri riproduce lo stesso sottoinsieme dopo il reload e un
-`?id=` inesistente mostra lo stato «non trovata».
+### M2 — Filtri, conteggi e stato nella query string (peso 10)
 
-### M3 — Interazione caratterizzante (peso 20)
+- M2.1 Filtri e ordinamento come da tabella del §«Filtri, conteggio e query string»:
+  `categoria`, `anno`, `prezzo`, `disponibilita`, `ordina`.
+- M2.2 Stato letto dalla query string al caricamento e riscritto a ogni cambio con
+  `history.replaceState`: l'URL resta ricaricabile e condivisibile.
+- M2.3 Conteggio «N vetture» calcolato dal dataset filtrato, non dal DOM, e sempre uguale al
+  numero di card renderizzate.
+- M2.4 Valore di parametro fuori dominio ignorato e riportato allo stato «tutti», senza
+  errore.
+
+**Fatto quando:** ogni combinazione di filtri produce il conteggio atteso con un numero di
+card uguale al conteggio, e un URL filtrato ricarica lo stesso sottoinsieme.
+
+**Verifica:** A3 e A4 del §«Verify».
+
+### M3 — Interazione caratterizzante: galleria con lightbox e parallax (peso 12)
 
 - M3.1 Lightbox con frecce, swipe touch, `Esc`, focus trap, ripristino del focus e contatore
   «n di m».
@@ -197,60 +220,89 @@ coincide col numero di card in ogni combinazione di filtri.
 **Fatto quando:** la galleria si apre e si chiude da tastiera su entrambe le pagine, e con
 reduced motion non resta alcuna animazione in esecuzione.
 
-### M4 — Accessibilità (peso 15)
+**Verifica:** A9 del §«Verify».
 
-- M4.1 WCAG 2.1 AA sui due temi: skip link, focus visibile, target ≥ 44×44 px, landmark,
+### M4 — Stati vuoto, errore e non valido (peso 8)
+
+- M4.1 `validateDataset()` fallito → pannello di errore con la lista dei problemi e nessuna
+  card parziale.
+- M4.2 Filtro senza risultati → stato vuoto con testo esplicito e pulsante «azzera filtri»
+  che riporta alla flotta completa.
+- M4.3 `?id=` inesistente o mancante → stato «Vettura non trovata» con link alla flotta.
+- M4.4 Form: campi invalidi con `aria-invalid` e messaggio legato da `aria-describedby`,
+  riepilogo in `aria-live="polite"` e focus sul primo campo invalido; richiesta valida salvata
+  in `retromotors:richieste:v1` (ultime 5) e storage corrotto o inaccessibile → pannello
+  vuoto, nessun crash.
+
+**Fatto quando:** dataset manomesso, filtro senza risultati, `?id=` inesistente e submit con
+email non valida producono gli stati dichiarati, ognuno con la sua via d'uscita, e uno storage
+corrotto non produce eccezioni.
+
+**Verifica:** A7 e A8 del §«Verify».
+
+### M5 — Accessibilità, reduced motion e contrasto (peso 8)
+
+- M5.1 WCAG 2.1 AA sui due temi: skip link, focus visibile, target ≥ 44×44 px, landmark,
   `alt` descrittivi per le auto e `alt=""` per gli ornamenti.
-- M4.2 Lightbox con semantica modale (`role="dialog"`, `aria-modal`, `aria-labelledby`).
-- M4.3 Form: label associate, errori con `aria-describedby`, riepilogo in
+- M5.2 Lightbox con semantica modale (`role="dialog"`, `aria-modal`, `aria-labelledby`).
+- M5.3 Form: label associate, errori con `aria-describedby`, riepilogo in
   `aria-live="polite"`, focus sul primo invalido, stato di conferma annunciato.
-- M4.4 Tabella di contrasto dei token dei due temi con i valori misurati.
+- M5.4 Reduced motion: `data-motion="reduced"` su `<html>`, parallax e transizioni spente.
+- M5.5 Tabella di contrasto dei token dei due temi con i valori misurati.
 
-**Fatto quando:** A7, A9 e A10 del §«Verify» passano nei due temi.
+**Fatto quando:** tutte le asserzioni di contrasto del §«Verify» passano nei due temi e il
+percorso da tastiera copre header, filtri, card, dettaglio e form.
 
-### M5 — Responsive (peso 15)
+**Verifica:** A8, A10 e A11 del §«Verify».
 
-- M5.1 Breakpoint 375 px, 768 px, 1280 px; griglia flotta 1/2/3 colonne con container
+### M6 — Responsive sui breakpoint dichiarati (peso 5)
+
+- M6.1 Breakpoint 375 px, 768 px, 1280 px; griglia flotta 1/2/3 colonne con container
   queries sulle card.
-- M5.2 Nessun overflow orizzontale a 320 px; immagini con `aspect-ratio` per evitare
+- M6.2 Nessun overflow orizzontale a 320 px; immagini con `aspect-ratio` per evitare
   spostamenti di layout.
-- M5.3 Form e filtri usabili a 375 px con target ≥ 44 px.
+- M6.3 Form e filtri usabili a 375 px con target ≥ 44 px.
 
-**Fatto quando:** A12 passa a 320, 375, 768 e 1280 px.
+**Fatto quando:** A13 passa a 320, 375, 768 e 1280 px.
 
-### M6 — Verify (peso 10)
+**Verifica:** A12 e A13 del §«Verify».
 
-- M6.1 `package.json` con `@playwright/test` 1.65.0 e lockfile committato.
-- M6.2 `playwright.config.*` con un progetto Chromium e server locale dei file statici.
-- M6.3 `./verify.sh` non interattivo che esegue le asserzioni del §«Verify» ed emette
-  `verify.json` con `M0`–`M6`.
-- M6.4 Mapping asserzione → milestone.
+### M7 — Verify: Playwright pinnato e verify.json (peso 5)
+
+- M7.1 `package.json` con `@playwright/test` 1.65.0 e lockfile committato.
+- M7.2 `playwright.config.*` con un progetto Chromium e server locale dei file statici.
+- M7.3 `./verify.sh` non interattivo che esegue le asserzioni del §«Verify» ed emette
+  `verify.json` con `M0`–`M7`.
+- M7.4 Mapping asserzione → milestone.
 
 **Fatto quando:** `./verify.sh` esce 0 su un progetto completo ed esce 1 con `verify.json`
 coerente quando una milestone fallisce.
 
+**Verifica:** A14 del §«Verify».
+
 ## Verify — `./verify.sh` e `verify.json`
 
 `./verify.sh` è un deliverable del progetto nella root `benchmarks/staticweb/staticweb-classic-cars/`:
-non interattivo, entro 600 s, exit 0 = pass, `verify.json` con gli id `M0`–`M6`, schema 1,
+non interattivo, entro 600 s, exit 0 = pass, `verify.json` con gli id `M0`–`M7`, schema 1,
 `benchmark` uguale a `staticweb-classic-cars`. Solo assert su DOM e stato: nessun giudizio
 visivo, nessuno screenshot diff.
 
 | # | asserzione | milestone |
 |---|------------|-----------|
 | A1 | le sei pagine caricano senza errori di console e senza richieste con origine diversa dal server locale | M0 |
-| A2 | la flotta senza parametri mostra «8 vetture» e 8 card; il conteggio è ricalcolato importando `js/data.js` in Node | M1 |
-| A3 | ogni combinazione di filtri produce il conteggio atteso e un numero di card uguale al conteggio | M1, M2 |
+| A2 | la flotta senza parametri mostra «8 vetture» e 8 card; il conteggio è ricalcolato importando `js/data.js` in Node | M0, M2 |
+| A3 | ogni combinazione di filtri produce il conteggio atteso e un numero di card uguale al conteggio | M2 |
 | A4 | i filtri nell'URL si rileggono dopo il reload e riproducono lo stesso sottoinsieme | M2 |
-| A5 | `auto.html?id=<id valido>` rende marca e modello del dataset; `?id=inesistente` mostra lo stato «non trovata» con link alla flotta | M2 |
-| A6 | l'anteprima flotta in home mostra tre auto presenti nel dataset | M1 |
-| A7 | submit del form con email non valida → nessuna conferma, `aria-invalid` sul campo e focus sul primo invalido; con dati validi → pannello di conferma e voce in `localStorage`; reload → «ultima richiesta» presente; storage corrotto → nessun crash | M2, M4 |
-| A8 | `Esc` chiude il lightbox e il focus torna sul trigger; le frecce cambiano immagine e aggiornano il contatore | M3 |
-| A9 | con `emulateMedia({reducedMotion: 'reduce'})` `<html>` ha `data-motion="reduced"` e non restano animazioni in esecuzione | M3, M4 |
-| A10 | contrasto calcolato da `getComputedStyle` sulle coppie testo/sfondo dei due temi: ≥ 4,5:1 il testo, ≥ 3:1 il testo grande e i bordi informativi | M4 |
-| A11 | ogni pagina espone lo stesso insieme di link di `siteNav` e lo stesso testo di footer; una pagina divergente fallisce | M0, M5 |
-| A12 | a 320, 375, 768 e 1280 px nessun overflow orizzontale e i tre flussi principali completabili | M5 |
-| A13 | `verify.json` contiene esattamente `M0`–`M6` e l'exit code concorda col file | M6 |
+| A5 | `auto.html?id=<id valido>` rende marca e modello del dataset | M0 |
+| A6 | l'anteprima flotta in home mostra tre auto presenti nel dataset | M0 |
+| A7 | dataset manomesso → pannello di errore con la lista dei problemi e nessuna card parziale; filtro senza risultati → stato vuoto con pulsante «azzera filtri»; `?id=` inesistente → stato «Vettura non trovata» con link alla flotta | M4 |
+| A8 | submit del form con email non valida → nessuna conferma, `aria-invalid` sul campo e focus sul primo invalido; con dati validi → pannello di conferma e voce in `localStorage`; reload → «ultima richiesta» presente; storage corrotto → nessun crash | M4, M5 |
+| A9 | `Esc` chiude il lightbox e il focus torna sul trigger; le frecce cambiano immagine e aggiornano il contatore | M3 |
+| A10 | con `emulateMedia({reducedMotion: 'reduce'})` `<html>` ha `data-motion="reduced"` e non restano animazioni in esecuzione | M5 |
+| A11 | contrasto calcolato da `getComputedStyle` sulle coppie testo/sfondo dei due temi: ≥ 4,5:1 il testo, ≥ 3:1 il testo grande e i bordi informativi | M5 |
+| A12 | ogni pagina espone lo stesso insieme di link di `siteNav` e lo stesso testo di footer; una pagina divergente fallisce | M0, M6 |
+| A13 | a 320, 375, 768 e 1280 px nessun overflow orizzontale e i tre flussi principali completabili | M6 |
+| A14 | `verify.json` contiene esattamente `M0`–`M7` e l'exit code concorda col file | M7 |
 
 ## Fuori scope
 

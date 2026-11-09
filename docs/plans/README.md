@@ -27,8 +27,8 @@ Definiti qui una volta sola. Uno step che li contraddice è sbagliato, non alter
 
 Due testi identici nel contenuto, uno per lingua. Ogni `PLAN.md` inizia con il proprio:
 
-- progetti esistenti (italiano) → variante IT;
-- progetti nuovi (inglese) → variante EN;
+- benchmark esistenti (italiano) → variante IT;
+- benchmark nuovi (inglese) → variante EN;
 - wording source (T1) → nessun banner, sono prompt prodotto e restano intatti.
 
 Blocchi obbligatori: una sessione/un host/turni di chiarimento; niente rete a runtime;
@@ -94,7 +94,7 @@ pinnato con assert su DOM/stato, **nessun giudizio visivo automatico**.
 - il tier non modifica il punteggio: segmenta soltanto la classifica;
 - claim non verificati valgono 0: conta `verify.json` confermato dall'harness;
 - punteggio di suite = media sui benchmark **tentati** + metrica separata di ampiezza
-  (quanti benchmark chiusi), così chi fa 3 progetti bene non è falsato contro chi ne apre 17;
+  (quanti benchmark chiusi), così chi fa 3 benchmark bene non è falsato contro chi ne apre 17;
 - `RESULT.md` obbligatorio: modello, wall-clock, turni, token, verdetto harness.
 
 ### 5. Skill policy — `docs/agents/skills-policy.md` (creato in C2)
@@ -114,11 +114,14 @@ Node 22, **zero dipendenze**. Legge `benchmarks/*/meta.json` e
 `benchmarks/staticweb/_wording-source/*/meta.json`, valida i contratti §2, e scrive:
 `benchmarks.json` (ordinato per `tier`, poi `id`) e la tabella dentro
 `benchmarks/README.md` fra `<!-- INDEX:START -->` e `<!-- INDEX:END -->`. `--check`
-fallisce se l'output rigenerato differisce da quello committato. Nessuna CI: si lancia a mano.
+fallisce se l'output rigenerato differisce da quello committato. La tabella «Milestone pesate» di
+ogni Plan è confrontata riga per riga con `meta.json` (id, peso, slice, titolo), e i cinque
+wording source sono **pinned by hash**: `_wording-source/index.meta.json` porta lo `sha256` di
+ogni file, così una modifica successiva non può passare in silenzio. Nessuna CI: si lancia a mano.
 
 ## Inventario e tier
 
-17 benchmark valutati + 4 wording source (T1, fuori dal conteggio della suite).
+17 benchmark valutati + 5 wording source (T1, fuori dal conteggio della suite).
 
 | id | impl | runtime | tier |
 |---|---|---|---|
@@ -141,7 +144,10 @@ fallisce se l'output rigenerato differisce da quello committato. Nessuna CI: si 
 | `paper-feed` | Python + Compose | container | T5 |
 
 Wording source T1: `staticweb/_wording-source/{cammelli,cammelli_inglese,car_rental,online_auction,vintage_watches}.txt`
-mantenuti **identici**, con un `meta.json` accanto che li indicizza.
+mantenuti **identici**, con un `index.meta.json` accanto che li indicizza e ne pinna lo
+`sha256`. `cammelli_inglese.txt` era non tracciato nel working tree prima di C1 ed è entrato
+in git nel commit di scaffolding `b3ec920`: la sua byte-identità è quindi asserita da quel
+commit in poi.
 
 ## Sequenza
 

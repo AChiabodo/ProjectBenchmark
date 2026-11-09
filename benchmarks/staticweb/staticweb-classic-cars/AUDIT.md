@@ -15,22 +15,22 @@ Seguono i rilievi nuovi della revisione C9.
 | 3 | Il form è validato, ma il comportamento di invio non è definito | applied | Il §«Comportamento del form» definisce validazione al blur e al submit, `aria-invalid`, riepilogo, `preventDefault`, pannello di conferma e persistenza in `retromotors:richieste:v1`; A7 lo asserisce |
 | 4 | Immagini e font esterni introducono dipendenze, licenze e rischio performance | applied | Il §«Font e immagini locali» fissa stack di sistema o file `woff2` in `assets/fonts/` con licenza, e segnaposto SVG in `assets/images/`; A1 fallisce su una sola richiesta con origine esterna |
 | 5 | Le transizioni multipagina sono difficili senza JavaScript aggiuntivo e fallback | applied | Il §«Interazione caratterizzante» limita le transizioni a una dissolvenza d'ingresso ≤ 200 ms, disattivata sotto reduced motion, con navigazione nativa come percorso principale: nessuna animazione bloccante all'uscita |
-| 6 | Non sono indicati reduced motion, test automatici o browser target | applied | Reduced motion in `SHARED.md` §3.5 e A9; test in `M6` e nel §«Verify» (13 asserzioni); browser target nel §«Fuori scope» (Chromium pinnato, altri browser come degradazione dichiarata) |
+| 6 | Non sono indicati reduced motion, test automatici o browser target | applied | Reduced motion in `SHARED.md` §3.5 e A9; test in `M7` e nel §«Verify» (14 asserzioni); browser target nel §«Fuori scope» (Chromium pinnato, altri browser come degradazione dichiarata) |
 
 ## Reperti d'archivio (§6, «Miglioramenti»)
 
 | # | Miglioramento | Stato | Ragione / dove ora |
 |---|---------------|-------|--------------------|
-| 1 | Definire un modulo dati unico per la flotta | applied | `js/data.js` è l'unica fonte (`AUTO`, `SERVIZI`, enum, `validateDataset()`); l'anteprima in home legge lo stesso modulo (M1.4) |
+| 1 | Definire un modulo dati unico per la flotta | applied | `js/data.js` è l'unica fonte (`AUTO`, `SERVIZI`, enum, `validateDataset()`); l'anteprima in home legge lo stesso modulo (M0.6) |
 | 2 | Specificare comportamento dei filtri e conteggio risultati | applied | §«Filtri, conteggio e query string»: cinque parametri, valori fuori dominio ignorati, conteggio calcolato dal dataset filtrato, stato vuoto con reset; A2–A4 |
 | 3 | Prevedere una strategia per componenti condivisi | applied | §«Header e footer senza framework»: duplicazione dichiarata, `siteNav` come fonte unica, test di parità A11. L'alternativa (include lato build) è scartata perché introdurrebbe un build tool che l'issue #10 tiene fuori scope |
-| 4 | Aggiungere criteri di accessibilità e performance verificabili | applied | Accessibilità in `M4` con asserzioni A9–A10 e tabella di contrasto; la performance non è più un target Lighthouse dichiarato ma un vincolo verificato (nessuna richiesta esterna, nessuna animazione continua, `aspect-ratio` per evitare spostamenti di layout) |
+| 4 | Aggiungere criteri di accessibilità e performance verificabili | applied | Accessibilità in `M5` con asserzioni A10–A11 e tabella di contrasto; la performance non è più un target Lighthouse dichiarato ma un vincolo verificato (nessuna richiesta esterna, nessuna animazione continua, `aspect-ratio` per evitare spostamenti di layout) |
 
 ## Rilievi nuovi (revisione C9)
 
 - **`meta.json` senza contratto.** Lo stub di C2 aveva `plan: null` e `audit: null`: nessun
   Plan, nessuna traccia d'audit, `--strict` in errore. Ora `plan: "PLAN.md"` e
-  `audit: "AUDIT.md"`, tabella `M0`–`M6` allineata al Plan (Σ pesi 100, Σ slice 40).
+  `audit: "AUDIT.md"`, tabella `M0`–`M7` allineata al Plan (Σ pesi 100, Σ slice 40).
 - **Sesta pagina non prevista dal prompt.** Il prompt elenca cinque pagine e nessuna scheda
   auto, mentre la slice richiede una pagina dettaglio. Aggiunta `auto.html?id=` e dichiarata
   nel §«Slice verticale»: la deviazione è esplicita, non implicita.
