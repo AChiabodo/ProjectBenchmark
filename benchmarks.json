@@ -364,6 +364,80 @@
       ]
     },
     {
+      "id": "go-http-server",
+      "title": "go-http-server — concurrent service with a bounded worker pool",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "Go"
+      ],
+      "stack": [
+        "Go 1.22",
+        "net/http (standard library only)",
+        "go vet",
+        "go test -race"
+      ],
+      "runtime": "go",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, routes, worker-pool slice and drain-on-shutdown"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Declared route table, handlers and error codes"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Middleware chain: panic recovery, logging, rate limit"
+        },
+        {
+          "id": "M3",
+          "weight": 15,
+          "slice": false,
+          "title": "Fixed worker pool, bounded queue and backpressure"
+        },
+        {
+          "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "Race-detector-clean functional and concurrency suite"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Health and textual metrics endpoints"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
       "id": "kotlin-desktop",
       "title": "Kotlin Desktop — expense tracker on the JVM without the Android SDK",
       "kind": "benchmark",
@@ -525,6 +599,87 @@
           "weight": 5,
           "slice": false,
           "title": "verify.sh non interattivo con verify.json"
+        }
+      ]
+    },
+    {
+      "id": "rust-tui-editor",
+      "title": "Rust TUI editor — headless-testable editor core",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "Rust"
+      ],
+      "stack": [
+        "Rust stable (edition 2021)",
+        "ratatui 0.30.2",
+        "crossterm 0.29.0",
+        "Cargo",
+        "cargo test"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Headless slice: open, edit, undo, redo, save, reopen"
+        },
+        {
+          "id": "M1",
+          "weight": 12,
+          "slice": false,
+          "title": "Gap buffer with a declared edit cost shape"
+        },
+        {
+          "id": "M2",
+          "weight": 10,
+          "slice": false,
+          "title": "Cursor and selection over grapheme clusters"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Undo and redo with run grouping and bounded depth"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Forward search with wrap and match navigation"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Save and load: encoding, newline and BOM policy, error path"
+        },
+        {
+          "id": "M6",
+          "weight": 7,
+          "slice": false,
+          "title": "Keymap, command layer and TUI view rendering"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
         }
       ]
     },
