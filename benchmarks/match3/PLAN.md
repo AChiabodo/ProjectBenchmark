@@ -15,15 +15,19 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 8 | sì | Fondamenta riproducibili (G0) |
-| M1 | 22 | sì | Core board e vertical slice Moves (G1) |
-| M2 | 26 | — | Speciali, cascade, identità e deadlock (G2) |
-| M3 | 15 | — | Game flow, Time e persistenza (G3) |
-| M4 | 19 | — | Rendering, UX e accessibilità (G3/P1) |
-| M5 | 10 | — | Verifica e packaging (G4) |
+| M0 | 40 | sì | Core puro e slice verticale giocabile (board deterministica, FSM minima, rendering e HUD minimi, Moves) |
+| M1 | 12 | — | Invarianti board, deadlock e stabilizzazione forzata al cap di cascade |
+| M2 | 10 | — | FSM completa e contratto di input lock |
+| M3 | 8 | — | Modalità Moves configurabile (5-50 mosse) |
+| M4 | 8 | — | Modalità Time configurabile (30-300 s) |
+| M5 | 10 | — | Special tile: creazione, attivazioni, catene e combo |
+| M6 | 4 | — | Persistenza difensiva versionata (localStorage) |
+| M7 | 3 | — | Accessibilità, performance e polish audiovisivo |
+| M8 | 5 | — | verify.sh non interattivo con verify.json |
 # GemSwap — Piano di sviluppo eseguibile (Match-3 Web completo)
 
-> **Root del progetto:** `Match3/`, cioè la cartella corrente del benchmark.
+> **Root del progetto:** `benchmarks/match3/`, cioè la cartella corrente del
+> benchmark: nessun'altra root è prevista.
 >
 > **Stack confermato:** TypeScript strict + Vite + Canvas 2D + Vitest. C/raylib non
 > fanno parte di questo target web; l'eventuale porting nativo è un progetto separato.
@@ -52,7 +56,8 @@ I valori configurati e il best score sono separati per modalità e persistiti in
 
 ### 1.2 Scope del primo rilascio
 
-**Vertical slice giocabile (P0):**
+**Vertical slice giocabile (P0):** corrisponde alla milestone `M0`, l'unica
+`slice` della tabella pesata.
 
 - core puro e deterministico: board, match, swap, clear, gravity, refill,
   cascade, deadlock e score;
@@ -62,7 +67,8 @@ I valori configurati e il best score sono separati per modalità e persistiti in
 - reset/restart affidabile e persistenza difensiva;
 - test unitari e di integrazione del core.
 
-**Release v1 completa (P1, obiettivo del progetto):**
+**Release v1 completa (P1, obiettivo del progetto):** corrisponde alle
+milestone `M1`–`M7`.
 
 - pezzi speciali creati da match di 4, 5, L/T, con attivazioni, reazioni a
   catena e combo tra speciali definite in §1.3;
@@ -76,11 +82,16 @@ I valori configurati e il best score sono separati per modalità e persistiti in
 - booster consumabili, livelli/campagna e monetizzazione;
 - backend, account, classifiche online e analytics;
 - asset binari: forme, colori e suoni sono procedurali;
-- Playwright, CI e deploy automatico: sono stretch goal documentati in §11.
+- Playwright oltre il set di asserzioni di stato di `./verify.sh` (§12), CI e
+  deploy automatico: sono stretch goal documentati in §11.
 
 ### 1.3 Pezzi speciali v1
 
-Le special tile sono parte della release v1 e conservano colore e identità:
+Le special tile sono **dentro v1** e hanno la milestone dedicata `M5`; le
+milestone P0 — in particolare la slice `M0` — non le richiedono, quindi la
+slice si completa e si valuta anche senza costruirle. Questa è l'unica
+dichiarazione di scope sulle speciali: il piano non contiene altre affermazioni
+in merito. Le special tile conservano colore e identità:
 
 | Match che le crea | Speciale | Effetto base |
 |---|---|---|
@@ -113,11 +124,11 @@ bonus configurabili, ma non consumano mosse aggiuntive.
 
 | Gate | Quando | Criteri bloccanti |
 |---|---|---|
-| **G0 Riproducibile** | fine setup | installazione da lockfile, typecheck, lint e test dummy verdi |
-| **G1 Vertical slice** | prima demo | una partita Moves completa con swap, match, cascade e restart |
-| **G2 Core robusto** | prima di polish | speciali/combo, invarianti board, deadlock, cap cascade e test verdi |
-| **G3 Feature complete** | fine funzionalità | Moves + Time, speciali/combo, persistenza, responsive e HUD |
-| **G4 Release v1** | fine verifica | coverage, performance, accessibilità, browser smoke e build produzione |
+| **G0 Riproducibile** | fine setup | installazione da lockfile, typecheck, lint e test dummy verdi (task M0.1–M0.3) |
+| **G1 Vertical slice** | prima demo | una partita Moves completa con swap, match, cascade e restart (M0) |
+| **G2 Core robusto** | prima di polish | invarianti board, deadlock, cap cascade, FSM completa e input lock con test verdi (M1, M2) |
+| **G3 Feature complete** | fine funzionalità | Moves + Time, speciali/combo, persistenza, responsive e HUD (M3–M7) |
+| **G4 Release v1** | fine verifica | coverage, performance, accessibilità, browser smoke, `verify.sh` e build produzione (M7, M8) |
 
 Un fallimento P1 non deve impedire G1: si consegna prima il core giocabile e si
 aggiunge il polish in seguito.
@@ -168,6 +179,7 @@ Baseline da fissare in `package.json` e verificare in `package-lock.json`:
 | `@vitest/coverage-v8` | `4.0.0` |
 | ESLint | `9.32.0` |
 | `typescript-eslint` | `8.38.0` |
+| `@playwright/test` | `1.65.0` (solo per `./verify.sh`, §12; browser Chromium installata con `npx playwright install chromium`) |
 
 Se una versione non è disponibile nell'ambiente, fermarsi e registrare la
 variazione in `CHANGELOG.md`: non sostituirla silenziosamente con `latest`.
@@ -218,7 +230,7 @@ Core puro (Board, MatchEngine, ScoreManager, GameSession, FSM)
 ### 4.2 Struttura dei file
 
 ```text
-Match3/
+benchmarks/match3/
 ├── index.html
 ├── package.json
 ├── package-lock.json
@@ -229,6 +241,8 @@ Match3/
 ├── vite.config.ts
 ├── vitest.config.ts
 ├── eslint.config.js
+├── playwright.config.ts
+├── verify.sh              # contratto di verifica, §12; genera verify.json
 ├── src/
 │   ├── main.ts
 │   ├── config.ts
@@ -423,6 +437,38 @@ clear atomico. L'ordine è stabile: effetto iniziale, quindi catene in ordine
 di 64 attivazioni (massimo le celle della board); superarlo è un errore di
 sviluppo e attiva la stabilizzazione sicura in produzione.
 
+### 4.8 Stabilizzazione forzata dopo il limite di cascade
+
+`MAX_CASCADE_DEPTH = 20`. Quando il refill produrrebbe la cascade 21, la
+sessione invoca `forceStabilize` (task M1.4). Il contratto ha tre parti
+obbligatorie:
+
+**Comportamento osservabile.** Il giocatore vede una transizione breve e
+dichiarata: un overlay `EMERGENCY_STABILIZING` di 300–500 ms, ridotto con
+`prefers-reduced-motion`. Non è uno stato della FSM (non compare in
+`GAME_STATES` né nella tabella §4.6): la sessione resta nella transazione
+corrente finché la coda degli effetti è esaurita, poi committa la board
+stabilizzata e torna a `IDLE`. Nessuna tile scompare a metà animazione e
+nessun nuovo match parte dalla board stabilizzata.
+
+**Stato canonico al termine.** FSM in `IDLE` con board che soddisfa gli
+invarianti §4.4: piena, senza match, con almeno una mossa valida, ogni tile
+con `row/col` coerenti e `cascadeLevel = 0`. Le tile permutate mantengono i
+propri ID; se il fallback rigenera la board, i vecchi ID sono ritirati
+esplicitamente, quelli nuovi non sono mai stati usati e la sessione emette un
+evento diagnostico. Score e contatore mosse sono identici a prima della
+stabilizzazione: la stabilizzazione non assegna punti, non consuma mosse e
+non crea loop.
+
+**Test che la coprono.** (1) fixture deterministica che raggiunge la cascade
+21; (2) score e mosse invariati attraverso la stabilizzazione; (3) stato
+canonico post-stabilizzazione: piena, senza match, mossa valida,
+`cascadeLevel = 0`, invarianti §4.4 verificati; (4) fallback: 1000 permutazioni
+deterministiche esaurite → board rigenerata con ID nuovi e vecchi ritirati;
+(5) non ricorsività: la board stabilizzata non genera alcuna cascade al
+commit; (6) terminazione garantita: `forceStabilize` esce sempre per limite
+esplicito, mai per condizione di ciclo.
+
 ---
 
 ## 5. Persistenza e tempo
@@ -455,7 +501,7 @@ interface BestScoresV1 {
 ```
 
 `StorageAdapter.load()` non si fida mai di un cast TypeScript: esegue parse,
-controllo dei campi, controllo dei tipi, clamp e validazione degli enum.
+controllo dei campi, controllo dei tipi, clamp e validazione dei valori ammessi.
 
 Comportamento definito:
 
@@ -499,12 +545,15 @@ esatta, delta negativo e reset. Verificare che non si perda tempo in pausa.
 Le stime sono per un singolo sviluppatore, senza includere attese. Le milestone
 sono sequenziali; all'interno di una milestone si parallelizzano solo file
 indipendenti. Ogni task deve produrre codice/test o un artefatto verificabile.
+Id, pesi e slice sono quelli della tabella «Milestone pesate» in testa al piano
+(fonte autorevole: `meta.json`).
 
-### M0 — Fondamenta riproducibili (0,5–1 giorno) — G0
+### M0 — Core puro e slice verticale giocabile (peso 40, slice) — G0+G1
 
-- [ ] **M0.1 Scaffold pinned** — creare in `Match3/` i file Vite vanilla-ts
-  usando la versione esatta di §3; aggiungere `.nvmrc`, `engines`, scripts,
-  `package-lock.json`. **Done:** `npm ci`, `npm run dev`, `npm run build`.
+- [ ] **M0.1 Scaffold pinned** — creare in `benchmarks/match3/` i file Vite
+  vanilla-ts usando le versioni esatte di §3; aggiungere `.nvmrc`, `engines`,
+  scripts, `package-lock.json`. **Done:** `npm ci`, `npm run dev`,
+  `npm run build`.
 - [ ] **M0.2 Tooling** — configurare TS strict (`noUncheckedIndexedAccess`,
   `noImplicitOverride`, `verbatimModuleSyntax`), ESLint flat config e Vitest.
   Configurare coverage solo su `src/core/**`. **Done:** typecheck, lint, test
@@ -512,116 +561,152 @@ indipendenti. Ogni task deve produrre codice/test o un artefatto verificabile.
 - [ ] **M0.3 Config e adapter** — creare config centralizzata, RNG seedabile,
   `Clock` e interfaccia `StorageAdapter`; nessuna dipendenza browser nel core.
   **Done:** test di riproducibilità RNG e typecheck.
-
-### M1 — Core board e vertical slice Moves (2–3 giorni) — G1
-
-- [ ] **M1.1 Tipi e invarianti** — implementare `constants.ts`, `types.ts`,
-  `assertBoardInvariant` e generatore di ID monotono. **Done:** fixture board
-  valida/invalida e test di ogni invariante.
-- [ ] **M1.2 Generazione iniziale** — `generateStableBoard(seed)` evita match
+- [ ] **M0.4 Tipi e generatore di ID** — implementare `constants.ts` e
+  `types.ts` secondo §4.3 e il generatore di ID monotono. **Done:** typecheck e
+  fixture board valida/invalida.
+- [ ] **M0.5 Generazione iniziale** — `generateStableBoard(seed)` evita match
   durante il riempimento e usa massimo un numero finito di tentativi. **Done:**
   1.000 seed senza match; board piena; almeno una mossa valida.
-- [ ] **M1.3 MatchEngine** — scan orizzontale/verticale, run sovrapposti e
+- [ ] **M0.6 MatchEngine** — scan orizzontale/verticale, run sovrapposti e
   geometria L/T; output di ID e celle immutabile. **Done:** fixture per run 3,
   run 4/5, overlap, L/T e nessun match.
-- [ ] **M1.4 Board swap e FSM minima** — swap adiacente con commit atomico,
+- [ ] **M0.7 Board swap e FSM minima** — swap adiacente con commit atomico,
   revert senza commit, `IDLE/SWAPPING/REVERTING/MATCHING`. **Done:** test di
   transizioni, scambio di riferimenti e input bloccato.
-- [ ] **M1.5 Clear, score e Moves** — rimozione, formula `tiles × 10 ×
-  cascadeMultiplier + shapeBonus`, decremento solo su swap valido e HUD score.
-  **Done:** vertical slice manuale completo con restart.
-- [ ] **M1.6 Canvas/input minimi** — renderer di griglia e sei forme procedurali,
+- [ ] **M0.8 Clear, score e Moves di default** — rimozione, formula
+  `tiles × 10 × cascadeMultiplier + shapeBonus`, decremento solo su swap
+  valido, HUD score, game-over a mosse esaurite e restart. **Done:** vertical
+  slice manuale completo con restart (20 mosse di default).
+- [ ] **M0.9 Canvas/input minimi** — renderer di griglia e sei forme procedurali,
   pointer events e mapping cella. **Done:** swap via mouse e touch su viewport
   desktop/mobile; nessuna logica core nel DOM.
-
-### M2 — Speciali, cascade, identità e deadlock (3–4 giorni) — G2
-
-- [ ] **M2.1 Gravity plan** — `applyGravity` ritorna movimenti per ID, compatti
+- [ ] **M0.10 Animator minimo** — tween con delta-time e piani per ID
+  swap/clear/fall/refill (§4.5); un solo completamento per piano. **Done:**
+  piani iniettivi, nessun commit doppio e nessuna callback stantia dopo reset.
+- [ ] **M0.11 Gravity plan** — `applyGravity` ritorna movimenti per ID, compatti
   ogni colonna verso il basso e committa coordinate solo a fine animazione.
   **Done:** colonne con zero/uno/molti gap e test `from/to` iniettivo.
-- [ ] **M2.2 Refill plan** — crea ID mai usati, spawn sopra il canvas, evita
+- [ ] **M0.12 Refill plan** — crea ID mai usati, spawn sopra il canvas, evita
   match introdotti quando possibile e riempie tutte le celle. **Done:** board
   piena a fine commit, contatore ID corretto, coordinate finali corrette.
-- [ ] **M2.3 Cascade orchestrata** — `CLEARING → FALLING → REFILLING →
+- [ ] **M0.13 Cascade orchestrata** — `CLEARING → FALLING → REFILLING →
   MATCHING` fino a stabilità; `cascadeLevel` incrementa solo per un nuovo
   clear. **Done:** fixture deterministica multi-cascade e nessun teleport.
-- [ ] **M2.4 Creazione speciali** — riconoscere match di 4/5/L/T, scegliere
-  anchor e trasformarla secondo §1.3 senza perderne ID/tipo. **Done:** fixture
-  per orientamenti, overlap, priorità e creazione durante una cascade.
-- [ ] **M2.5 Attivazioni e combo** — produrre `ResolutionPlan`, risolvere riga,
-  colonna, area, colore, catene e swap tra speciali con deduplica per ID.
-  **Done:** ogni combinazione di §1.3, score una sola volta e coda sempre finita.
-- [ ] **M2.6 Cap cascade esplicito** — usare `MAX_CASCADE_DEPTH = 20`. Quando il
-  refill produrrebbe la cascade 21, non assegnare score né bonus aggiuntivi e
-  invocare `forceStabilize`. L'algoritmo tenta al massimo 1000 permutazioni
-  deterministiche delle tile esistenti per ottenere board piena, senza match e
-  con mossa valida; se fallisce, genera una nuova board stabile, ritira i vecchi
-  ID e mostra una breve transizione `EMERGENCY_STABILIZING`. Non consuma mosse,
-  non crea loop e azzera `cascadeLevel` a 0. **Done:** test cap, score invariato
-  durante la stabilizzazione, board stabile e fallback finito.
-- [ ] **M2.7 Deadlock** — a fine cascade eseguire `hasValidMoves`; se falso,
+- [ ] **M0.14 Start/restart/reset** — overlay iniziale, `RESTART` e `RESET` con
+  nuovo seed/session generation. **Done:** score, selezione, board,
+  transazioni e moves resettati; best score conservato (il timer entra con
+  M4).
+
+### M1 — Invarianti board, deadlock e stabilizzazione forzata (peso 12) — G2
+
+- [ ] **M1.1 Invarianti formali** — implementare `assertBoardInvariant(board,
+  phase)` e i test di ogni invariante di §4.4. **Done:** invarianti verificati
+  dopo ogni operazione pubblica del core; fixture board valida/invalida.
+- [ ] **M1.2 Deadlock** — a fine cascade eseguire `hasValidMoves`; se falso,
   `RESHUFFLING` con Fisher–Yates limitato a 100 tentativi, preservando ID/tipi.
   Fallback deterministico a board stabile se necessario. **Done:** fixture
   senza mosse, reshuffle finito e nessun loop infinito.
-- [ ] **M2.8 Test identità/reset** — test espliciti per swap, speciali, gravity, refill,
-  reshuffle, coordinate e callback tardivo dopo reset. **Done:** invarianti
-  verificati dopo ogni commit e nessun ID duplicato.
+- [ ] **M1.3 Test identità/reset** — test espliciti per swap, gravity, refill,
+  reshuffle, coordinate e callback tardivo dopo reset (le identità delle
+  speciali si aggiungono con M5). **Done:** invarianti verificati dopo ogni
+  commit e nessun ID duplicato.
+- [ ] **M1.4 Cap cascade e stabilizzazione forzata** — usare
+  `MAX_CASCADE_DEPTH = 20`; quando il refill produrrebbe la cascade 21, non
+  assegnare score né bonus aggiuntivi e invocare `forceStabilize` secondo il
+  contratto §4.8 (1000 permutazioni deterministiche, poi board stabile nuova;
+  overlay `EMERGENCY_STABILIZING`; nessuna mossa consumata; `cascadeLevel = 0`).
+  **Done:** i sei test elencati in §4.8 verdi.
 
-### M3 — Game flow, Time e persistenza (2 giorni) — G3
+### M2 — FSM completa e contratto di input lock (peso 10) — G2/G3
 
-- [ ] **M3.1 FSM completa** — aggiungere `START`, `PAUSED`, `GAME_OVER`,
+- [ ] **M2.1 FSM completa** — aggiungere `START`, `PAUSED`, `GAME_OVER`,
   `RESHUFFLING` e resume state; definire eventi tipizzati e transizioni illegali.
   **Done:** tabella §4.6 coperta da test.
-- [ ] **M3.2 Start/restart/reset** — overlay iniziale, `RESTART` e `RESET` con
-  nuovo seed/session generation. **Done:** score, selezione, board, transazioni,
-  moves e timer resettati; best score conservato.
-- [ ] **M3.3 Time mode** — implementare il contratto `tick(nowMs)` e HUD countdown;
-  pausa e tab nascosta non consumano tempo. **Done:** test con fake clock per
-  tick, pausa, resume, scadenza e reset.
-- [ ] **M3.4 Storage versionato** — implementare schema v1, validazione, migrazione,
-  fallback in memoria e gestione corruzione secondo §5.1. **Done:** test di
-  localStorage assente/corrotto/inaccessibile, versioni e clamp.
-- [ ] **M3.5 Best score e preferenze** — salvare best per modalità e configurazione
-  scelta, con HUD coerente. **Done:** reload manuale e test di isolamento
-  `moves`/`time`.
+- [ ] **M2.2 Input lock e pause/resume** — ogni input di gioco è ignorato, non
+  accodato, durante gli stati di transizione; `PAUSE` congela clock, Animator e
+  transazione e `RESUME` riprende lo stesso piano senza ricominciarlo;
+  `GAME_OVER_REQUEST` consumato una sola volta al confine sicuro della
+  transizione. **Done:** test di input durante animazione, pausa/ripresa e
+  transizione illegale come no-op controllato.
 
-### M4 — Rendering, UX e accessibilità (2–3 giorni) — G3/P1
+### M3 — Modalità Moves configurabile (peso 8) — G3
 
-- [ ] **M4.1 Animator** — tween con delta-time, easing, cancellazione tramite
-  session token e piani swap/clear/special/fall/refill. Ogni speciale deve avere
-  forma e animazione distinguibili senza dipendere solo dal colore. **Done:**
-  completamento singolo, catene leggibili, pausa/ripresa e reset senza callback
-  stantii.
-- [ ] **M4.2 Responsive layout** — `ResizeObserver`, DPR clamp a 2, trasformazione
-  Canvas corretta e hit-test derivato dallo stesso layout. **Done:** tre
-  viewport della DoD senza blur/overflow o celle errate.
-- [ ] **M4.3 HUD/overlay** — score, best, modalità, moves/time, pause e game-over;
-  elementi HTML semantici, focus visibile, pulsanti e board utilizzabili da
-  tastiera tramite cursore di cella, selezione e swap. **Done:**
-  `prefers-reduced-motion`, contrasto sufficiente, stato annunciato e aria-label
-  per i controlli non testuali.
-- [ ] **M4.4 Polish audiovisivo** — particelle con pool e Web Audio sintetico con
-  toggle persistito. **Done:** audio creato solo dopo gesto utente; fallback
-  silenzioso; nessun calo misurabile causato dagli FX.
+- [ ] **M3.1 Contatore mosse** — decremento solo su swap che produce match o
+  attivazione speciale valida; game-over a zero con overlay e restart.
+  **Done:** test di decremento/non-decremento, game-over e restart.
+- [ ] **M3.2 Configurazione 5–50** — selettore del numero di mosse con clamp
+  5..50 (schema §5.1) e HUD coerente; la persistenza della preferenza è di M6.
+  **Done:** test di clamp e HUD.
 
-### M5 — Verifica e packaging (1–2 giorni) — G4
+### M4 — Modalità Time configurabile (peso 8) — G3
 
-- [ ] **M5.1 Test finale** — completare casi limite e coverage branch ≥90% su
-  `src/core`; nessun test random non riproducibile (ogni failure stampa seed).
-  **Done:** `npm run test:coverage` verde.
-- [ ] **M5.2 Performance** — misurare cascade lunga con CPU 4× su dispositivo
+- [ ] **M4.1 Time mode** — implementare il contratto `tick(nowMs)` e HUD
+  countdown; pausa e tab nascosta non consumano tempo. **Done:** test con fake
+  clock per tick, pausa, resume, scadenza e reset.
+- [ ] **M4.2 Configurazione 30–300** — selettore della durata con clamp
+  30..300 s (schema §5.1) e HUD countdown; la persistenza della preferenza è
+  di M6. **Done:** test di clamp e countdown.
+
+### M5 — Special tile: creazione, attivazioni, catene e combo (peso 10) — G2/G3
+
+- [ ] **M5.1 Creazione speciali** — riconoscere match di 4/5/L/T, scegliere
+  anchor e trasformarla secondo §1.3 senza perderne ID/tipo. **Done:** fixture
+  per orientamenti, overlap, priorità e creazione durante una cascade.
+- [ ] **M5.2 Attivazioni e combo** — produrre `ResolutionPlan`, risolvere riga,
+  colonna, area, colore, catene e swap tra speciali con deduplica per ID.
+  **Done:** ogni combinazione di §1.3, score una sola volta e coda sempre finita.
+- [ ] **M5.3 Identità e rendering delle speciali** — l'anchor trasformata
+  mantiene ID, tipo e coordinate (§4.5); ogni speciale ha forma e animazione
+  distinguibili senza dipendere solo dal colore. **Done:** test di identità
+  dell'anchor e piani di animazione dedicati alle speciali.
+
+### M6 — Persistenza difensiva versionata (peso 4) — G3
+
+- [ ] **M6.1 Storage versionato** — implementare schema v1, validazione,
+  migrazione, fallback in memoria e gestione corruzione secondo §5.1.
+  **Done:** test di localStorage assente/corrotto/inaccessibile, versioni e
+  clamp.
+- [ ] **M6.2 Best score e preferenze** — salvare best per modalità e
+  configurazione scelta (Moves 5–50, Time 30–300 s), con HUD coerente.
+  **Done:** reload manuale e test di isolamento `moves`/`time`.
+
+### M7 — Accessibilità, performance e polish audiovisivo (peso 3) — G3/P1
+
+- [ ] **M7.1 Responsive layout** — `ResizeObserver`, DPR clamp a 2,
+  trasformazione Canvas corretta e hit-test derivato dallo stesso layout.
+  **Done:** tre viewport della DoD senza blur/overflow o celle errate.
+- [ ] **M7.2 HUD/overlay e accessibilità** — score, best, modalità,
+  moves/time, pause e game-over; elementi HTML semantici, focus visibile,
+  pulsanti e board utilizzabili da tastiera tramite cursore di cella,
+  selezione e swap. **Done:** `prefers-reduced-motion`, contrasto sufficiente,
+  stato annunciato e aria-label per i controlli non testuali.
+- [ ] **M7.3 Polish audiovisivo** — particelle con pool e Web Audio sintetico
+  con toggle persistito. **Done:** audio creato solo dopo gesto utente;
+  fallback silenzioso; nessun calo misurabile causato dagli FX.
+- [ ] **M7.4 Performance** — misurare cascade lunga con CPU 4× su dispositivo
   di riferimento, memorizzando browser, hardware e risultati in
   `docs/PERFORMANCE.md`. **Done:** criteri misurabili in §2.2 o issue P1,
   mai un "60 FPS" non verificato.
-- [ ] **M5.3 Browser smoke** — verificare desktop Chrome/Firefox e almeno un
+- [ ] **M7.5 Browser smoke** — verificare desktop Chrome/Firefox e almeno un
   mobile reale (Android Chrome oppure iOS Safari); la matrice estesa è una
   attività separata. **Done:** checklist `docs/TEST-MATRIX.md`, zero errori
   console e input funzionante.
-- [ ] **M5.4 Produzione** — `npm run build`, `npm run preview`, smoke test sulla
-  build, verifica asset procedurali e dimensione bundle. **Done:** preview
-  giocabile e artefatto `dist/` riproducibile.
 
-**Stima totale:** 10–14 giorni lavorativi per G3, 12–16 per G4 con polish e
+### M8 — verify.sh non interattivo con verify.json (peso 5) — G4
+
+- [ ] **M8.1 Test finale e coverage** — completare casi limite e coverage
+  branch ≥90% su `src/core`; nessun test random non riproducibile (ogni
+  failure stampa seed). **Done:** `npm run test:coverage` verde.
+- [ ] **M8.2 Produzione** — `npm run build`, `npm run preview`, smoke test
+  sulla build, verifica asset procedurali e dimensione bundle. **Done:**
+  preview giocabile e artefatto `dist/` riproducibile.
+- [ ] **M8.3 verify.sh e verify.json** — implementare `./verify.sh` secondo
+  §12: `npm ci`, typecheck, lint, `vitest --run`, build e pass Playwright
+  pinnato con assert su stato; scrittura di `verify.json` con tutti gli id
+  M0–M8 e concordanza dell'exit code. **Done:** `./verify.sh` non interattivo
+  verde in una sola esecuzione entro 600 s.
+
+**Stima totale:** 13–18 giorni lavorativi per G3, 14–20 per G4 con polish e
 verifica. La coverage e la matrice browser completa non sono sovrapposte alla
 stima del vertical slice.
 
@@ -664,7 +749,9 @@ core da testare sono almeno:
 
 ### 7.3 E2E e test manuali
 
-Per v1 i test di integrazione del core sono bloccanti; Playwright è stretch.
+Per v1 i test di integrazione del core sono bloccanti; il pass Playwright
+pinnato di `./verify.sh` (assert su stato, §12) è parte del contratto di
+verifica, non stretch. La matrice E2E estesa oltre quel set è stretch (§11).
 La verifica manuale minima copre:
 
 1. start → swap valido → match → cascade → score;
@@ -729,27 +816,54 @@ La verifica manuale minima copre:
 Solo dopo G4, con dipendenze sempre pinned:
 
 - **Nuove speciali/booster:** richiedono regole, UX, scoring e test separati;
-- **E2E Playwright:** avvio, swap, score, game-over, storage e viewport mobile;
+- **E2E Playwright estesa:** oltre il set di asserzioni di stato già in
+  `./verify.sh` (§12): matrice browser completa, scenari lunghi e viewport
+  mobile aggiuntivi;
 - **CI GitHub Actions:** `npm ci`, typecheck, lint, test, coverage e build;
 - **Deploy Cloudflare Pages:** build `npm run build`, output `dist/`, preview e
   auto-deploy su `main`;
 - daily challenge, livelli e porting C/raylib come progetti distinti.
 
 Nessuna attività stretch può diventare requisito implicito del MVP: deve avere
-una issue, una stima e un criterio di accettazione separati.
+una issue, una stima e un criterio di accettazione separati. Il pass
+Playwright pinnato di `./verify.sh` non è stretch: è parte del contratto di
+verifica di §12.
 
 ---
 
-## 12. Comandi di verifica
+## 12. Verify — `./verify.sh` e `verify.json`
+
+`./verify.sh` è un deliverable del progetto, risiede nella root
+`benchmarks/match3/` ed è l'unico comando di verifica dell'harness: non
+interattivo, termina entro 600 s, exit 0 = pass, e scrive `verify.json` con
+esattamente gli id milestone del `meta.json` (`M0`–`M8`, schema 1, benchmark
+`match3`, una voce `{id, pass, detail}` per milestone, peso facoltativo ma
+coerente con il `meta.json`). L'exit code concorda con il file: 0 se e solo se
+tutte le milestone sono `pass: true`.
+
+Sequenza eseguita dallo script, con tutte le dipendenze pinnate nel lockfile
+(§3):
 
 ```bash
 npm ci
 npm run typecheck
 npm run lint
-npm test
-npm run test:coverage
+vitest --run
 npm run build
-npm run preview
+npx playwright test   # pass pinnato: @playwright/test 1.65.0, Chromium
 ```
 
-Playwright, CI e deploy si attivano solo dopo approvazione dello scope post-v1.
+Il pass Playwright lavora sulla build di preview e fa solo **assert su
+DOM/stato**: board 8×8 popolata dopo il caricamento, punteggio che cambia
+dopo uno swap valido, modalità corrente (Moves/Time) nel HUD, game-over a
+mosse esaurite con restart funzionante, reload con `localStorage` corrotto
+senza crash. Nessun giudizio visivo automatico: vietati screenshot diff e
+confronti di pixel.
+
+Ogni milestone riceve `pass` dai risultati che le competono (unit test del
+suo ambito, build, assert Playwright di stato); il task M8.3 dettaglia il
+mapping. `npm run preview` e la verifica manuale di §7.3 restano attività di
+sviluppo, non passi di `./verify.sh`.
+
+CI, deploy e la matrice E2E estesa si attivano solo dopo approvazione dello
+scope post-v1 (§11).
