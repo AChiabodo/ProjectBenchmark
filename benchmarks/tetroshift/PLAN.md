@@ -15,14 +15,17 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 40 | sì | Setup progetto e core Tetris classico (MVP baseline) |
-| M1 | 20 | — | Motore fisico e deformabilità (soft-body layer) |
-| M2 | 20 | — | Architettura roguelike e sistema carte |
-| M3 | 12 | — | Game juice, shader, particelle e audio |
-| M4 | 8 | — | Estensibilità geometrica (proof of concept) |
+| M0 | 40 | sì | Core Tetris classico: spawn, movimento, rotazione, lock, line clear e game over con FSM valida |
+| M1 | 10 | — | Griglia e operazioni pezzo tramite l'interfaccia astratta `IGrid` |
+| M2 | 10 | — | Regole di lock, line clear e punteggio |
+| M3 | 8 | — | Stati e transizioni della FSM |
+| M4 | 10 | — | Draft carte e modificatori con seed deterministico |
+| M5 | 6 | — | Negozio ed economia |
+| M6 | 8 | — | Juice visivo, rendering e audio |
+| M7 | 8 | — | Suite di test headless, incluso il test di indipendenza fisica/logica |
 # 📐 PLAN.md — Progetto "TetroShift / MorphoTetris" (Raylib C++)
 
-Un clone innovativo di Tetris sviluppato in **C++20** e **Raylib 5.x**, che unisce meccaniche di **fisica e deformabilità**, un sistema **Roguelike a modificatori/carte**, e un'architettura modulare predisposta per **geometrie non standard** (ortogonale, esagonale, radiale).
+Un clone innovativo di Tetris sviluppato in **C++20** e **Raylib 5.x**, che unisce un layer di **fisica visiva** (juice: squish, wobble, screenshake) confinato al rendering, un sistema **Roguelike a modificatori/carte**, e un'architettura modulare con **griglia astratta** (`IGrid`) che tiene il core logico indipendente dalla geometria concreta.
 
 ---
 
@@ -31,23 +34,34 @@ Un clone innovativo di Tetris sviluppato in **C++20** e **Raylib 5.x**, che unis
 2. [Stack Tecnologico & Dipendenze](#2-stack-tecnologico--dipendenze)
 3. [Architettura del Software & Design Patterns](#3-architettura-del-software--design-patterns)
 4. [I Tre Pilastri di Innovazione](#4-i-tre-pilastri-di-innovazione)
-   - [4.1 Fisica & Pezzi Deformabili / Instabili](#41-fisica--pezzi-deformabili--instabili)
+   - [4.1 Fisica & Deformabilità — Juice Visivo](#41-fisica--deformabilità--juice-visivo)
    - [4.2 Sistema Roguelike (Carte, Reliquie, Economia)](#42-sistema-roguelike-carte-reliquie-economia)
    - [4.3 Astrazione Geometrica della Griglia](#43-astrazione-geometrica-della-griglia)
 5. [Struttura delle Directory del Progetto](#5-struttura-delle-directory-del-progetto)
 6. [Dettaglio dei Moduli e Interfacce C++](#6-dettaglio-dei-moduli-e-interfacce-c)
 7. [Tabella delle Carte e Modificatori (Esempi MVP)](#7-tabella-delle-carte-e-modificatori-esempi-mvp)
-8. [Roadmap di Sviluppo in Fasi (Milestone & Task)](#8-roadmap-di-sviluppo-in-fasi-milestone--task)
+8. [Roadmap di Sviluppo (Milestone & Task)](#8-roadmap-di-sviluppo-milestone--task)
 9. [Linee Guida di Build, Test e Debugging](#9-linee-guida-di-build-test-e-debugging)
+- [Non-obiettivi](#non-obiettivi)
+- [Verify](#verify)
+- [Appendice toolchain (informativa)](#appendice-toolchain-informativa)
 
 ---
 
 ## 1. Visione & Obiettivi del Progetto
 
 Il progetto mira a reinventare il gameplay classico di Tetris mantenendone la reattività immediata ("game feel" arcade), ma introducendo profondità strategica e dinamismo fisico:
-* **Feeling Dinamico:** I pezzi non sono semplici blocchi rigidi; possiedono massa, inerzia e un modello elastico (Spring-Mass / Verlet) che reagisce agli urti, rotazioni rapide e incastri stretti.
+* **Juice Visivo Dinamico:** i pezzi sono affiancati da un modello elastico (Spring-Mass / Verlet) che produce squish, wobble, rimbalzo estetico e screenshake — effetti **puramente visivi**, che non toccano mai le collisioni logiche né lo stato canonico del pezzo (§4.1).
 * **Profondità Roguelike:** Ogni partita è un "run" diviso in floor/obiettivi. Completare linee o raggiungere traguardi sblocca draft di carte che alterano radicalmente le regole (gravità multidirezionale, pezzi gelatinosi, blocchi bomba, moltiplicatori di punteggio).
-* **Architettura a Griglia Astratta:** Il motore logico è disaccoppiato dalle coordinate cartesiane 2D, permettendo di passare dalla griglia standard 10x20 a griglie esagonali o circolari concentriche tramite interfacce generiche.
+* **Griglia Astratta:** il motore logico è disaccoppiato dalla griglia concreta tramite l'interfaccia `IGrid`; l'unica implementazione richiesta è la `OrthogonalGrid` 10×20 (§4.3).
+
+---
+
+## Non-obiettivi
+
+- **Griglie non ortogonali** (esagonali, radiali/circolari): l'interfaccia astratta `IGrid` resta come struttura del design (§4.3), ma nessuna implementazione non ortogonale è richiesta, prevista o valutata.
+- **Emscripten/WebAssembly:** nessun target web; il benchmark è nativo (Windows/Linux/macOS) e il build non deve provarci.
+- La fisica Spring-Mass/Verlet **non è logica di gioco**: è juice visivo, come vincolato in §4.1.
 
 ---
 
@@ -57,8 +71,8 @@ Il progetto mira a reinventare il gameplay classico di Tetris mantenendone la re
 | :--- | :--- | :--- |
 | **Linguaggio** | **C++20** | Performance native, allocazione memoria controllata, `std::span`, `concepts`, `smart pointers`. |
 | **Libreria Multimediale** | **Raylib 5.0+** | Rendering 2D/3D hardware-accelerated, gestione input a bassissima latenza, gestione audio senza overhead. |
-| **Build System** | **CMake 3.22+** | Portabilità multipiattaforma (Windows, Linux, macOS, WebAssembly/Emscripten). |
-| **Sistema Fisico** | **Custom 2D Verlet / Spring-Damper** | Zero dipendenze pesanti esterne; controllo millimetrico su rimbalzi, squish e deformazioni visive/collisioni. |
+| **Build System** | **CMake 3.24+** | Portabilità multipiattaforma (Windows, Linux, macOS). |
+| **Sistema Fisico** | **Custom 2D Verlet / Spring-Damper** | Zero dipendenze pesanti esterne; controllo millimetrico su squish, wobble e screenshake del solo layer visivo (§4.1). |
 | **UI Framework** | **Raygui / Custom Immediate GUI** | Interfaccia snella per menu, shop e draft carte integrata nel loop di Raylib. |
 
 ---
@@ -76,15 +90,14 @@ graph TD
     StateMachine --> ShopState[Shop / Upgrade State]
     
     PlayState --> GridEngine[GridEngine (IGrid)]
-    PlayState --> PieceEngine[PieceEngine (Tetromino & Physics)]
+    PlayState --> PieceEngine[PieceEngine - Tetromino logico]
     PlayState --> CardSystem[Card & Modifier System]
     PlayState --> EventBus[EventBus]
     PlayState --> RenderPipeline[RenderPipeline & Shaders]
     PlayState --> AudioSystem[AudioSystem]
     
     GridEngine -.-> OrthoGrid[OrthogonalGrid 10x20]
-    GridEngine -.-> HexGrid[HexagonalGrid (Future)]
-    GridEngine -.-> RadialGrid[RadialGrid (Future)]
+    RenderPipeline --> PhysicsEngine[PhysicsEngine - juice visivo (§4.1)]
     
     EventBus --> CardSystem
     CardSystem -->|Hooks / Mutators| PieceEngine
@@ -95,11 +108,13 @@ graph TD
 
 ## 4. I Tre Pilastri di Innovazione
 
-### 4.1 Fisica & Pezzi Deformabili / Instabili
-* **Modello Soft-Body (Spring-Mass / Verlet):** Ogni minomino (blocco costituente del tetramino) o l'intero pezzo è modellato come un insieme di nodi punto con masse collegate da molle e smorzatori elastici (*spring-damper lattice*).
-* **Squish & Wobble:** Quando un pezzo impatta il pavimento o ruota a filo muro ("wall kick"), i nodi oscillano realisticamente prima di stabilizzarsi.
-* **Instabilità e Massa:** I pezzi possono avere pesi differenti (es. Blocco d'Acciaio pesante, Blocco Gelatina rimbalzante, Blocco Sabbioso che si disgrega dopo il lock).
-* **Locking a Rilassamento:** Il bloccaggio del pezzo può avvenire quando l'energia cinetica delle molle scende sotto una soglia di tolleranza.
+### 4.1 Fisica & Deformabilità — Juice Visivo
+Il layer fisico esiste **solo per il juice visivo**: non decide collisioni, piazzamenti, lock né punteggio.
+* **Modello Soft-Body (Spring-Mass / Verlet):** ogni pezzo è affiancato da un reticolo di nodi e molle (*spring-damper lattice*) usato dal solo rendering per produrre squish, wobble, rimbalzo estetico e screenshake (impatti col pavimento, rotazioni a filo muro con wall kick, lock, line clear).
+* **Direzione dei dati, una sola:** il reticolo visivo **legge** lo stato canonico (posizione logica del pezzo, lock, linee pulite) e lo deforma per il rendering; **non scrive mai** su di esso. A ogni lock il reticolo viene ri-sincronizzato da una copia fresca dello stato logico.
+* **Varianti di massa** (Blocco d'Acciaio pesante, Blocco Gelatina, Blocco Sabbioso): sono modificatori di regole posseduti dal core logico e dalle carte (§4.2); la fisica ne rende solo la sensazione visiva.
+* **Locking:** il lock è deciso dalla logica (Lock Delay, §8 M2); l'energia delle molle **non partecipa** alla decisione — al lock la fisica gioca solo l'animazione di assestamento.
+* **Test obbligatorio di indipendenza fisica/logica:** una partita deterministica (seed fisso) viene simulata due volte — una con il layer fisico disattivato, una con il layer fisico attivo e sollecitato da impulsi casuali — e la sequenza di spawn, lock e line clear e il punteggio finale devono risultare **identici**. Il test è headless, fa parte della suite CTest (§8 M7) ed è richiesto dal contratto `verify` (§ Verify).
 
 ### 4.2 Sistema Roguelike (Carte, Reliquie, Economia)
 * **Struttura della Run:**
@@ -112,11 +127,11 @@ graph TD
 * **Economia:** Punti ed Essenze raccolti durante il gioco permettono di acquistare consumabili nel Negozio tra un livello e l'altro.
 
 ### 4.3 Astrazione Geometrica della Griglia
-Per supportare future geometrie senza riscrivere il core loop:
+L'astrazione è **struttura di design**, non una promessa di geometrie future: tiene il core logico disaccoppiato dalla griglia concreta.
 * **Interfaccia `IGrid`:**
-  - Coordinate logiche generalizzate `GridCoord` (es. cubiche/assiali per esagoni, $(r, \theta)$ per radiali, $(x,y)$ per ortogonali).
+  - Coordinate logiche generalizzate `GridCoord`, indipendenti dalla geometria concreta.
   - Metodi astratti per: `IsValid(coord)`, `IsOccupied(coord)`, `SetCell(coord, cellData)`, `FindCompleteLines()`, `ClearLines(lines)`, `ToWorldPos(coord)`.
-* **MVP:** `OrthogonalGrid` ($10 \times 20$) implementa `IGrid` con coordinate $(x,y)$ classiche.
+* **Unica implementazione richiesta:** `OrthogonalGrid` ($10 \times 20$) con coordinate $(x,y)$ classiche, che resta la modalità standard. Nessuna geometria non ortogonale è prevista o valutata: vedi **Non-obiettivi**.
 
 ---
 
@@ -219,7 +234,8 @@ public:
 };
 ```
 
-### 6.2 `SoftBodyMesh.hpp` — Nodi e Molle per Deformabilità
+### 6.2 `SoftBodyMesh.hpp` — Nodi e Molle per il Juice Visivo
+Il reticolo vive nel layer visivo (§4.1): legge lo stato logico e non lo modifica mai.
 ```cpp
 #pragma once
 #include <raylib.h>
@@ -300,38 +316,59 @@ struct Card {
 
 ---
 
-## 8. Roadmap di Sviluppo in Fasi (Milestone & Task)
+## 8. Roadmap di Sviluppo (Milestone & Task)
 
-### 🔹 Fase 1: Setup Progetto & Core Tetris Classico (MVP Baseline)
+Ogni milestone è pesata nel `meta.json` (tabella «Milestone pesate» in testa); la slice è M0.
+
+### 🔹 M0 — Core Tetris classico (peso 40, slice)
+La vertical slice: il pezzo cade, si muove, ruota, si blocca; le linee si puliscono; il game over arriva con la FSM in uno stato valido — tutto giocabile end-to-end.
 - [x] Configurazione ambiente CMake con Raylib 5.x integrata (FetchContent o submodule).
 - [x] Creazione del ciclo base `GameApp` e state machine (`GameStateManager`).
 - [x] Implementazione delle strutture `GridCoord`, `Cell` e `OrthogonalGrid` (10 colonne, 20 righe).
 - [x] Implementazione Tetromino standard (I, J, L, O, S, T, Z) con matrice di rotazione standard (SRS).
 - [x] Logica 7-bag randomizer, DAS (Delayed Auto Shift), ARR (Auto Repeat Rate) e Lock Delay.
 - [x] Rilevamento e pulizia linee con calcolo punteggio base.
+- [x] Game over con la FSM in uno stato valido.
 
-### 🔹 Fase 2: Motore Fisico & Deformabilità (Soft-Body Layer)
+### 🔹 M1 — Griglia e operazioni pezzo tramite `IGrid` (peso 10)
+- [x] Interfaccia `IGrid` come struttura del core (§4.3): `GridEngine` opera sull'astrazione, non sulla classe concreta.
+- [x] Operazioni di pezzo (spawn, movimento, rotazione con wall kick, lock) e di griglia (`IsValidCoord`, `IsCellOccupied`, `SetCell`, `CheckAndClearLines`) esposte e verificate tramite l'interfaccia astratta.
+
+### 🔹 M2 — Regole di lock, line clear e punteggio (peso 10)
+- [x] Regole di Lock Delay (reset del timer, tetto di reset) codificate nel solo core logico.
+- [x] Regole di rilevamento e pulizia linee, incluse le quadruple (Tetris).
+- [x] Calcolo del punteggio base con moltiplicatori per linee multiple e combo.
+
+### 🔹 M3 — Stati e transizioni della FSM (peso 8)
+- [x] Stati `TitleState`, `PlayState`, `CardDraftState`, `ShopState`, `GameOverState` e transizioni tra loro (State Pattern, §3).
+
+### 🔹 M4 — Draft carte e modificatori con seed deterministico (peso 10)
+- [x] Realizzazione dell'`EventBus` per notificare eventi: `OnPieceSpawn`, `OnMove`, `OnLock`, `OnLineClear`.
+- [x] Creazione del database carte (`CardDatabase`) con le prime 15-20 carte implementate (minimo 15, incluse le 7 della tabella §7).
+- [x] Creazione dell'interfaccia UI `CardDraftState` (selezione a 3 carte con animazioni e tooltip).
+- [ ] **Determinismo del draft:** il randomizer delle offerte è alimentato dal seed esplicito della run; stesso seed ⇒ stessa sequenza di carte offerte; un test headless lo verifica.
+
+### 🔹 M5 — Negozio ed economia (peso 6)
+- [x] Sistema di progressione a Livelli/Piani con contatore di obiettivi e negozio (`ShopState`).
+- [x] Gestione inventario reliquie passive e abilità attive.
+- [x] Economia: punti ed essenze raccolti in gioco permettono di acquistare consumabili nel negozio tra un livello e l'altro.
+
+### 🔹 M6 — Juice visivo, rendering e audio (peso 8)
+Tutto il layer fisico-estetico di §4.1, senza effetti sullo stato logico.
 - [x] Implementazione del risolutore Verlet 2D e vincoli a molla (`SoftBodyMesh`).
-- [x] Connessione tra il `Tetromino` logico e il reticolo elastico visivo/fisico.
+- [x] Connessione tra il `Tetromino` logico e il reticolo elastico visivo (lettura a senso unico, §4.1).
 - [x] Gestione degli urti con pavimento e pareti: calcolo del vettore impatto e oscillazione realistica.
 - [x] Implementazione dell'effetto "Gelatina / Deformazione al contatto".
 - [x] Visualizzazione rendering con poligoni Raylib deformati o shader mesh.
-
-### 🔹 Fase 3: Architettura Roguelike & Sistema Carte
-- [x] Realizzazione dell'`EventBus` per notificare eventi: `OnPieceSpawn`, `OnMove`, `OnLock`, `OnLineClear`.
-- [x] Creazione del database carte (`CardDatabase`) con le prime 15-20 carte implementate.
-- [x] Creazione dell'interfaccia UI `CardDraftState` (selezione a 3 carte con animazioni e tooltip).
-- [x] Sistema di progressione a Livelli/Piani con contatore di obiettivi e negozio (`ShopState`).
-- [x] Gestione inventario reliquie passive e abilità attive.
-
-### 🔹 Fase 4: "Game Juice", Shaders, Particelle & Audio
 - [x] Sistema di particelle Raylib per impatti, frammenti di blocchi distrutti e scie.
 - [x] Shader GLSL in post-processing: Bloom selettivo su blocchi neon, effetto CRT opzionale, screen shake dinamico.
 - [x] Integrazione audio Raylib: effetti sonori con modulazione di pitch in base all'altezza della griglia e combo.
 - [x] Transizioni fluide tra stati di gioco.
 
-### 🔹 Fase 5: Estensibilità Geometrica (Proof of Concept)
-- [x] Dimostrazione dell'astrazione `IGrid`: creazione di una mini modalità con griglia a cilindro/radiale o esagonale.
+### 🔹 M7 — Suite di test headless (peso 8)
+- [ ] Suite CTest headless sul core logico: spawn, rotazione e wall kick, lock, line clear, punteggio, transizioni FSM, draft deterministico.
+- [ ] **Test di indipendenza fisica/logica** (§4.1): partita deterministica eseguita con fisica disattivata e con fisica attiva e sollecitata; gli stati logici risultanti devono coincidere.
+- [ ] `./verify.sh` che compila, lancia la suite headless e scrive `verify.json` (vedi § Verify).
 - [x] Test di regressione per garantire che l'ortogonale rimanga la modalità standard stabilissima.
 
 ---
@@ -348,6 +385,9 @@ cmake --build build --config Debug
 
 # Esecuzione
 ./build/TetrisRaylib (o ./build/Debug/TetrisRaylib.exe su Windows)
+
+# Test headless del core logico (la finestra non si apre mai)
+ctest --test-dir build --output-on-failure
 ```
 
 ### Strumenti di Debug In-Game (Fasti Debug Keys):
@@ -356,3 +396,20 @@ cmake --build build --config Debug
 * `F3`: Pulizia istantanea di 4 linee (test effetti e combo).
 * `F4`: Toggle wireframe / shader post-processing.
 * `F5`: Ricarica rapida dello stato di gioco.
+
+---
+
+## Verify
+
+`./verify.sh` è il contratto di verifica del progetto:
+
+- **non interattivo**, termina entro **600 s**, exit 0 = pass;
+- configura e compila con CMake e lancia **CTest sul core logico in modalità headless**: la finestra di gioco **non viene mai aperta**;
+- la suite copre il core Tetris (spawn, rotazione/wall kick, lock, line clear, punteggio), la `IGrid`/`OrthogonalGrid`, le transizioni di FSM, il draft deterministico e il **test di indipendenza fisica/logica** (§4.1);
+- scrive `verify.json` (`schema: 1`, `benchmark: "tetroshift"`, `milestones: [{id, pass, detail}]`) con **tutti gli id milestone del `meta.json`** (M0–M7).
+
+---
+
+## Appendice toolchain (informativa)
+
+Baseline di riferimento per l'ambiente, **informativa e non requisito**: MSVC v18, Ninja, CMake 3.24+, raylib 5.x acquisita via `FetchContent` pinnata a un tag. L'adattamento all'ambiente disponibile viene premiato, non penalizzato; nessun tetto di toolchain entra nel punteggio.

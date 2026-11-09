@@ -440,13 +440,13 @@
       ],
       "stack": [
         "raylib 5.0+",
-        "CMake 3.22+",
+        "CMake 3.24+",
         "Raygui",
         "Verlet 2D custom"
       ],
       "runtime": "native",
       "plan": "PLAN.md",
-      "audit": null,
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -463,31 +463,49 @@
           "id": "M0",
           "weight": 40,
           "slice": true,
-          "title": "Setup progetto e core Tetris classico (MVP baseline)"
+          "title": "Core Tetris classico: spawn, movimento, rotazione, lock, line clear e game over con FSM valida"
         },
         {
           "id": "M1",
-          "weight": 20,
+          "weight": 10,
           "slice": false,
-          "title": "Motore fisico e deformabilità (soft-body layer)"
+          "title": "Griglia e operazioni pezzo tramite l'interfaccia astratta IGrid"
         },
         {
           "id": "M2",
-          "weight": 20,
+          "weight": 10,
           "slice": false,
-          "title": "Architettura roguelike e sistema carte"
+          "title": "Regole di lock, line clear e punteggio"
         },
         {
           "id": "M3",
-          "weight": 12,
+          "weight": 8,
           "slice": false,
-          "title": "Game juice, shader, particelle e audio"
+          "title": "Stati e transizioni della FSM"
         },
         {
           "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "Draft carte e modificatori con seed deterministico"
+        },
+        {
+          "id": "M5",
+          "weight": 6,
+          "slice": false,
+          "title": "Negozio ed economia"
+        },
+        {
+          "id": "M6",
           "weight": 8,
           "slice": false,
-          "title": "Estensibilità geometrica (proof of concept)"
+          "title": "Juice visivo, rendering e audio"
+        },
+        {
+          "id": "M7",
+          "weight": 8,
+          "slice": false,
+          "title": "Suite di test headless, incluso il test di indipendenza fisica/logica"
         }
       ]
     },
