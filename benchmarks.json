@@ -17,7 +17,7 @@
       ],
       "runtime": "native",
       "plan": "PLAN.md",
-      "audit": null,
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -25,62 +25,51 @@
         "tdd",
         "diagnosing-bugs",
         "prototype",
-        "code-review"
+        "code-review",
+        "build-raylib-c-games"
       ],
       "milestones": [
         {
           "id": "M0",
-          "weight": 12,
+          "weight": 40,
           "slice": true,
-          "title": "Bootstrap, CMake e test headless"
+          "title": "Bootstrap, build, test headless e core giocabile con game over"
         },
         {
           "id": "M1",
-          "weight": 20,
-          "slice": true,
-          "title": "Core playable senza sistemi accessori"
+          "weight": 15,
+          "slice": false,
+          "title": "Collisioni deterministiche e testate"
         },
         {
           "id": "M2",
-          "weight": 15,
+          "weight": 12,
           "slice": false,
-          "title": "Collisioni robuste e testate"
+          "title": "Livelli: caricamento e validazione del formato"
         },
         {
           "id": "M3",
-          "weight": 10,
+          "weight": 15,
           "slice": false,
-          "title": "Stati, vite, punteggio e tipi di mattone"
+          "title": "Power-up con durata, stacking e scadenza"
         },
         {
           "id": "M4",
-          "weight": 10,
+          "weight": 8,
           "slice": false,
-          "title": "Loader TXT e progressione"
+          "title": "Stati, punteggio, HUD, audio, game feel e transizioni"
         },
         {
           "id": "M5",
-          "weight": 10,
+          "weight": 5,
           "slice": false,
-          "title": "Power-up e multiball"
+          "title": "Release, sanitizers e packaging redistribuibile"
         },
         {
           "id": "M6",
-          "weight": 8,
+          "weight": 5,
           "slice": false,
-          "title": "UI, asset e audio"
-        },
-        {
-          "id": "M7",
-          "weight": 8,
-          "slice": false,
-          "title": "Game feel e bilanciamento"
-        },
-        {
-          "id": "M8",
-          "weight": 7,
-          "slice": false,
-          "title": "Release, sanitizers, packaging e QA finale"
+          "title": "verify.sh che emette verify.json per ogni milestone"
         }
       ]
     },
@@ -239,11 +228,12 @@
         "Vite 7.0.6",
         "TypeScript 5.8.3",
         "Vitest 4.0.0",
-        "ESLint 9"
+        "Playwright 1.65.0",
+        "ESLint 9.32.0"
       ],
       "runtime": "browser",
       "plan": "PLAN.md",
-      "audit": null,
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -253,44 +243,64 @@
         "prototype",
         "code-review",
         "codebase-design",
-        "improve-codebase-architecture"
+        "improve-codebase-architecture",
+        "code-reviewer",
+        "typescript-pro"
       ],
       "milestones": [
         {
           "id": "M0",
-          "weight": 8,
+          "weight": 40,
           "slice": true,
-          "title": "Fondamenta riproducibili (G0)"
+          "title": "Core puro e slice verticale giocabile (board deterministica, FSM minima, rendering e HUD minimi, Moves)"
         },
         {
           "id": "M1",
-          "weight": 22,
-          "slice": true,
-          "title": "Core board e vertical slice Moves (G1)"
+          "weight": 12,
+          "slice": false,
+          "title": "Invarianti board, deadlock e stabilizzazione forzata al cap di cascade"
         },
         {
           "id": "M2",
-          "weight": 26,
+          "weight": 10,
           "slice": false,
-          "title": "Speciali, cascade, identità e deadlock (G2)"
+          "title": "FSM completa e contratto di input lock"
         },
         {
           "id": "M3",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Game flow, Time e persistenza (G3)"
+          "title": "Modalità Moves configurabile (5-50 mosse)"
         },
         {
           "id": "M4",
-          "weight": 19,
+          "weight": 8,
           "slice": false,
-          "title": "Rendering, UX e accessibilità (G3/P1)"
+          "title": "Modalità Time configurabile (30-300 s)"
         },
         {
           "id": "M5",
           "weight": 10,
           "slice": false,
-          "title": "Verifica e packaging (G4)"
+          "title": "Special tile: creazione, attivazioni, catene e combo"
+        },
+        {
+          "id": "M6",
+          "weight": 4,
+          "slice": false,
+          "title": "Persistenza difensiva versionata (localStorage)"
+        },
+        {
+          "id": "M7",
+          "weight": 3,
+          "slice": false,
+          "title": "Accessibilità, performance e polish audiovisivo"
+        },
+        {
+          "id": "M8",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh non interattivo con verify.json"
         }
       ]
     },
@@ -451,13 +461,13 @@
       ],
       "stack": [
         "raylib 5.0+",
-        "CMake 3.22+",
+        "CMake 3.24+",
         "Raygui",
         "Verlet 2D custom"
       ],
       "runtime": "native",
       "plan": "PLAN.md",
-      "audit": null,
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -474,31 +484,49 @@
           "id": "M0",
           "weight": 40,
           "slice": true,
-          "title": "Setup progetto e core Tetris classico (MVP baseline)"
+          "title": "Core Tetris classico: spawn, movimento, rotazione, lock, line clear e game over con FSM valida"
         },
         {
           "id": "M1",
-          "weight": 20,
+          "weight": 10,
           "slice": false,
-          "title": "Motore fisico e deformabilità (soft-body layer)"
+          "title": "Griglia e operazioni pezzo tramite l'interfaccia astratta IGrid"
         },
         {
           "id": "M2",
-          "weight": 20,
+          "weight": 10,
           "slice": false,
-          "title": "Architettura roguelike e sistema carte"
+          "title": "Regole di lock, line clear e punteggio"
         },
         {
           "id": "M3",
-          "weight": 12,
+          "weight": 8,
           "slice": false,
-          "title": "Game juice, shader, particelle e audio"
+          "title": "Stati e transizioni della FSM"
         },
         {
           "id": "M4",
+          "weight": 10,
+          "slice": false,
+          "title": "Draft carte e modificatori con seed deterministico"
+        },
+        {
+          "id": "M5",
+          "weight": 6,
+          "slice": false,
+          "title": "Negozio ed economia"
+        },
+        {
+          "id": "M6",
           "weight": 8,
           "slice": false,
-          "title": "Estensibilità geometrica (proof of concept)"
+          "title": "Juice visivo, rendering e audio"
+        },
+        {
+          "id": "M7",
+          "weight": 8,
+          "slice": false,
+          "title": "Suite di test headless, incluso il test di indipendenza fisica/logica"
         }
       ]
     },
@@ -518,7 +546,7 @@
       ],
       "runtime": "native",
       "plan": "PLAN.md",
-      "audit": null,
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -537,45 +565,57 @@
       "milestones": [
         {
           "id": "M0",
-          "weight": 10,
+          "weight": 40,
           "slice": true,
-          "title": "Scaffold + game loop + smoke"
+          "title": "Slice verticale: arena giocabile con player, dash, sparo, un tipo di nemico, morte e restart"
         },
         {
           "id": "M1",
-          "weight": 25,
-          "slice": true,
-          "title": "Core gameplay"
+          "weight": 12,
+          "slice": false,
+          "title": "Spawn Director con curva di budget seedata"
         },
         {
           "id": "M2",
-          "weight": 15,
+          "weight": 12,
           "slice": false,
-          "title": "Sistemi: nemici, spawner, collisioni, juice e audio"
+          "title": "Orb XP, level-up e draft di 3 carte con seed riproducibile"
         },
         {
           "id": "M3",
-          "weight": 12,
+          "weight": 8,
           "slice": false,
-          "title": "Integrazione"
+          "title": "Boss a due fasi"
         },
         {
           "id": "M4",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Roguelite + UI"
+          "title": "Juice: particelle, screenshake, hit-stop"
         },
         {
           "id": "M5",
-          "weight": 15,
+          "weight": 6,
           "slice": false,
-          "title": "Boss + bilanciamento + polish"
+          "title": "Audio procedurale con criterio di inizializzazione headless"
         },
         {
           "id": "M6",
-          "weight": 8,
+          "weight": 6,
           "slice": false,
-          "title": "Review indipendente + fix pass"
+          "title": "Check automatico: nessun asset binario e build senza warning"
+        },
+        {
+          "id": "M7",
+          "weight": 3,
+          "slice": false,
+          "title": "Costanti di bilanciamento sotto test"
+        },
+        {
+          "id": "M8",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh che emette verify.json"
         }
       ]
     },

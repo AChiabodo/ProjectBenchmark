@@ -15,13 +15,93 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 10 | sì | Scaffold + game loop + smoke |
-| M1 | 25 | sì | Core gameplay |
-| M2 | 15 | — | Sistemi: nemici, spawner, collisioni, juice e audio |
-| M3 | 12 | — | Integrazione |
-| M4 | 15 | — | Roguelite + UI |
-| M5 | 15 | — | Boss + bilanciamento + polish |
-| M6 | 8 | — | Review indipendente + fix pass |
+| M0 | 40 | sì | Slice verticale: arena giocabile con player, dash, sparo, un tipo di nemico, morte e restart |
+| M1 | 12 | — | Spawn Director con curva di budget seedata |
+| M2 | 12 | — | Orb XP, level-up e draft di 3 carte con seed riproducibile |
+| M3 | 8 | — | Boss a due fasi |
+| M4 | 8 | — | Juice: particelle, screenshake, hit-stop |
+| M5 | 6 | — | Audio procedurale con criterio di inizializzazione headless |
+| M6 | 6 | — | Check automatico: nessun asset binario e build senza warning |
+| M7 | 3 | — | Costanti di bilanciamento sotto test |
+| M8 | 5 | — | verify.sh che emette verify.json |
+
+Mappatura sulla roadmap (Sez. 10), che resta il piano di esecuzione: **M0** = Fasi 1–2
+(scaffold, loop a timestep fisso, core gameplay) ridotte alla sola AI del CHASER, con
+di conseguenza l'harness già verde; **M1** = Fase 3A (SpawnDirector) con il requisito di
+seed; **M2** = Fase 5 (roguelite + UI); **M3** = Fase 6 limitatamente al boss a due fasi;
+**M4** = Fase 3B (juice) come integrata dalla Fase 4; **M5** = Fase 3B (audio) con il
+criterio headless; **M6**–**M7** = contratti di qualità delle Sez. 6 e 11 resi meccanici;
+**M8** = contratto di verifica (sezione Verify). La Fase 7 (review + fix pass) resta il
+criterio di accettazione finale trasversale e non ha peso proprio: è la condizione sotto cui
+M0–M8 superano l'harness.
+
+## Verify
+
+`./verify.sh` è il **canale ufficiale di verifica** del benchmark: promuove lo Smoke Test
+Harness della Sez. 9 da strategia di validazione interna a contratto. Non esistono altri
+canali: nessun giudizio visivo, nessuna prova a mano.
+
+- **Build + harness headless**: `./verify.sh` configura e compila il progetto (CMake, build
+  Release) e poi esegue l'harness `--smoke` della Sez. 9. **La finestra non viene mai
+  lanciata**: nessuna chiamata raylib che richieda contesto (Sez. 4.1), nessun audio device.
+- **Input scriptato deterministico**: l'input umano della tabella comandi (Sez. 1) non è
+  richiesto. La modalità scriptata che lo sostituisce è `SimulateInput(frame, world)`
+  (Sez. 3.3 e 9), il bot di sopravvivenza a timestep fisso, con RNG centralizzato a seed
+  fisso (Sez. 3.2): due esecuzioni dello stesso comando producono lo stesso risultato.
+- **Contratto**: non interattivo, termina entro 600 s, exit 0 = pass, e scrive `verify.json`
+  con **tutti** gli id M0–M8 del `meta.json`, ciascuno con `pass` booleano e `detail`.
+- Criterio binario per milestone, tutti a carico dell'harness:
+  - **M0** — `--smoke 600` exit 0, `playerBullets > 0`, e una corsa dedicata in cui il bot
+    muore (GAMEOVER) e la partita riparte: morte e restart esercitati, non solo presenti.
+  - **M1** — due run `--smoke` a parità di seed producono la stessa sequenza di spawn
+    (stessa ondata e stessi nemici nello stesso ordine) e `wave ≥ 2`.
+  - **M2** — `level > 1`, `upgradesPicked ≥ 1`, e a parità di seed la mano del draft al
+    level-up k è identica tra due run.
+  - **M3** — `--smoke 6000 6` exit 0 con `bossSpawned ≥ 1`, `bossKilled ≥ 1`, e attraversamento
+    verificato della soglia 50% HP (fase 2 raggiunta).
+  - **M4** — dopo un kill: particelle attive > 0, trauma > 0, e hit-stop osservabile
+    (almeno un frame con il mondo congelato e particelle in movimento).
+  - **M5** — nessun file audio nel repository (check del harness) e `Audio::Init(false)`
+    completato in headless senza device, con `Play*` no-op sicuri.
+  - **M6** — build del harness con warning-as-errors sul solo codice di gioco (Risoluzione R1)
+    e check di assenza di file binari nel repository (Risoluzione R4).
+  - **M7** — unit test che affermano i valori delle costanti `cfg` della Sez. 6 (Risoluzione R2).
+  - **M8** — il `verify.sh` stesso: esiste, è non interattivo, rispetta il timeout e produce
+    un `verify.json` con tutti gli id e senza duplicati.
+
+## Risoluzioni vincolanti (ex ambiguità)
+
+Quattro punti del piano erano giudicabili in due modi diversi; ognuno ha una sola lettura
+vincolante da questo punto in avanti. Le sedi originali (Sez. 1, 2, 6, 8, 11) puntano qui.
+
+**R1 — "Zero warning" è un requisito, non un obiettivo.** Ambito: solo il codice di gioco
+(`src/`), mai le dipendenze di terze parti (raylib via FetchContent). Canale di verifica: la
+stessa build che l'harness esegue, dove i warning sul codice di gioco diventano errori
+(`/WX` su MSVC, `-Werror` su GCC/Clang, applicati al solo target `NeonVanguard`). La Fase 7
+("zero warning di gioco" nella validazione finale) va intesa così: la regola non viene
+abbandonata, diventa meccanica. I warning di raylib restano tollerati.
+
+**R2 — Le tabelle di bilanciamento (Sez. 6) sono fonti di verità da implementare, non
+parametri da tarare.** Il piano è insolitamente esplicito sui numeri: i valori esatti vanno
+implementati in `cfg` e verificati da unit test sui valori (milestone M7). Una deviazione è
+ammessa solo se registrata in `RESULT.md` con la costante, il valore usato e la ragione;
+non esiste una seconda lettura "tunabile". Tunare resta legittimo nello sviluppo locale,
+ma ciò che l'harness valuta sono i valori della Sez. 6.
+
+**R3 — L'audio procedurale ha un criterio verificabile: nessun file audio nel repository e
+il sistema audio si inizializza in headless senza device.** Il criterio è a carico
+dell'harness (M5): check di assenza di file audio (`*.wav`, `*.mp3`, `*.ogg`, `*.flac`,
+`*.opus`) e affermazione che `Audio::Init(false)` completi la sintesi delle Wave senza alcuna
+chiamata raylib-audio. La qualità sonora resta fuori dal giudizio: non esiste un criterio
+d'opinione.
+
+**R4 — "Nessun asset" è verificato automaticamente.** Il pillar zero-asset (Sez. 1) non è
+una dichiarazione: l'harness controlla (M6) che il repository non contenga file binari di
+media — immagini (`*.png`, `*.jpg`, `*.jpeg`, `*.gif`, `*.bmp`, `*.webp`, `*.ico`, `*.tga`),
+audio (vedi R3), font, modelli/video — via elenco di estensioni e controllo che i file di
+testo rimangano testo. Eventuali binari di build nella directory `build/` sono esclusi dal
+check perché generati, non asset.
+
 # 📐 PLAN.md — NEON VANGUARD
 
 **Piano di sviluppo completo per la realizzazione da zero di un arena survival twin-stick shooter roguelite in C++20 + raylib 5.5.**
@@ -37,7 +117,7 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 6. [Tabelle di Bilanciamento (fonte di verità)](#6-tabelle-di-bilanciamento-fonte-di-verità)
 7. [Rendering Neon & Juice](#7-rendering-neon--juice)
 8. [Audio Procedurale](#8-audio-procedurale)
-9. [Smoke Test Harness (strategia di validazione)](#9-smoke-test-harness-strategia-di-validazione)
+9. [Smoke Test Harness (canale ufficiale di verifica)](#9-smoke-test-harness-canale-ufficiale-di-verifica)
 10. [Roadmap di Sviluppo in Fasi](#10-roadmap-di-sviluppo-in-fasi)
 11. [Regole di Qualità](#11-regole-di-qualità)
 12. [Sviluppi Futuri](#12-sviluppi-futuri)
@@ -50,7 +130,7 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 ### Pillari di design
 1. **Game feel arcade immediato** — movimento con inerzia, dash con invulnerabilità, sparo reattivo, feedback costante (particelle, screenshake, hit-stop, suoni sintetizzati).
-2. **Zero asset esterni** — grafica 100% procedurale (primitive raylib), audio 100% sintetizzato a runtime. Il progetto compila e gira senza alcun file binario aggiuntivo. Questo elimina l'intera pipeline asset ed è un requisito non negoziabile.
+2. **Zero asset esterni** — grafica 100% procedurale (primitive raylib), audio 100% sintetizzato a runtime. Il progetto compila e gira senza alcun file binario aggiuntivo. Questo elimina l'intera pipeline asset ed è un requisito non negoziabile — verificato automaticamente (Risoluzione R4; per l'audio, R3).
 3. **Roguelite a draft** — ogni kill rilascia orb XP; ogni level-up congelà il gioco e offre la scelta tra 3 carte-upgrade che alterano radicalmente il build del player.
 4. **Difficoltà a direttore** — uno *Spawn Director* a budget pilota le ondate con curva quadratica; ogni 5 ondate un Boss a due fasi.
 
@@ -79,7 +159,7 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 | Linguaggio | **C++20** | `std::erase_if`, design con header leggeri |
 | Libreria | **raylib 5.5** | via CMake `FetchContent` |
 | Build | **CMake ≥ 3.22** | generatore Visual Studio 2022+ (Windows) o equivalente |
-| Compiler flags | MSVC: `/W4 /permissive- /utf-8`; GCC/Clang: `-Wall -Wextra -Wpedantic` | **zero warning** sul codice di gioco |
+| Compiler flags | MSVC: `/W4 /permissive- /utf-8`; GCC/Clang: `-Wall -Wextra -Wpedantic` | **zero warning** sul codice di gioco: requisito, non obiettivo (Risoluzione R1) |
 | Asset | **Nessuno** | grafica = primitive; audio = sintesi runtime |
 
 ### CMakeLists.txt (partenza)
@@ -152,6 +232,12 @@ inline float Lerp(float a, float b, float t);
 inline float Clamp01(float v);
 inline float RandRange(float min, float max); // std::mt19937 statico seedato da std::random_device
 ```
+
+**Determinismo del RNG** (vincolante per M1 e M2): esiste **un solo** generatore, iniettabile
+e seedabile da CLI (`--seed N`). In gioco il seed può venire da `std::random_device`; in
+`--smoke` il seed è **fisso** (default 42), così spawn director (Sez. 5.3), draft carte
+(Sez. 5.6) e bot usano la stessa sequenza e due run dello stesso comando sono riproducibili
+bit per bit.
 
 ### 3.3 Input (`core/Input.hpp`)
 L'input è **disaccoppiato da raylib** tramite snapshot: è il perno che rende possibile lo smoke test headless.
@@ -376,6 +462,7 @@ Factory `CreateEnemy(type, pos, elite, splitGeneration, wave)` centralizza la cr
 - **Elite**: probabilità 0 fino alla wave 3; dalla wave 4: `min(0.35, 0.15 + 0.02·n)`.
 - Costruire la coda riempiendo il budget con tipi sbloccati casuali, poi **mescolare**; `push_front` del boss nelle wave `n % 5 == 0` (e ridurre il budget dei minion del 30% in quelle wave).
 - **Consumo**: 1 spawn ogni `max(0.1, 0.8 − min(0.1, 0.02·n))` secondi; posizione: bordo casuale, 10–40px fuori arena, direzione iniziale verso il centro.
+- **Seed**: la costruzione della coda attinge dal RNG centralizzato (Sez. 3.2); a parità di seed, la coda dell'ondata n è identica in ogni run (M1).
 - `WaveCleared` = coda vuota E zero nemici vivi.
 
 ### 5.4 Boss "Vanguard Prime" (ogni 5 ondate)
@@ -398,7 +485,7 @@ In Game, alla ricezione del summary: se `playerHits > 0` → flash rosso, trauma
 - **Magnetismo** (algoritmo esatto): entro `magnetRadius` → `t = 1 − clamp(dist / magnetRadius, 0, 1)`; `targetSpeed = 260 + 520·t`; l'orb lerp della velocità verso l'homing con rate `12.0·dt`; fuori dal raggio frena con `vel *= (1 − min(1, 4·dt))`. Raccolta a dist < 16px → `player.xp += xp`, suono, mini burst.
 - **Curva XP**: a Lv.1 `xpToNext = 4`. Al superamento: `xp −= xpToNext; level++; xpToNext = 4 + level·3;` (→ 4 XP per Lv.2, 10 per Lv.3, 13 per Lv.4…; ~1 level-up ogni 1–2 ondate nel early game). Al level-up: heal +10 HP, poi draft.
 - **Draft**: 3 carte distinte; stack massimi: MULTISHOT e PIERCE **4**, gli altri **6**; i tipi a stack pieno non tornano nel pool. Se restano meno di 3 upgrade disponibili, il draft ne offre solo quelli idonei (HUD centra il numero ridotto di carte); se il pool è **vuoto** il LEVELUP viene ignorato (nessun freeze).
-- Selezione tasti `1/2/3`; il mondo resta congelato finché non si sceglie.
+- Selezione tasti `1/2/3`; il mondo resta congelato finché non si sceglie. La mano del draft attinge dal RNG centralizzato (Sez. 3.2): a parità di seed, la mano offerta al level-up k è identica tra due run (M2).
 
 **Dettagli HUD** (stile neon, helper `Neon`):
 - Barra HP con bordo ciano + numeri `HP: X/Y`; barra XP gialla sotto con `LV X` e progresso.
@@ -413,7 +500,8 @@ File `highscore.txt` nella working directory: lettura a avvio del Game (gestire 
 
 ## 6. Tabelle di Bilanciamento (fonte di verità)
 
-Tutte in `core/Config.hpp`, namespace `cfg`. **Non inventare valori: usa questi.**
+Tutte in `core/Config.hpp`, namespace `cfg`. **Non inventare valori: usa questi.** Normative,
+non tarabili: la lettura vincolante è la Risoluzione R2 (deviazioni solo in `RESULT.md`).
 
 ### Palette neon
 | Costante | RGBA |
@@ -542,12 +630,13 @@ Regole operative:
 - `PlayShoot` throttled: max 1 emissione ogni 40ms (`std::chrono::steady_clock`).
 - `Init(enableDevice)`: se `enableDevice == false` (smoke) **zero chiamate** raylib-audio; ogni `Play*` è un no-op sicuro. Se `InitAudioDevice` fallisce → continua muto.
 - `Shutdown`: `UnloadSound` (con guardia `IsSoundValid`) + `CloseAudioDevice`.
+- Criterio verificabile di questa sezione: Risoluzione R3 (nessun file audio nel repo + inizializzazione headless senza device, a carico dell'harness, M5).
 
 ---
 
-## 9. Smoke Test Harness (strategia di validazione)
+## 9. Smoke Test Harness (canale ufficiale di verifica)
 
-**Ogni fase termina SOLO se la sua validazione è verde.** Il harness è la rete di sicurezza dello sviluppo.
+**Ogni fase termina SOLO se la sua validazione è verde.** Il harness è la rete di sicurezza dello sviluppo. Da questo punto è anche il **canale ufficiale di verifica** del benchmark: la sezione Verify lo dichiara contratto `./verify.sh` (build + `--smoke` headless → `verify.json`, finestra mai lanciata).
 
 ### Comportamento `--smoke [frames] [dtScale]`
 - Nessuna finestra, nessun audio device, nessuna chiamata raylib legata al contesto.
@@ -607,7 +696,7 @@ cmake --build build --config Release && ./build/Release/NeonVanguard.exe --smoke
 
 ## 11. Regole di Qualità
 
-1. **Zero warning** sul codice di gioco (i warning interni di raylib sono tollerati).
+1. **Zero warning** sul codice di gioco (i warning interni di raylib sono tollerati) — requisito meccanizzato dalla Risoluzione R1.
 2. **Contratti prima del codice**: le struct della Sezione 3 sono legge; estendere con campi nuovi, mai rinominare.
 3. **Un solo writer per file**: in team, ogni modulo ha un proprietario; le integrazioni in `Game` sono una fase dedicata a scrittore unico.
 4. **Nessuna chiamata raylib dipendente da contesto in smoke mode** (input, audio, drawing).
@@ -649,6 +738,21 @@ Roadmap di crescita per rendere il gioco **completo, unico e vendibile**, in ord
 
 ### 12.5 Priorità consigliata (impatto per sforzo)
 1. Meta-progressione + RNG seedabile → 2. Reliche → 3. Musica procedurale → 4. Gamepad → 5. Shop/relic economy → 6. Emscripten → 7. Biomi/boss extra → 8. Steam packaging.
+
+---
+
+## Appendice A — Toolchain (informativa)
+
+Baseline **informativa, mai requisito**: adattarsi all'ambiente disponibile è premiato, non
+trovare esattamente questa combinazione. Vale tutto ciò che compila C++20 con raylib 5.5
+rispettando i contratti di Sez. 2 e le Risoluzioni R1–R4.
+
+| Componente | Baseline | Note |
+|---|---|---|
+| Compilatore | MSVC v18, `/W4 /permissive- /utf-8` | GCC/Clang equivalente: `-Wall -Wextra -Wpedantic` (Sez. 2); gli altri ambienti restano legittimi |
+| Generatore build | Ninja | `Visual Studio 2022+` su Windows o equivalente: il generatore non è parte del contratto |
+| Build system | CMake ≥ 3.22 | richiesto da `FetchContent`/raylib come da Sez. 2 |
+| Libreria | raylib 5.5 via CMake `FetchContent`, pinnata al tag `5.5` | dipendenza build-time ammessa perché pinnata; copia locale via `FETCHCONTENT_SOURCE_DIR_RAYLIB` per build offline (Sez. 2) |
 
 ---
 
