@@ -9,6 +9,7 @@ Ogni benchmark vive in `benchmarks/<id>/` e dichiara i propri contratti in `meta
 | rulechat | RuleChat — deterministic conversational chatbot | T2 | container | Python | PLAN.md |
 | staticweb-camels | StaticWeb — Cammelli (e-commerce vetrina) | T2 | browser | HTML, CSS, JavaScript | PLAN.md |
 | staticweb-classic-cars | StaticWeb — Auto d'epoca (noleggio) | T2 | browser | HTML, CSS, JavaScript | PLAN.md |
+| connect4-minimax | Connect4-Minimax — deterministic Connect Four search engine | T3 | dotnet | C# | PLAN.md |
 | match3 | GemSwap (Match-3 Web) | T3 | browser | TypeScript | PLAN.md |
 | staticweb-auction | StaticWeb — Aste virtuali online | T3 | browser | HTML, CSS, JavaScript | PLAN.md |
 | staticweb-watches | StaticWeb — Orologi d'epoca | T3 | browser | HTML, CSS, JavaScript | PLAN.md |
