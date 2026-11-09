@@ -668,7 +668,7 @@
       ],
       "runtime": "browser",
       "plan": "PLAN.md",
-      "audit": null,
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -687,45 +687,57 @@
       "milestones": [
         {
           "id": "M0",
-          "weight": 30,
+          "weight": 40,
           "slice": true,
-          "title": "MVP-0: vertical slice bloccato"
+          "title": "Bootstrap e vertical slice: Valdaluce → incontro → Sintonia → Wayline → copia URL → reload/deep link"
         },
         {
           "id": "M1",
-          "weight": 15,
+          "weight": 12,
           "slice": false,
-          "title": "Fondamenta deterministiche e hardening del MVP"
+          "title": "Codec Wayline: checksum, validazione, messaggio per link invalido"
         },
         {
           "id": "M2",
-          "weight": 15,
+          "weight": 10,
           "slice": false,
-          "title": "R1: Atto I e Torre"
+          "title": "Combattimento con il sistema tattico leggero"
         },
         {
           "id": "M3",
-          "weight": 12,
+          "weight": 10,
           "slice": false,
-          "title": "R1: i due rami"
+          "title": "Roster Echi del target (8–10) con risonanze"
         },
         {
           "id": "M4",
-          "weight": 10,
+          "weight": 8,
           "slice": false,
-          "title": "R1: finale e reattività"
+          "title": "Economia e consumabili"
         },
         {
           "id": "M5",
-          "weight": 10,
+          "weight": 8,
           "slice": false,
-          "title": "RC: presentazione e hardening"
+          "title": "Le tre regioni del target e 12–15 nodi"
         },
         {
           "id": "M6",
-          "weight": 8,
+          "weight": 5,
           "slice": false,
-          "title": "RC: bilanciamento e release"
+          "title": "Accessibilità: tastiera, touch, screen reader, 320 px"
+        },
+        {
+          "id": "M7",
+          "weight": 4,
+          "slice": false,
+          "title": "PWA installabile e giocabile offline"
+        },
+        {
+          "id": "M8",
+          "weight": 3,
+          "slice": false,
+          "title": "verify.sh e verify.json"
         }
       ]
     }
