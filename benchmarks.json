@@ -161,8 +161,8 @@
         "HTML/CSS/JS vanilla"
       ],
       "runtime": "browser",
-      "plan": null,
-      "audit": null,
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -195,7 +195,7 @@
           "id": "M3",
           "weight": 20,
           "slice": false,
-          "title": "Interazione caratterizzante"
+          "title": "Interazione caratterizzante: lightbox prodotto, parallax e carrello locale"
         },
         {
           "id": "M4",
@@ -232,8 +232,8 @@
         "HTML/CSS/JS vanilla"
       ],
       "runtime": "browser",
-      "plan": null,
-      "audit": null,
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -266,7 +266,7 @@
           "id": "M3",
           "weight": 20,
           "slice": false,
-          "title": "Interazione caratterizzante"
+          "title": "Interazione caratterizzante: galleria con lightbox e parallax"
         },
         {
           "id": "M4",
@@ -285,6 +285,81 @@
           "weight": 10,
           "slice": false,
           "title": "Verify: Playwright pinnato + verify.sh"
+        }
+      ]
+    },
+    {
+      "id": "connect4-minimax",
+      "title": "Connect4-Minimax — deterministic Connect Four search engine",
+      "kind": "benchmark",
+      "tier": 3,
+      "spec_language": "en",
+      "impl_languages": [
+        "C#"
+      ],
+      "stack": [
+        ".NET 8",
+        "C# 12",
+        "xUnit 2.9.2",
+        "dotnet test",
+        "dotnet CLI"
+      ],
+      "runtime": "dotnet",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, board, rules and playable CLI"
+        },
+        {
+          "id": "M1",
+          "weight": 10,
+          "slice": false,
+          "title": "Win and draw detection over the full board"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Negamax with alpha-beta pruning"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Window evaluation function"
+        },
+        {
+          "id": "M4",
+          "weight": 12,
+          "slice": false,
+          "title": "Fixed-position and perft test suite"
+        },
+        {
+          "id": "M5",
+          "weight": 8,
+          "slice": false,
+          "title": "Deterministic timing benchmark"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
         }
       ]
     },
@@ -392,8 +467,8 @@
         "HTML/CSS/JS vanilla"
       ],
       "runtime": "browser",
-      "plan": null,
-      "audit": null,
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -428,7 +503,7 @@
           "id": "M3",
           "weight": 20,
           "slice": false,
-          "title": "Interazione caratterizzante"
+          "title": "Interazione caratterizzante: countdown deterministico e offerta simulata"
         },
         {
           "id": "M4",
@@ -465,8 +540,8 @@
         "HTML/CSS/JS vanilla"
       ],
       "runtime": "browser",
-      "plan": null,
-      "audit": null,
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -501,7 +576,7 @@
           "id": "M3",
           "weight": 20,
           "slice": false,
-          "title": "Interazione caratterizzante"
+          "title": "Interazione caratterizzante: orologio analogico e ombre dinamiche"
         },
         {
           "id": "M4",
@@ -600,6 +675,83 @@
           "weight": 8,
           "slice": false,
           "title": "Suite di test headless, incluso il test di indipendenza fisica/logica"
+        }
+      ]
+    },
+    {
+      "id": "minilang",
+      "title": "MiniLang — mini-language interpreter",
+      "kind": "benchmark",
+      "tier": 4,
+      "spec_language": "en",
+      "impl_languages": [
+        "Rust"
+      ],
+      "stack": [
+        "Rust (std only, edition 2021)",
+        "Cargo",
+        "cargo test"
+      ],
+      "runtime": "native",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review",
+        "codebase-design",
+        "improve-codebase-architecture",
+        "to-spec",
+        "to-tickets",
+        "implement-spec",
+        "wayfinder"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, slice program and positioned diagnostics"
+        },
+        {
+          "id": "M1",
+          "weight": 15,
+          "slice": false,
+          "title": "Lexer, parser and AST for the full declared grammar"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Tree-walking evaluator: precedence, scope, if and while"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Functions, parameters and call semantics"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "REPL and file mode with exit codes"
+        },
+        {
+          "id": "M5",
+          "weight": 7,
+          "slice": false,
+          "title": "Table-driven suite with output and diagnostic snapshots"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
         }
       ]
     },
