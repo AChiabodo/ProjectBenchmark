@@ -9,7 +9,7 @@ Ogni benchmark vive in `benchmarks/<id>/` e dichiara i propri contratti in `meta
 | staticweb-camels | StaticWeb — Cammelli (e-commerce vetrina) | T2 | browser | HTML, CSS, JavaScript | PLAN.md |
 | staticweb-classic-cars | StaticWeb — Auto d'epoca (noleggio) | T2 | browser | HTML, CSS, JavaScript | PLAN.md |
 | match3 | GemSwap (Match-3 Web) | T3 | browser | TypeScript | PLAN.md |
-| staticweb-auction | StaticWeb — Aste virtuali online | T3 | browser | HTML, CSS, JavaScript | — |
+| staticweb-auction | StaticWeb — Aste virtuali online | T3 | browser | HTML, CSS, JavaScript | PLAN.md |
 | staticweb-watches | StaticWeb — Orologi d'epoca | T3 | browser | HTML, CSS, JavaScript | — |
 | tetroshift | TetroShift / MorphoTetris | T3 | native | C++20 | PLAN.md |
 | neon-vanguard | NEON VANGUARD | T5 | native | C++20 | PLAN.md |

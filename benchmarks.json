@@ -309,8 +309,8 @@
         "HTML/CSS/JS vanilla"
       ],
       "runtime": "browser",
-      "plan": null,
-      "audit": null,
+      "plan": "PLAN.md",
+      "audit": "AUDIT.md",
       "verify": "./verify.sh",
       "verify_timeout_s": 600,
       "skills": [
@@ -345,7 +345,7 @@
           "id": "M3",
           "weight": 20,
           "slice": false,
-          "title": "Interazione caratterizzante"
+          "title": "Interazione caratterizzante: countdown deterministico e offerta simulata"
         },
         {
           "id": "M4",
