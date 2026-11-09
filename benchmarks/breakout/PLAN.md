@@ -15,15 +15,25 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 12 | sì | Bootstrap, CMake e test headless |
-| M1 | 20 | sì | Core playable senza sistemi accessori |
-| M2 | 15 | — | Collisioni robuste e testate |
-| M3 | 10 | — | Stati, vite, punteggio e tipi di mattone |
-| M4 | 10 | — | Loader TXT e progressione |
-| M5 | 10 | — | Power-up e multiball |
-| M6 | 8 | — | UI, asset e audio |
-| M7 | 8 | — | Game feel e bilanciamento |
-| M8 | 7 | — | Release, sanitizers, packaging e QA finale |
+| M0 | 40 | sì | Bootstrap, build, test headless e core giocabile con game over |
+| M1 | 15 | — | Collisioni deterministiche e testate |
+| M2 | 12 | — | Livelli: caricamento e validazione del formato |
+| M3 | 15 | — | Power-up con durata, stacking e scadenza |
+| M4 | 8 | — | Stati, punteggio, HUD, audio, game feel e transizioni |
+| M5 | 5 | — | Release, sanitizers e packaging redistribuibile |
+| M6 | 5 | — | verify.sh che emette verify.json per ogni milestone |
+
+`M0` è la vertical slice: bootstrap, build e test harness headless verdi, poi paddle, pallina e mattoni con collisione, vite e game over giocabili.
+
+## Verify
+
+Contratto di verifica del progetto risultante; è l'unico canale che vale punteggio:
+
+- `./verify.sh` è un deliverable del progetto (milestone `M6`): non interattivo, termina entro 600 s, exit 0 = pass, exit diverso da zero = fail.
+- Scrive `verify.json` con tutti gli id milestone di `meta.json` (`M0`–`M6`), ognuno esattamente una volta, con `pass` e `detail`.
+- Il canale è la build CMake più la suite CTest headless prescritta ai §9 e §10, sanitizers inclusi sui toolchain compatibili: la finestra di gioco non viene mai lanciata durante la verifica (regola GUI: solo build e target di test headless).
+- Lo smoke manuale e la QA interattiva richiesti nel §9 restano obbligatori per la Definition of Done, ma non fanno parte del contratto e non valgono punteggio.
+
 # Piano di sviluppo — Breakout
 
 ## 0. Obiettivo e criteri di progetto
@@ -466,9 +476,13 @@ I timer vengono decrementati solo in `GAME_PLAYING`, non durante pausa, menu o s
 
 ## 9. Milestone con criteri di accettazione e verifica
 
-### M0 — Bootstrap, CMake e test headless
+I pesi e la slice vivono in `meta.json` (tabella «Milestone pesate» all'inizio del piano); questa sezione dettaglia implementazione, accettazione e comandi. Il canale che vale punteggio è il contratto `## Verify`: build CMake + suite CTest headless, finestra mai lanciata. I blocchi «Verifica» qui sotto sono i comandi concreti di quel canale; lo smoke manuale è QA e non vale punteggio.
 
-**Implementare:** `CMakeLists.txt`, preset, acquisizione raylib 5.5, target `game_core`, target eseguibile, CTest, warning target-locali, opzione sanitizers, copia/install degli asset e README minimo.
+### M0 — Bootstrap, build, test headless e core giocabile con game over
+
+**Peso 40 — vertical slice.**
+
+**Implementare:** `CMakeLists.txt`, preset, acquisizione raylib 5.5, target `game_core`, target eseguibile, CTest, warning target-locali, opzione sanitizers, copia/install degli asset e README minimo; paddle controllabile, una pallina ancorata/lanciabile, griglia di mattoni normali, movimento, draw con primitive raylib, muri, vite, perdita della pallina, game over e vittoria provvisoria.
 
 **Accettazione:**
 
@@ -476,7 +490,9 @@ I timer vengono decrementati solo in `GAME_PLAYING`, non durante pausa, menu o s
 - `game_core` compila in C17 con `-Wall -Wextra -Wpedantic` o `/W4`;
 - l'eseguibile apre e chiude una finestra vuota;
 - CTest trova almeno un test headless;
-- nessun asset viene caricato prima di `InitWindow`.
+- nessun asset viene caricato prima di `InitWindow`;
+- partita completa senza asset esterni: `GameUpdate` non usa raylib, il movimento dipende da `dt`, `SPACE` lancia una sola volta e il reset non lascia entità stale;
+- vite e game over già giocabili nella slice: la pallina persa decreta una vita e a vite esaurite la partita termina con game over.
 
 **Verifica:**
 
@@ -486,26 +502,11 @@ cmake --build --preset debug
 ctest --preset debug --output-on-failure
 ```
 
-Su PowerShell usare `Remove-Item -Recurse -Force build/debug` se necessario. Eseguire anche il binario per almeno 5 secondi e chiuderlo normalmente.
+Su PowerShell usare `Remove-Item -Recurse -Force build/debug` se necessario. Smoke manuale (QA, fuori dal contratto verify): eseguire il binario per almeno 5 secondi e chiuderlo normalmente; avvio → movimento A/D e frecce → lancio → rimbalzo → mattone distrutto → perdita → reset → distruzione dell'ultima fila.
 
-### M1 — Core playable senza sistemi accessori
+### M1 — Collisioni deterministiche e testate
 
-**Implementare:** paddle, una pallina ancorata/lanciabile, griglia di mattoni normali, movimento, draw con primitive raylib, muri, perdita della pallina e vittoria provvisoria.
-
-**Accettazione:** partita completa senza asset esterni; `GameUpdate` non usa raylib; movimento dipende da `dt`; `SPACE` lancia una sola volta; reset non lascia entità stale.
-
-**Verifica:**
-
-```bash
-cmake --build --preset debug
-ctest --preset debug --output-on-failure
-```
-
-Smoke manuale: avvio → movimento A/D e frecce → lancio → rimbalzo → mattone distrutto → perdita → reset → distruzione dell'ultima fila.
-
-### M2 — Collisioni robuste e testate
-
-**Implementare:** normale, correzione di penetrazione, paddle-angle, contatti multipli, substep/swept anti-tunneling, limiti di contatti per step ed eventi di collisione.
+**Implementare:** normale di contatto, correzione di penetrazione, paddle-angle, contatti multipli, substep/swept anti-tunneling, limiti di contatti per step ed eventi di collisione; angolo, tunneling e collisioni multiple nello stesso frame con i rispettivi test.
 
 **Accettazione:** nessun incollamento o jitter visibile a pareti/paddle; la pallina non attraversa un mattone ad alta velocità; un overlap non raddoppia danno/punteggio; contatti simultanei hanno esito deterministico.
 
@@ -519,37 +520,22 @@ ctest --test-dir build/debug --output-on-failure
 
 Aggiungere test per tutti i casi del §5 prima di procedere.
 
-### M3 — Stati, vite, punteggio e tipi di mattone
+### M2 — Livelli: caricamento e validazione del formato
 
-**Implementare:** `GAME_MENU`, `GAME_READY`, `GAME_PLAYING`, `GAME_PAUSED`, `GAME_LEVEL_COMPLETE`, `GAME_WON`, `GAME_OVER`; vite, punteggio, mattoni strong/unbreakable e reset.
+**Implementare:** parser puro, loader file, diagnostica e tre livelli; la transizione vittoria → livello successivo/menu del §7 è della milestone `M4`.
 
-**Accettazione:** 3 vite iniziali; decremento solo alla perdita dell'ultima pallina; game over a zero; pausa congela simulazione; punteggio esatto secondo §6; bonus di livello una sola volta.
-
-**Verifica:**
-
-```bash
-cmake --build --preset debug
-ctest --test-dir build/debug -R "game|score|state|life" --output-on-failure
-```
-
-Smoke manuale: pausa/ripresa, perdita ripetuta, game over, restart e ritorno al menu.
-
-### M4 — Loader TXT e progressione
-
-**Implementare:** parser puro, loader file, diagnostica, tre livelli e transizione descritta al §7.
-
-**Accettazione:** file valido carica una griglia rettangolare; ogni input invalido viene rifiutato senza corrompere il livello precedente; completamento blocca il gioco; conferma passa al livello successivo o a `GAME_WON`; errore di caricamento è controllato.
+**Accettazione:** file valido carica una griglia rettangolare; ogni input invalido viene rifiutato senza corrompere il livello precedente.
 
 **Verifica:**
 
 ```bash
 cmake --build --preset debug
-ctest --test-dir build/debug -R "level|progression" --output-on-failure
+ctest --test-dir build/debug -R "level|parser" --output-on-failure
 ```
 
 Testare LF, CRLF, newline mancante, riga corta/lunga, carattere `4`, spazio, BOM, file vuoto, righe extra e livello senza `1/2`.
 
-### M5 — Power-up e multiball
+### M3 — Power-up con durata, stacking e scadenza
 
 **Implementare:** array `balls[]`, array `powerups[]`, spawn deterministico, raccolta, timer, stacking, scadenza, ripristino e massimo entità.
 
@@ -564,37 +550,23 @@ ctest --test-dir build/debug -R "powerup|multiball|effect" --output-on-failure
 
 Smoke manuale: raccogliere ciascun pickup, attendere la scadenza, raccogliere due volte lo stesso effetto e perdere palline in ordine diverso.
 
-### M6 — UI, asset e audio
+### M4 — Stati, punteggio, HUD, audio, game feel e transizioni
 
-**Implementare:** HUD, menu e schermate finali, adapter input, renderer separato, caricamento asset con validazione, effetti audio e music stream opzionale.
+**Implementare:** `GAME_MENU`, `GAME_READY`, `GAME_PLAYING`, `GAME_PAUSED`, `GAME_LEVEL_COMPLETE`, `GAME_WON`, `GAME_OVER`; vite, punteggio, mattoni strong/unbreakable e reset; HUD, menu e schermate finali, adapter input, renderer separato, caricamento asset con validazione, effetti audio e music stream opzionale; particelle in array statico, trail limitato, flash mattone, screen shake leggero, aumento velocità con limiti e bilanciamento dei livelli; transizione vittoria → livello successivo/menu descritta al §7.
 
-**Accettazione:** il core resta headless; risorse caricate una sola volta e scaricate in ordine; asset mancanti producono fallback o errore leggibile; `UpdateMusicStream` viene chiamato ogni frame; suoni di collisione non si ripetono a ogni frame di overlap.
-
-**Verifica:**
-
-```bash
-cmake --build --preset debug
-ctest --preset debug --output-on-failure
-```
-
-Smoke manuale con audio disponibile: menu, suoni per bounce/distruzione/pickup, pausa/ripresa, mute se previsto, chiusura e riavvio ripetuto. Se il device non è disponibile, registrare il limite senza segnare l'audio come verificato.
-
-### M7 — Game feel e bilanciamento
-
-**Implementare:** particelle in array statico, trail limitato, flash mattone, screen shake leggero, aumento velocità con limiti e bilanciamento dei livelli.
-
-**Accettazione:** effetti non cambiano le regole; nessuna allocazione per frame; frame time limitato; performance stabile; toggle debug per FPS, collider, numero palline/pickup e stato.
+**Accettazione:** 3 vite iniziali; decremento solo alla perdita dell'ultima pallina; game over a zero; pausa congela simulazione; punteggio esatto secondo §6; bonus di livello una sola volta; completamento blocca il gioco e la conferma passa al livello successivo o a `GAME_WON`, con errore di caricamento controllato; il core resta headless; risorse caricate una sola volta e scaricate in ordine; asset mancanti producono fallback o errore leggibile; `UpdateMusicStream` viene chiamato ogni frame; suoni di collisione non si ripetono a ogni frame di overlap; effetti non cambiano le regole; nessuna allocazione per frame; frame time limitato; performance stabile; toggle debug per FPS, collider, numero palline/pickup e stato.
 
 **Verifica:**
 
 ```bash
 cmake --build --preset debug
+ctest --test-dir build/debug -R "game|score|state|life|progression" --output-on-failure
 ctest --preset debug --output-on-failure
 ```
 
-Smoke a frame rate normale e con finestra ridimensionata se supportato; verificare che particelle e shake non modifichino punteggio o collisioni.
+Smoke manuale: pausa/ripresa, perdita ripetuta, game over, restart e ritorno al menu; con audio disponibile: menu, suoni per bounce/distruzione/pickup, pausa/ripresa, mute se previsto, chiusura e riavvio ripetuto — se il device non è disponibile, registrare il limite senza segnare l'audio come verificato; a frame rate normale e con finestra ridimensionata se supportato, verificando che particelle e shake non modifichino punteggio o collisioni.
 
-### M8 — Release, sanitizers, packaging e QA finale
+### M5 — Release, sanitizers e packaging redistribuibile
 
 **Implementare:** documentazione completa, install rules, CPack ZIP/TGZ, eventuale CI, asset attribution e checklist di rilascio.
 
@@ -611,6 +583,24 @@ cpack --config build/release/CPackConfig.cmake -G TGZ
 ```
 
 Su Windows produrre anche ZIP e verificare il `.exe` dal contenuto estratto. Eseguire ASan/UBSan ove supportato e correggere il primo report, senza distribuire i runtime sanitizer.
+
+### M6 — verify.sh che emette verify.json per ogni milestone
+
+**Implementare:** `verify.sh` alla root del progetto: configura, compila ed esegue la suite CTest headless e scrive `verify.json` secondo il contratto `## Verify`.
+
+**Accettazione:**
+
+- non interattivo e termina entro 600 s; exit 0 se e solo se la suite del canale passa;
+- scrive `verify.json` con `schema: 1`, `benchmark: "breakout"` e tutti gli id `M0`–`M6`, ognuno esattamente una volta, con `pass` e `detail`;
+- la finestra di gioco non viene mai lanciata: solo build e target di test headless;
+- usa i preset quando disponibili, altrimenti il fallback senza preset del §1.
+
+**Verifica:**
+
+```bash
+./verify.sh
+cat verify.json
+```
 
 ---
 
@@ -701,3 +691,18 @@ CTest deve esporre test nominati, ad esempio `collision_response`, `game_rules`,
 - Non modificare sistemi non pertinenti alla milestone corrente.
 - Aggiorna README, test e istruzioni di packaging insieme alla funzionalità che li rende obsoleti.
 - Prima di dichiarare una milestone completata, riportare: file cambiati, comandi eseguiti, risultati dei test, smoke test eseguiti e rischi residui.
+
+---
+
+## Appendice — baseline toolchain (informativa, non vincolante)
+
+La baseline è un riferimento informativo, mai un requisito: il piano premia l'adattamento all'ambiente trovato, non l'aver indovinato la toolchain dell'host.
+
+| strumento | baseline di riferimento |
+|---|---|
+| Compilatore | MSVC v18 (toolset di Visual Studio 2026) su Windows; GCC/Clang recenti su Linux |
+| Generator | Ninja |
+| Build system | CMake ≥ 3.24 |
+| Libreria | raylib 5.5, acquisizione `FetchContent` pinnata a tag + SHA256 (§1) |
+
+Nota per CMake ≥ 4: la compatibilità con `cmake_minimum_required` inferiore a 3.5 è stata rimossa. raylib 5.5 dichiara esattamente `VERSION 3.5`, quindi configura anche con CMake ≥ 4; se una dipendenza dichiarasse meno di 3.5 e la configurazione fallisse, impostare il floor `-DCMAKE_POLICY_VERSION_MINIMUM=3.5`.
