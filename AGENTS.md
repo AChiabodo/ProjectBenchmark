@@ -1,6 +1,6 @@
 # Benchmark
 
-A collection of independent benchmark projects under `benchmarks/` (`breakout`, `match3`, `neon-vanguard`, `staticweb`, `tetroshift`, `wayline`, `paper-feed`), each with its own `PLAN.md`. Skills for these projects live in `.agents/skills/`.
+Seventeen benchmarks under `benchmarks/<id>/` (T2–T5, each with its own `PLAN.md`), five T1 wording sources under `benchmarks/staticweb/_wording-source/`, and the generated index in `benchmarks/README.md` + `benchmarks.json`. Skills for these benchmarks live in `.agents/skills/`; `node scripts/index.mjs --check` is the suite gate.
 
 ## Benchmark contracts (C2+)
 

@@ -32,7 +32,7 @@ ragione e il punto del Plan in cui vive ora. Seguono i rilievi nuovi della revis
 
 - **`meta.json` senza contratto.** Lo stub di C2 aveva `plan: null` e `audit: null`: nessun
   Plan, nessuna traccia d'audit, `--strict` in errore. Ora `plan: "PLAN.md"` e
-  `audit: "AUDIT.md"`, tabella `M0`–`M6` allineata al Plan (Σ pesi 100, Σ slice 40).
+  `audit: "AUDIT.md"`, tabella `M0`–`M7` allineata al Plan (Σ pesi 100, Σ slice 40).
 - **L'ottone non passa il contrasto sull'avorio.** `#A88F63` su `#F6F4EF` misura ≈2,8:1:
   sotto la soglia 3:1, quindi non è ammesso nemmeno per testo grande, bordi informativi o
   anello di focus. Il Plan introduce `#7A6438` (≈5,0:1) per testo e focus e lascia

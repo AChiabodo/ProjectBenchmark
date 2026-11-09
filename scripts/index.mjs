@@ -11,12 +11,15 @@
 //   node scripts/index.mjs --check   exit 1 if regeneration differs from disk
 //   node scripts/index.mjs --strict  additionally reject plan: null (C9 gate)
 //
-// Plan-text checks (banner variant, milestone ids, remote-reference deny-list)
-// are skipped entirely when plan is null; structural checks always apply.
+// Plan-text checks (banner variant, weighted-milestone table, remote-reference
+// deny-list) are skipped entirely when plan is null; structural checks always
+// apply. The five wording-source prompts are hash-pinned: index.meta.json carries
+// the sha256 of each file, so a later edit fails the gate instead of passing.
 // Error output: one line per violation naming the benchmark id and field;
 // exit 1; a bare stack trace is never the only output.
 
 import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,6 +27,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const BENCH = join(ROOT, "benchmarks");
 const RUNTIMES = new Set(["native", "browser", "container", "jvm", "dotnet", "go", "python", "node"]);
 const SPEC_LANGUAGES = new Set(["it", "en"]);
+// Heading that opens the rendered copy of meta.json.milestones inside the plan.
+const MILESTONE_HEADINGS = { it: "## Milestone pesate", en: "## Weighted milestones" };
+// Accepted slice-column cells, per spec language.
+const SLICE_CELLS = new Map([["sì", true], ["yes", true], ["—", false], ["-", false], ["no", false]]);
+const SHA256_HEX = /^[0-9a-f]{64}$/;
 const SLICE_MIN = 30;
 const SLICE_MAX = 50;
 // Remote runtime asset/service references denied in plan bodies. Bare words
@@ -46,6 +54,15 @@ const violations = [];
 const fail = (line) => violations.push(line);
 const norm = (s) => s.replace(/\r\n/g, "\n");
 const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
+// Tiers then ids: the one sort order shared by both generated outputs.
+const byTierThenId = (a, b) => (a.tier - b.tier) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+// Titles are compared modulo typography: curly quotes and spacing.
+const normTitle = (s) =>
+  s.replace(/[‘’‚‛]/g, "'").replace(/[“”„‟]/g, '"').replace(/\s+/g, " ").trim();
+// Wording sources are pinned on their LF content: git stores LF and core.autocrlf
+// rewrites the checkout, so the pin must not depend on the platform.
+const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
+const wordingSourceHash = (p) => sha256(Buffer.from(norm(readFileSync(p, "utf8")), "utf8"));
 const subdirs = (p) =>
   readdirSync(p, { withFileTypes: true })
     .filter((e) => e.isDirectory() && !e.name.startsWith("."))
@@ -87,7 +104,7 @@ function skillCatalogue(benchDir) {
   return cat;
 }
 
-// --- discover the ten benchmark directories and their meta.json ---
+// --- discover the seventeen benchmark directories and their meta.json ---
 function discoverBenchmarks() {
   const found = [];
   for (const name of subdirs(BENCH)) {
@@ -200,10 +217,83 @@ function validatePlanText({ id, dir }, meta, banners) {
       fail(`${label}: plan/milestones — l'id "${ms.id}" non compare nel ${meta.plan}`);
     }
   }
-  // 3. remote-reference deny-list on the plan body.
+  // 3. the rendered milestone table must match meta.json row by row.
+  validateMilestoneTable(label, meta, plan);
+  // 4. remote-reference deny-list on the plan body.
   const lower = plan.toLowerCase();
   for (const term of DENY_TERMS) {
     if (lower.includes(term)) fail(`${label}: plan/deny-list — riferimento remoto vietato "${term}" nel ${meta.plan}`);
+  }
+}
+
+// The table under MILESTONE_HEADINGS is the rendered copy of meta.json.milestones.
+// Rows are "| id | peso | slice | titolo |" (IT) or "| id | weight | slice | title |" (EN).
+function parseMilestoneTable(plan, heading) {
+  const lines = plan.split("\n");
+  const start = lines.findIndex((l) => l.trim() === heading);
+  if (start < 0) return { error: "heading" };
+  let rows = null;
+  for (let i = start + 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith("## ")) break;
+    if (line.startsWith("|")) {
+      if (!rows) rows = [];
+      rows.push(line);
+    } else if (rows) break;
+  }
+  if (!rows || rows.length < 2) return { error: "table" };
+  const cells = rows.map((r) =>
+    (r.startsWith("|") ? r.slice(1) : r).replace(/\|$/, "").split("|").map((c) => c.trim()));
+  // Drop the |---|---| separator row that follows the header row.
+  const body = cells.slice(1).filter((row, i) => !(i === 0 && row.every((c) => /^:?-+:?$/.test(c))));
+  if (body.length === 0) return { error: "table" };
+  return { rows: body };
+}
+
+function validateMilestoneTable(label, meta, plan) {
+  const heading = MILESTONE_HEADINGS[meta.spec_language];
+  const parsed = parseMilestoneTable(plan, heading);
+  if (parsed.error === "heading") {
+    fail(`${label}: plan/milestone-table — intestazione «${heading}» assente dal ${meta.plan}`);
+    return;
+  }
+  if (parsed.error === "table") {
+    fail(`${label}: plan/milestone-table — tabella assente o vuota sotto «${heading}» nel ${meta.plan}`);
+    return;
+  }
+  const byId = new Map((meta.milestones || []).map((m) => [m && m.id, m]));
+  const seen = new Set();
+  for (const row of parsed.rows) {
+    if (row.length !== 4 || row.some((c) => c === "")) {
+      fail(`${label}: plan/milestone-table — riga «| ${row.join(" | ")} |» non interpretabile (attese 4 colonne: id, peso, slice, titolo)`);
+      continue;
+    }
+    const [id, rawWeight, rawSlice, rawTitle] = row;
+    if (seen.has(id)) fail(`${label}: plan/milestone-table — id "${id}" duplicato nella tabella`);
+    seen.add(id);
+    const ms = byId.get(id);
+    if (!ms) {
+      fail(`${label}: plan/milestone-table — id "${id}" presente nella tabella ma assente da meta.json`);
+      continue;
+    }
+    const weight = Number(rawWeight);
+    if (!Number.isInteger(weight) || weight !== ms.weight) {
+      fail(`${label}: plan/milestone-table[${id}].weight — "${rawWeight}" ≠ ${ms.weight} di meta.json`);
+    }
+    const slice = SLICE_CELLS.get(rawSlice.toLowerCase());
+    if (slice === undefined) {
+      fail(`${label}: plan/milestone-table[${id}].slice — "${rawSlice}" non è un valore ammesso (IT: sì/—; EN: yes/—)`);
+    } else if (slice !== ms.slice) {
+      fail(`${label}: plan/milestone-table[${id}].slice — "${rawSlice}" ≠ ${ms.slice} di meta.json`);
+    }
+    if (normTitle(rawTitle) !== normTitle(typeof ms.title === "string" ? ms.title : "")) {
+      fail(`${label}: plan/milestone-table[${id}].title — "${rawTitle}" ≠ "${ms.title}" di meta.json`);
+    }
+  }
+  for (const ms of meta.milestones || []) {
+    if (ms && typeof ms.id === "string" && !seen.has(ms.id)) {
+      fail(`${label}: plan/milestone-table — id "${ms.id}" di meta.json assente dalla tabella del ${meta.plan}`);
+    }
   }
 }
 
@@ -220,7 +310,16 @@ function validateWordingSources() {
         if (!e || typeof e.file !== "string" || !e.file.trim()) { fail(`${label}/index.meta.json: entries[].file — mancante o vuoto`); continue; }
         if (listed.has(e.file)) fail(`${label}/index.meta.json: entries[].file — "${e.file}" duplicato`);
         listed.add(e.file);
-        if (!existsSync(join(dir, e.file))) fail(`${label}: entries[].file — "${e.file}" non esiste su disco`);
+        if (!existsSync(join(dir, e.file))) {
+          fail(`${label}: entries[].file — "${e.file}" non esiste su disco`);
+        } else {
+          const actual = wordingSourceHash(join(dir, e.file));
+          if (typeof e.sha256 !== "string" || !SHA256_HEX.test(e.sha256)) {
+            fail(`${label}: entries["${e.file}"].sha256 — mancante o non esadecimale a 64 caratteri`);
+          } else if (actual !== e.sha256) {
+            fail(`${label}: entries["${e.file}"].sha256 — ${actual} ≠ ${e.sha256} atteso (file modificato rispetto al pin)`);
+          }
+        }
         if (e.kind !== "wording-source") fail(`${label}: entries["${e.file}"].kind — "${e.kind}" deve essere "wording-source"`);
         if (e.tier !== 1) fail(`${label}: entries["${e.file}"].tier — ${e.tier} deve essere 1`);
         if (typeof e.title !== "string" || !e.title.trim()) fail(`${label}: entries["${e.file}"].title — mancante o vuoto`);
@@ -236,7 +335,7 @@ function validateWordingSources() {
 
 // --- generation ---
 function renderIndexSection(benchmarks, wordingSources) {
-  const rows = [...benchmarks].sort((a, b) => (a.tier - b.tier) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const rows = [...benchmarks].sort(byTierThenId);
   const lines = [
     "| id | titolo | tier | runtime | impl | piano |",
     "|----|--------|:----:|---------|------|-------|",
@@ -253,7 +352,7 @@ function renderIndexSection(benchmarks, wordingSources) {
 }
 
 function renderBenchmarksJson(benchmarks, wordingSources) {
-  const rows = [...benchmarks].sort((a, b) => (a.tier - b.tier) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const rows = [...benchmarks].sort(byTierThenId);
   return JSON.stringify({ schema: 1, benchmarks: rows, wordingSources }, null, 2) + "\n";
 }
 

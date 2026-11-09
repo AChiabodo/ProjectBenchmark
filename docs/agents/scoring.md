@@ -21,9 +21,19 @@ decide nulla a mano: applica questa pagina.
 ## Punteggio di suite
 
 - Media sui benchmark **tentati**, non sul totale dell'inventario, così chi
-  completa bene 3 progetti non è falsato contro chi ne apre 17.
+  completa bene 3 benchmark non è falsato contro chi ne apre 17.
 - Una metrica separata di ampiezza conta i **benchmark chiusi**; le due misure
   si leggono insieme, mai sommate.
+
+## Stato attuale
+
+Il punteggio **per benchmark** è già eseguibile: `scripts/score.mjs` legge il
+`verify.json` e il `meta.json` e applica la regola qui sopra. Il **punteggio di
+suite** (media sui benchmark tentati più la metrica di ampiezza) è definito in
+questa pagina e per ora si aggrega a mano, perché non esiste un run store da
+cui leggere i risultati di più run: finché non c'è, chi pubblica un punteggio di
+suite dichiara la media e l'ampiezza calcolate a mano. È un buco noto, non un
+requisito nascosto.
 
 ## Esempio numerico completo
 

@@ -15,16 +15,19 @@ Tabella resa da `meta.json`, che resta la fonte autorevole dei pesi; `scripts/in
 
 | id | peso | slice | titolo |
 |----|-----:|:-----:|--------|
-| M0 | 10 | sì | Bootstrap e layout |
-| M1 | 20 | sì | Dataset e rendering lista |
-| M2 | 10 | sì | Dettaglio e filtri |
-| M3 | 20 | — | Interazione caratterizzante: countdown deterministico e offerta simulata |
-| M4 | 15 | — | Accessibilità |
-| M5 | 15 | — | Responsive |
-| M6 | 10 | — | Verify: Playwright pinnato + verify.sh |
+| M0 | 40 | sì | Slice verticale: home, catalogo lotti filtrato e pagina lotto |
+| M1 | 12 | — | Dataset unico LOTTI con schema, enum e validateDataset() |
+| M2 | 10 | — | Filtri, ricerca, conteggi e stato nella query string |
+| M3 | 12 | — | Interazione caratterizzante: countdown deterministico e offerta simulata |
+| M4 | 8 | — | Stati vuoto, errore e non valido |
+| M5 | 8 | — | Accessibilità, reduced motion e contrasto |
+| M6 | 5 | — | Responsive sui breakpoint dichiarati |
+| M7 | 5 | — | Verify: Playwright pinnato e verify.json |
 
-La vertical slice vale 40 punti su 100 (`M0`+`M1`+`M2`) ed è il cancello dello scoring
+La vertical slice vale 40 punti su 100 (`M0`) ed è il cancello dello scoring
 (`docs/agents/scoring.md`): finché non passa, il resto non vale credito.
+
+# StaticWeb — Aste virtuali online
 
 ## Slice verticale
 
@@ -40,6 +43,7 @@ index.html ──▶ aste.html?categoria=…&stato=…&prezzo=…&ordina=…&q=�
 La slice è completa quando la home mostra il lotto in evidenza con il countdown reale del
 dataset, il catalogo filtra e dichiara il conteggio, e la pagina lotto rende il lotto
 richiesto, il suo countdown e la cronologia iniziale, oppure lo stato «Lotto non trovato».
+Gli stati vuoto, errore e non valido sono pesati in `M4`.
 
 ## Convenzione condivisa
 
@@ -170,7 +174,7 @@ riduce a un cambio immediato sotto reduced motion.
 
 ## Milestone e task
 
-### M0 — Bootstrap e layout (peso 10, slice)
+### M0 — Slice verticale: home, catalogo lotti filtrato e pagina lotto (peso 40, slice)
 
 - M0.1 Struttura a sei pagine (`index.html`, `aste.html`, `lotto.html`,
   `come-funziona.html`, `chi-siamo.html`, `contatti.html`) con `css/main.css`,
@@ -182,38 +186,58 @@ riduce a un cambio immediato sotto reduced motion.
   prima; `data-theme` e `data-motion` su `<html>`, tema applicato in `<head>` senza FOUC.
 - M0.4 Orologio di sessione: lettura/scrittura di `martello:epoch:v1`, override `?epoch=`,
   modulo `js/clock.js` con sorgente di tempo iniettabile.
+- M0.5 `js/data.js` con `LOTTI` e 14 lotti; `aste.html` rende le card dal dataset (titolo,
+  autore, categoria, offerta corrente, tempo rimanente, badge di stato derivato).
+- M0.6 Home: lotto in evidenza con countdown, ticker dei lotti in arrivo e lotti in
+  evidenza, tutti letti dal dataset.
+- M0.7 `lotto.html?id=` rende il lotto dal dataset: galleria, descrizione, stima, offerta
+  corrente, cronologia iniziale, countdown, pannello offerta.
+- M0.8 Filtro per categoria letto da `?categoria=` con conteggio «N lotti»: tanto basta a
+  chiudere la slice, mentre il contratto completo dei filtri è `M2`.
 
 **Fatto quando:** le sei pagine si aprono da server locale senza errori in console e senza
-richieste esterne, e il footer mostra un countdown coerente con l'epoca.
+richieste esterne, il footer mostra un countdown coerente con l'epoca, il catalogo senza
+parametri mostra 14 card e «14 lotti», e `lotto.html?id=<id valido>` rende titolo e autore del
+dataset.
 
-### M1 — Dataset e rendering lista (peso 20, slice)
+**Verifica:** A1, A2 e A5 del §«Verify».
 
-- M1.1 `js/data.js` con `LOTTI`, `CATEGORIE`, `STATI`, `rivalTick()`, `validateDataset()`;
-  14 lotti come da schema.
-- M1.2 `aste.html` rende le card dal dataset (titolo, autore, categoria, offerta corrente,
-  tempo rimanente, badge di stato derivato).
-- M1.3 Conteggio «N lotti» calcolato dal dataset filtrato, aggiornato a ogni cambio.
-- M1.4 Home: lotto in evidenza con countdown, ticker dei lotti in arrivo e lotti in
-  evidenza, tutti letti dal dataset.
-- M1.5 Stato di errore del dataset: validazione fallita → pannello con i problemi e nessuna
-  card parziale.
+### M1 — Dataset unico LOTTI con schema, enum e validateDataset() (peso 12)
 
-**Fatto quando:** il catalogo senza parametri mostra 14 card e «14 lotti», e il conteggio
-coincide col numero di card in ogni combinazione di filtri.
+- M1.1 `js/data.js` esporta `LOTTI`, gli enum `CATEGORIE` e `STATI`, `rivalTick()`,
+  `validateDataset()` e lo schema del §«Dataset: lotti» (campo, tipo, dominio).
+- M1.2 `validateDataset()` rifiuta id duplicati, stime incoerenti, prezzi di partenza sopra
+  la stima minima e `immagini` vuoto o fuori da 2–4 percorsi, e restituisce la lista dei
+  problemi invece di lanciare un'eccezione.
+- M1.3 Il dataset contiene 14 lotti, almeno due per categoria, almeno un
+  `chiudeTraMinuti` negativo, almeno uno sotto i 60 minuti e almeno uno oltre le 24 ore.
+- M1.4 Lo stato del lotto non è un campo del dataset: si deriva dall'orologio a ogni render,
+  secondo la tabella del §«Date relative deterministiche».
 
-### M2 — Dettaglio e filtri (peso 10, slice)
+**Fatto quando:** un dataset manomesso produce la lista dei problemi attesi e un test Node che
+importa `js/data.js` conta 14 lotti e deriva gli stati attesi da un'epoca fissata.
 
-- M2.1 `lotto.html?id=` rende il lotto dal dataset: galleria, descrizione, stima, offerta
-  corrente, cronologia iniziale, countdown, pannello offerta.
-- M2.2 `?id=` inesistente o mancante → stato «Lotto non trovato» con link al catalogo.
-- M2.3 Filtri, ricerca e ordinamento come da tabella, con stato nella query string letto al
-  caricamento e riscritto a ogni cambio (`history.replaceState`).
-- M2.4 Stato vuoto con testo esplicito e pulsante «azzera filtri».
+**Verifica:** A2 del §«Verify» (conteggio ricalcolato importando `js/data.js`) e A6 per il
+pannello di errore.
 
-**Fatto quando:** un URL con filtri riproduce lo stesso sottoinsieme dopo il reload e un
-`?id=` inesistente mostra lo stato «non trovato».
+### M2 — Filtri, ricerca, conteggi e stato nella query string (peso 10)
 
-### M3 — Interazione caratterizzante (peso 20)
+- M2.1 Filtri, ricerca e ordinamento come da tabella del §«Filtri, conteggio e query string»:
+  `categoria`, `stato`, `prezzo`, `ordina`, `q`.
+- M2.2 Stato letto dalla query string al caricamento e riscritto a ogni cambio con
+  `history.replaceState`: l'URL resta ricaricabile e condivisibile.
+- M2.3 Conteggio «N lotti» calcolato dal dataset filtrato con lo stato derivato all'istante
+  del render, e sempre uguale al numero di card.
+- M2.4 Valore di parametro fuori dominio ignorato e riportato allo stato «tutti», senza
+  errore.
+
+**Fatto quando:** ogni combinazione di filtri, ricerca e ordinamento produce il conteggio
+atteso con un numero di card uguale al conteggio, e un URL filtrato ricarica lo stesso
+sottoinsieme.
+
+**Verifica:** A3 e A4 del §«Verify».
+
+### M3 — Interazione caratterizzante: countdown deterministico e offerta simulata (peso 12)
 
 - M3.1 Countdown deterministico: cifre aggiornate una volta al secondo, decimi solo nel lotto
   in evidenza e solo senza reduced motion; stato derivato coerente con `chiudeTraMinuti`.
@@ -228,60 +252,90 @@ coincide col numero di card in ogni combinazione di filtri.
 **Fatto quando:** con `?epoch=` fissato, il countdown e lo stato del lotto sono gli stessi in
 due run, e un'offerta valida sopravvive al reload.
 
-### M4 — Accessibilità (peso 15)
+**Verifica:** A7, A8 e A9 del §«Verify».
 
-- M4.1 WCAG 2.1 AA su entrambi i temi: skip link, focus visibile, target ≥ 44×44 px,
+### M4 — Stati vuoto, errore e non valido (peso 8)
+
+- M4.1 `validateDataset()` fallito → pannello di errore con la lista dei problemi e nessuna
+  card parziale.
+- M4.2 Filtro senza risultati → stato vuoto con testo esplicito e pulsante «azzera filtri»
+  che riporta al catalogo completo.
+- M4.3 `?id=` inesistente o mancante → stato «Lotto non trovato» con link al catalogo.
+- M4.4 Dato persistito non valido → voce scartata e avviso visibile: epoca non ISO ricreata,
+  offerta con importo non intero o id sconosciuto scartata, esito sconosciuto ignorato,
+  nessun crash.
+
+**Fatto quando:** dataset manomesso, filtro senza risultati e `?id=` inesistente producono i
+tre stati dichiarati, ognuno con la sua via d'uscita verso il catalogo, e uno storage corrotto
+non produce eccezioni.
+
+**Verifica:** A6 del §«Verify».
+
+### M5 — Accessibilità, reduced motion e contrasto (peso 8)
+
+- M5.1 WCAG 2.1 AA su entrambi i temi: skip link, focus visibile, target ≥ 44×44 px,
   landmark, `alt` descrittivi per le opere.
-- M4.2 Regioni live come da tabella del §«Annunci `aria-live`», con la prova che nessuna
+- M5.2 Regioni live come da tabella del §«Annunci `aria-live`», con la prova che nessuna
   regione cambia più di una volta ogni 3 s.
-- M4.3 Modale di esito e lightbox con semantica modale, focus trap, `Esc` e ripristino.
-- M4.4 Tabella di contrasto dei token dei due temi con i valori misurati; il neon non è mai
+- M5.3 Modale di esito e lightbox con semantica modale, focus trap, `Esc` e ripristino del
+  focus.
+- M5.4 Reduced motion: `data-motion="reduced"` su `<html>`, nessuna animazione in esecuzione
+  e decimi non mostrati.
+- M5.5 Tabella di contrasto dei token dei due temi con i valori misurati; il neon non è mai
   solo decorativo.
 
-**Fatto quando:** A9–A11 del §«Verify» passano nei due temi.
+**Fatto quando:** tutte le asserzioni di regione live e di contrasto del §«Verify» passano
+nei due temi e il percorso da tastiera copre header, filtri, card, lotto e pannello offerta.
 
-### M5 — Responsive (peso 15)
+**Verifica:** A10, A11 e A12 del §«Verify».
 
-- M5.1 Breakpoint 375 px, 768 px, 1280 px; griglia lotti 1/2/3 colonne con container queries.
-- M5.2 Nessun overflow orizzontale a 320 px; immagini con `aspect-ratio`.
-- M5.3 Pannello offerta, filtri e ticker usabili a 375 px con target ≥ 44 px; il ticker si
+### M6 — Responsive sui breakpoint dichiarati (peso 5)
+
+- M6.1 Breakpoint 375 px, 768 px, 1280 px; griglia lotti 1/2/3 colonne con container queries.
+- M6.2 Nessun overflow orizzontale a 320 px; immagini con `aspect-ratio`.
+- M6.3 Pannello offerta, filtri e ticker usabili a 375 px con target ≥ 44 px; il ticker si
   ferma al hover e al focus e non è una regione live.
 
-**Fatto quando:** A12 passa a 320, 375, 768 e 1280 px.
+**Fatto quando:** A13 passa a 320, 375, 768 e 1280 px.
 
-### M6 — Verify (peso 10)
+**Verifica:** A13 del §«Verify».
 
-- M6.1 `package.json` con `@playwright/test` 1.65.0 e lockfile committato.
-- M6.2 `playwright.config.*` con un progetto Chromium e server locale dei file statici.
-- M6.3 `./verify.sh` non interattivo che esegue le asserzioni del §«Verify» ed emette
-  `verify.json` con `M0`–`M6`.
-- M6.4 Mapping asserzione → milestone.
+### M7 — Verify: Playwright pinnato e verify.json (peso 5)
+
+- M7.1 `package.json` con `@playwright/test` 1.65.0 e lockfile committato.
+- M7.2 `playwright.config.*` con un progetto Chromium e server locale dei file statici.
+- M7.3 `./verify.sh` non interattivo che esegue le asserzioni del §«Verify» ed emette
+  `verify.json` con `M0`–`M7`.
+- M7.4 Mapping asserzione → milestone.
 
 **Fatto quando:** `./verify.sh` esce 0 su un progetto completo ed esce 1 con `verify.json`
 coerente quando una milestone fallisce.
 
+**Verifica:** A14 del §«Verify».
+
 ## Verify — `./verify.sh` e `verify.json`
 
 `./verify.sh` è un deliverable del progetto nella root `benchmarks/staticweb/staticweb-auction/`:
-non interattivo, entro 600 s, exit 0 = pass, `verify.json` con gli id `M0`–`M6`, schema 1,
+non interattivo, entro 600 s, exit 0 = pass, `verify.json` con gli id `M0`–`M7`, schema 1,
 `benchmark` uguale a `staticweb-auction`. Solo assert su DOM e stato: nessun giudizio visivo,
 nessuno screenshot diff.
 
 | # | asserzione | milestone |
 |---|------------|-----------|
 | A1 | le sei pagine caricano senza errori di console e senza richieste con origine diversa dal server locale | M0 |
-| A2 | il catalogo senza parametri mostra «14 lotti» e 14 card; il conteggio è ricalcolato importando `js/data.js` in Node | M1 |
-| A3 | ogni combinazione di filtri, ricerca e ordinamento produce il conteggio atteso e un numero di card uguale al conteggio | M1, M2 |
+| A2 | il catalogo senza parametri mostra «14 lotti» e 14 card; il conteggio è ricalcolato importando `js/data.js` in Node | M0, M2 |
+| A3 | ogni combinazione di filtri, ricerca e ordinamento produce il conteggio atteso e un numero di card uguale al conteggio | M2 |
 | A4 | i filtri nell'URL si rileggono dopo il reload e riproducono lo stesso sottoinsieme | M2 |
-| A5 | `lotto.html?id=<id valido>` rende titolo e autore del dataset; `?id=inesistente` mostra «Lotto non trovato» | M2 |
-| A6 | con `?epoch=` fissato, due caricamenti producono lo stesso testo del countdown e lo stesso `data-stato` per ogni lotto; un lotto con `chiudeTraMinuti` negativo è `chiusa` | M1, M3 |
-| A7 | offerta valida → offerta corrente e cronologia aggiornate, voce in `martello:offerte:v1`; reload → offerta conservata; importo sotto il minimo → errore annunciato e nessuna scrittura | M3 |
-| A8 | due offerte entro 2 s → la seconda è rifiutata con motivo annunciato; `rivalTick()` in Node produce la stessa sequenza per lo stesso `lotId` | M3 |
-| A9 | con `emulateMedia({reducedMotion: 'reduce'})` `<html>` ha `data-motion="reduced"`, nessuna animazione in esecuzione e i decimi non sono mostrati | M3, M4 |
-| A10 | nessuna regione `aria-live` contiene un nodo che cambia più di una volta ogni 3 s (osservazione con `MutationObserver` su 5 s); le cifre del countdown sono fuori dalle regioni live | M4 |
-| A11 | contrasto calcolato da `getComputedStyle` sulle coppie testo/sfondo dei due temi: ≥ 4,5:1 il testo, ≥ 3:1 il testo grande e i bordi informativi | M4 |
-| A12 | a 320, 375, 768 e 1280 px nessun overflow orizzontale | M5 |
-| A13 | `verify.json` contiene esattamente `M0`–`M6` e l'exit code concorda col file | M6 |
+| A5 | `lotto.html?id=<id valido>` rende titolo e autore del dataset | M0 |
+| A6 | dataset manomesso → pannello di errore con la lista dei problemi e nessuna card parziale; filtro senza risultati → stato vuoto con pulsante «azzera filtri»; `?id=` inesistente → stato «Lotto non trovato» con link al catalogo | M4 |
+| A7 | con `?epoch=` fissato, due caricamenti producono lo stesso testo del countdown e lo stesso `data-stato` per ogni lotto; un lotto con `chiudeTraMinuti` negativo è `chiusa` | M3 |
+| A8 | offerta valida → offerta corrente e cronologia aggiornate, voce in `martello:offerte:v1`; reload → offerta conservata; importo sotto il minimo → errore annunciato e nessuna scrittura | M3 |
+| A9 | due offerte entro 2 s → la seconda è rifiutata con motivo annunciato; `rivalTick()` in Node produce la stessa sequenza per lo stesso `lotId` | M3 |
+| A10 | con `emulateMedia({reducedMotion: 'reduce'})` `<html>` ha `data-motion="reduced"`, nessuna animazione in esecuzione e i decimi non sono mostrati | M5 |
+| A11 | nessuna regione `aria-live` contiene un nodo che cambia più di una volta ogni 3 s (osservazione con `MutationObserver` su 5 s); le cifre del countdown sono fuori dalle regioni live | M5 |
+| A12 | contrasto calcolato da `getComputedStyle` sulle coppie testo/sfondo dei due temi: ≥ 4,5:1 il testo, ≥ 3:1 il testo grande e i bordi informativi | M5 |
+| A13 | a 320, 375, 768 e 1280 px nessun overflow orizzontale | M6 |
+| A14 | `verify.json` contiene esattamente `M0`–`M7` e l'exit code concorda col file | M7 |
 
 ## Fuori scope
 

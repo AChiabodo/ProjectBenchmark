@@ -175,45 +175,51 @@
       "milestones": [
         {
           "id": "M0",
-          "weight": 10,
+          "weight": 40,
           "slice": true,
-          "title": "Bootstrap e layout"
+          "title": "Slice verticale: home, catalogo filtrato e pagina prodotto"
         },
         {
           "id": "M1",
-          "weight": 20,
-          "slice": true,
-          "title": "Dataset e rendering lista"
+          "weight": 12,
+          "slice": false,
+          "title": "Dataset unico PRODOTTI con schema, enum e validateDataset()"
         },
         {
           "id": "M2",
           "weight": 10,
-          "slice": true,
-          "title": "Dettaglio e filtri"
+          "slice": false,
+          "title": "Filtri, conteggi e stato nella query string"
         },
         {
           "id": "M3",
-          "weight": 20,
+          "weight": 12,
           "slice": false,
           "title": "Interazione caratterizzante: lightbox prodotto, parallax e carrello locale"
         },
         {
           "id": "M4",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Accessibilità"
+          "title": "Stati vuoto, errore e non valido"
         },
         {
           "id": "M5",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Responsive"
+          "title": "Accessibilità, reduced motion e contrasto"
         },
         {
           "id": "M6",
-          "weight": 10,
+          "weight": 5,
           "slice": false,
-          "title": "Verify: Playwright pinnato + verify.sh"
+          "title": "Responsive sui breakpoint dichiarati"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "Verify: Playwright pinnato e verify.json"
         }
       ]
     },
@@ -246,45 +252,51 @@
       "milestones": [
         {
           "id": "M0",
-          "weight": 10,
+          "weight": 40,
           "slice": true,
-          "title": "Bootstrap e layout"
+          "title": "Slice verticale: home, flotta filtrata e scheda auto"
         },
         {
           "id": "M1",
-          "weight": 20,
-          "slice": true,
-          "title": "Dataset e rendering lista"
+          "weight": 12,
+          "slice": false,
+          "title": "Dataset unico AUTO con schema, enum e validateDataset()"
         },
         {
           "id": "M2",
           "weight": 10,
-          "slice": true,
-          "title": "Dettaglio e filtri"
+          "slice": false,
+          "title": "Filtri, conteggi e stato nella query string"
         },
         {
           "id": "M3",
-          "weight": 20,
+          "weight": 12,
           "slice": false,
           "title": "Interazione caratterizzante: galleria con lightbox e parallax"
         },
         {
           "id": "M4",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Accessibilità"
+          "title": "Stati vuoto, errore e non valido"
         },
         {
           "id": "M5",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Responsive"
+          "title": "Accessibilità, reduced motion e contrasto"
         },
         {
           "id": "M6",
-          "weight": 10,
+          "weight": 5,
           "slice": false,
-          "title": "Verify: Playwright pinnato + verify.sh"
+          "title": "Responsive sui breakpoint dichiarati"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "Verify: Playwright pinnato e verify.json"
         }
       ]
     },
@@ -714,45 +726,51 @@
       "milestones": [
         {
           "id": "M0",
-          "weight": 10,
+          "weight": 40,
           "slice": true,
-          "title": "Bootstrap e layout"
+          "title": "Slice verticale: home, catalogo lotti filtrato e pagina lotto"
         },
         {
           "id": "M1",
-          "weight": 20,
-          "slice": true,
-          "title": "Dataset e rendering lista"
+          "weight": 12,
+          "slice": false,
+          "title": "Dataset unico LOTTI con schema, enum e validateDataset()"
         },
         {
           "id": "M2",
           "weight": 10,
-          "slice": true,
-          "title": "Dettaglio e filtri"
+          "slice": false,
+          "title": "Filtri, ricerca, conteggi e stato nella query string"
         },
         {
           "id": "M3",
-          "weight": 20,
+          "weight": 12,
           "slice": false,
           "title": "Interazione caratterizzante: countdown deterministico e offerta simulata"
         },
         {
           "id": "M4",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Accessibilità"
+          "title": "Stati vuoto, errore e non valido"
         },
         {
           "id": "M5",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Responsive"
+          "title": "Accessibilità, reduced motion e contrasto"
         },
         {
           "id": "M6",
-          "weight": 10,
+          "weight": 5,
           "slice": false,
-          "title": "Verify: Playwright pinnato + verify.sh"
+          "title": "Responsive sui breakpoint dichiarati"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "Verify: Playwright pinnato e verify.json"
         }
       ]
     },
@@ -787,45 +805,51 @@
       "milestones": [
         {
           "id": "M0",
-          "weight": 10,
+          "weight": 40,
           "slice": true,
-          "title": "Bootstrap e layout"
+          "title": "Slice verticale: home, collezione filtrata e scheda orologio"
         },
         {
           "id": "M1",
-          "weight": 20,
-          "slice": true,
-          "title": "Dataset e rendering lista"
+          "weight": 12,
+          "slice": false,
+          "title": "Dataset unico OROLOGI con schema, enum e validateDataset()"
         },
         {
           "id": "M2",
           "weight": 10,
-          "slice": true,
-          "title": "Dettaglio e filtri"
+          "slice": false,
+          "title": "Filtri, conteggi e stato nella query string"
         },
         {
           "id": "M3",
-          "weight": 20,
+          "weight": 12,
           "slice": false,
           "title": "Interazione caratterizzante: orologio analogico e ombre dinamiche"
         },
         {
           "id": "M4",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Accessibilità"
+          "title": "Stati vuoto, errore e non valido"
         },
         {
           "id": "M5",
-          "weight": 15,
+          "weight": 8,
           "slice": false,
-          "title": "Responsive"
+          "title": "Accessibilità, reduced motion e contrasto"
         },
         {
           "id": "M6",
-          "weight": 10,
+          "weight": 5,
           "slice": false,
-          "title": "Verify: Playwright pinnato + verify.sh"
+          "title": "Responsive sui breakpoint dichiarati"
+        },
+        {
+          "id": "M7",
+          "weight": 5,
+          "slice": false,
+          "title": "Verify: Playwright pinnato e verify.json"
         }
       ]
     },
@@ -1360,31 +1384,36 @@
       "file": "cammelli.txt",
       "title": "Sito Web Statico Avanzato — Cammelli (IT)",
       "tier": 1,
-      "kind": "wording-source"
+      "kind": "wording-source",
+      "sha256": "03c3d09085a31922a02226c733a8df6275c19e52f0781ad697e308a67f8e6b27"
     },
     {
       "file": "cammelli_inglese.txt",
       "title": "Advanced Static Website — Camels (EN)",
       "tier": 1,
-      "kind": "wording-source"
+      "kind": "wording-source",
+      "sha256": "8520e07fd2eec49bafe0b4e8ae527830760b81cabc0659ff70816969d1509415"
     },
     {
       "file": "car_rental.txt",
       "title": "Sito Web Statico Multipagina — Noleggio Auto d'Epoca",
       "tier": 1,
-      "kind": "wording-source"
+      "kind": "wording-source",
+      "sha256": "0adb534f1ac767f705ef1ae767c9fb1c44572bd523c787677703f63e75a58edf"
     },
     {
       "file": "online_auction.txt",
       "title": "Sito Web Statico Multipagina — Aste Virtuali Online",
       "tier": 1,
-      "kind": "wording-source"
+      "kind": "wording-source",
+      "sha256": "b8e59325d39be0d8004e90c8dedcd87fb556205c173b4ba9942ac4c2468e3213"
     },
     {
       "file": "vintage_watches.txt",
       "title": "Sito Web Statico Multipagina — Orologi d'Epoca",
       "tier": 1,
-      "kind": "wording-source"
+      "kind": "wording-source",
+      "sha256": "fced89f7182f1dccdb2a2460b54965e7797449f5857ecb741decae4bccdcbce8"
     }
   ]
 }
