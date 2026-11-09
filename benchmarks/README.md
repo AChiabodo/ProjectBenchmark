@@ -15,6 +15,7 @@ Ogni benchmark vive in `benchmarks/<id>/` e dichiara i propri contratti in `meta
 | staticweb-watches | StaticWeb — Orologi d'epoca | T3 | browser | HTML, CSS, JavaScript | PLAN.md |
 | tetroshift | TetroShift / MorphoTetris | T3 | native | C++20 | PLAN.md |
 | minilang | MiniLang — mini-language interpreter | T4 | native | Rust | PLAN.md |
+| taskboard | Taskboard — board full stack on Docker Compose | T4 | container | TypeScript, SQL | PLAN.md |
 | neon-vanguard | NEON VANGUARD | T5 | native | C++20 | PLAN.md |
 | paper-feed | AI/ML Newsletter (paper-feed) | T5 | container | Python | PLAN.md |
 | wayline | WAYLINE — L'Atlante Spezzato | T5 | browser | TypeScript | PLAN.md |
