@@ -85,6 +85,79 @@
       ]
     },
     {
+      "id": "rulechat",
+      "title": "RuleChat — deterministic conversational chatbot",
+      "kind": "benchmark",
+      "tier": 2,
+      "spec_language": "en",
+      "impl_languages": [
+        "Python"
+      ],
+      "stack": [
+        "Python 3.12",
+        "Flask 3.0.3",
+        "SQLite (stdlib sqlite3)",
+        "pytest 8.3.3",
+        "Docker Compose"
+      ],
+      "runtime": "container",
+      "plan": "PLAN.md",
+      "audit": null,
+      "verify": "./verify.sh",
+      "verify_timeout_s": 600,
+      "skills": [
+        "implement",
+        "tdd",
+        "diagnosing-bugs",
+        "prototype",
+        "code-review"
+      ],
+      "milestones": [
+        {
+          "id": "M0",
+          "weight": 40,
+          "slice": true,
+          "title": "Bootstrap, HTTP API and vertical slice"
+        },
+        {
+          "id": "M1",
+          "weight": 15,
+          "slice": false,
+          "title": "Utterance corpus and intent matcher"
+        },
+        {
+          "id": "M2",
+          "weight": 15,
+          "slice": false,
+          "title": "Slot filling and dialogue FSM"
+        },
+        {
+          "id": "M3",
+          "weight": 10,
+          "slice": false,
+          "title": "Session persistence (SQLite)"
+        },
+        {
+          "id": "M4",
+          "weight": 8,
+          "slice": false,
+          "title": "Fallback and escalation"
+        },
+        {
+          "id": "M5",
+          "weight": 7,
+          "slice": false,
+          "title": "Table-driven tests and held-out accuracy"
+        },
+        {
+          "id": "M6",
+          "weight": 5,
+          "slice": false,
+          "title": "verify.sh and verify.json"
+        }
+      ]
+    },
+    {
       "id": "staticweb-camels",
       "title": "StaticWeb — Cammelli (e-commerce vetrina)",
       "kind": "benchmark",

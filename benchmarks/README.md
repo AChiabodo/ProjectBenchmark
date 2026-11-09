@@ -6,6 +6,7 @@ Ogni benchmark vive in `benchmarks/<id>/` e dichiara i propri contratti in `meta
 | id | titolo | tier | runtime | impl | piano |
 |----|--------|:----:|---------|------|-------|
 | breakout | Breakout | T2 | native | C17 | PLAN.md |
+| rulechat | RuleChat — deterministic conversational chatbot | T2 | container | Python | PLAN.md |
 | staticweb-camels | StaticWeb — Cammelli (e-commerce vetrina) | T2 | browser | HTML, CSS, JavaScript | — |
 | staticweb-classic-cars | StaticWeb — Auto d'epoca (noleggio) | T2 | browser | HTML, CSS, JavaScript | — |
 | match3 | GemSwap (Match-3 Web) | T3 | browser | TypeScript | PLAN.md |
